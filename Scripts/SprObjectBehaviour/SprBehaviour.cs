@@ -15,13 +15,13 @@ public class SprBehaviourBase : MonoBehaviour {
             // 非実行中にはApplication.dataPathは使えないので
             string currDir = Directory.GetCurrentDirectory();
 
-            if (Directory.Exists(currDir + "/Assets/Springhead/Plugins")) {
+            if (Directory.Exists(currDir + "/Assets/SprUnity/Plugins")) {
                 // Editor内、あるいはEditorから実行している時
-                SetDllDirectory(currDir + "/Assets/Springhead/Plugins");
+                SetDllDirectory(currDir + "/Assets/SprUnity/Plugins");
 
-            } else if (Directory.Exists(currDir + "/Springhead/Plugins")) {
+            } else if (Directory.Exists(currDir + "/SprUnity/Plugins")) {
                 // ビルドされたものを実行している時
-                SetDllDirectory(currDir + "/Springhead/Plugins");
+                SetDllDirectory(currDir + "/SprUnity/Plugins");
 
             }
         }
