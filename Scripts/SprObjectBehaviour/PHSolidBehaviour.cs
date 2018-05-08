@@ -13,6 +13,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     // メンバ変数
 
     public PHSolidDescStruct desc;
+    public GameObject centerOfMass = null;
 
     // このGameObjectがScene Hierarchyでどれくらいの深さにあるか。浅いものから順にUpdatePoseするために使う
     [HideInInspector]
@@ -57,7 +58,23 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         while (t.parent != null) { treeDepth++; t = t.parent; }
         phSceneBehaviour.RegisterPHSolidBehaviour(this);
 
+        UpdateCenterOfMass();
+
         return so;
+    }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // MonoBehaviourのメソッド
+
+    // UnityのFixedUpdate
+    void FixedUpdate() {
+        UpdateCenterOfMass();
+    }
+
+    // UnityのOnValidate
+    public override void OnValidate() {
+        base.OnValidate();
+        UpdateCenterOfMass();
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -76,5 +93,15 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             }
         }
 	}
+
+    public void UpdateCenterOfMass () {
+        if (centerOfMass != null) {
+            Vec3d centerOfMassLocalPos = gameObject.transform.ToPosed().Inv() * centerOfMass.transform.position.ToVec3d();
+            desc.center = centerOfMassLocalPos;
+            if (phSolid != null) {
+                phSolid.SetCenterOfMass(centerOfMassLocalPos);
+            }
+        }
+    }
 
 }
