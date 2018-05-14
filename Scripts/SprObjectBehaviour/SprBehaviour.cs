@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using SprCs;
 
@@ -15,14 +15,27 @@ public class SprBehaviourBase : MonoBehaviour {
             // 非実行中にはApplication.dataPathは使えないので
             string currDir = Directory.GetCurrentDirectory();
 
-            if (Directory.Exists(currDir + "/Assets/SprUnity/Plugins")) {
-                // Editor内、あるいはEditorから実行している時
-                SetDllDirectory(currDir + "/Assets/SprUnity/Plugins");
+            List<string> dirCands = new List<string>();
+            dirCands.Add(currDir);
 
-            } else if (Directory.Exists(currDir + "/SprUnity/Plugins")) {
-                // ビルドされたものを実行している時
-                SetDllDirectory(currDir + "/SprUnity/Plugins");
+            // SprUnity/Pluginsフォルダの場所を探す
+            for (int i = 0; i < 10; i++) { // フォルダ階層を10階層までは辿る
+                List<string> newDirCands = new List<string>();
+                foreach (var dir in dirCands) {
+                    if (Directory.Exists(dir + "/SprUnity/Plugins")) {
+                        SetDllDirectory(dir + "/SprUnity/Plugins");
+                        Debug.Log("SprUnity Plugins Found at : " + dir + "/SprUnity/Plugins");
+                        dllPathAlreadySet = true;
+                        newDirCands.Clear();
+                        break;
 
+                    } else {
+                        foreach (var subDir in Directory.GetDirectories(dir)) {
+                            newDirCands.Add(subDir);
+                        }
+                    }
+                }
+                dirCands = newDirCands;
             }
         }
     }
