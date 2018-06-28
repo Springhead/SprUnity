@@ -19,6 +19,13 @@ public class MeshRoundCone : MonoBehaviour {
     }
 
     public void Reshape () {
+        // Avoid Invalid Value
+        if (length <= 0) { length = 1e-5f; }
+        if (r1 < 0) { r1 = 0; }
+        if (r2 < 0) { r2 = 0; }
+
+        // ----- ----- ----- ----- -----
+
         MeshFilter mf = gameObject.GetComponent<MeshFilter>();
         Mesh mesh = mf.sharedMesh;
 
