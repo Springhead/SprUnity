@@ -20,7 +20,7 @@ public class BuildClass : MonoBehaviour {
                     GetOutputPath(),        //!< 出力先
                     target,                 //!< ビルド対象プラットフォーム
                     opt
-            );
+            ).ToString();
 
         // 元に戻す
         EditorUserBuildSettings.SwitchActiveBuildTarget(prevPlatform);

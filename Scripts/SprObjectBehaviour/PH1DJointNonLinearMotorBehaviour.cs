@@ -87,7 +87,7 @@ public class PH1DJointNonLinearMotorBehaviour : SprSceneObjBehaviour {
                 Copy(damperParam, d_double, 4);
                 break;
         }
-        m.SetFuncFromDatabase(springMode, damperMode, s_double, d_double);
+        // m.SetFuncFromDatabase(springMode, damperMode, s_double, d_double);
 
         return m;
     }
