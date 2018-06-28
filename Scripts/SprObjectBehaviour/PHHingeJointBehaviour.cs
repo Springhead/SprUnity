@@ -36,6 +36,7 @@ public class PHHingeJointBehaviour : PHJointBehaviour {
     // -- DescStructをDescに適用する
     public override void ApplyDesc(CsObject from, CsObject to) {
         (from as PHHingeJointDescStruct).ApplyTo(to as PHHingeJointDesc);
+        (from as PH1DJointDescStruct).ApplyTo(to as PH1DJointDesc);
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
