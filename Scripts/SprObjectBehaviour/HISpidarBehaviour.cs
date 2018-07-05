@@ -80,7 +80,6 @@ public class HISpidarBehaviour : SprBehaviour {
                 string text = "";
                 for (int i = 0; i < hiSpidar.NMotor(); i++) {
                     text += hiSpidar.GetMotor((uint)i).GetLength().ToString() + "\r\n";
-                    hiSpidar.GetMotor((uint)i).SetForce(1.0f);
                 }
                 lengthText.text = text;
             }
