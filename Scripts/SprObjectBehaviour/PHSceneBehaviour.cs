@@ -21,14 +21,6 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableStep = true;
     public bool enableUpdate = true;
 
-    [Serializable]
-    public class SolidPair {
-        public PHSolidBehaviour solid1 = null;
-        public PHSolidBehaviour solid2 = null;
-        public PHSceneDesc.ContactMode contactMode;
-    }
-    public List<SolidPair> collisionSetting = new List<SolidPair>();
-
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -80,25 +72,6 @@ public class PHSceneBehaviour : SprBehaviour {
         }
 
         return phScene;
-    }
-
-    // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
-    public override void Link() {
-        // Collision Setting
-        foreach (var pair in collisionSetting) {
-            if (pair.solid1 == null && pair.solid2 == null) {
-                phScene.SetContactMode(pair.contactMode);
-            }
-            if (pair.solid1 != null && pair.solid2 == null) {
-                phScene.SetContactMode(pair.solid1.phSolid, pair.contactMode);
-            }
-            if (pair.solid1 == null && pair.solid2 != null) {
-                phScene.SetContactMode(pair.solid2.phSolid, pair.contactMode);
-            }
-            if (pair.solid1 != null && pair.solid2 != null) {
-                phScene.SetContactMode(pair.solid1.phSolid, pair.solid2.phSolid, pair.contactMode);
-            }
-        }
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
