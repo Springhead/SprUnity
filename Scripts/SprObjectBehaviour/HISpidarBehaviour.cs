@@ -17,6 +17,8 @@ public class HISpidarBehaviour : SprBehaviour {
 
     public TextMesh lengthText = null;
 
+    public bool updateSpidarInFixedUpdate = true;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -73,15 +75,17 @@ public class HISpidarBehaviour : SprBehaviour {
     // MonoBehaviourのメソッド
 
     void FixedUpdate() {
-        if (sprObject != null) {
-            hiSpidar.Update(Time.fixedDeltaTime);
+        if (updateSpidarInFixedUpdate) {
+            if (sprObject != null) {
+                hiSpidar.Update(Time.fixedDeltaTime);
 
-            if (lengthText != null) {
-                string text = "";
-                for (int i = 0; i < hiSpidar.NMotor(); i++) {
-                    text += hiSpidar.GetMotor((uint)i).GetLength().ToString() + "\r\n";
+                if (lengthText != null) {
+                    string text = "";
+                    for (int i = 0; i < hiSpidar.NMotor(); i++) {
+                        text += hiSpidar.GetMotor((uint)i).GetLength().ToString() + "\r\n";
+                    }
+                    lengthText.text = text;
                 }
-                lengthText.text = text;
             }
         }
     }
