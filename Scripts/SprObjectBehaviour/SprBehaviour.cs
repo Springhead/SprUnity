@@ -48,6 +48,10 @@ public class SprBehaviourBase : MonoBehaviour {
 
 public abstract class SprBehaviour : SprBehaviourBase {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // SpringheadオブジェクトからSprBehaviourを逆引きするマップ
+    public static Dictionary<ObjectIf, SprBehaviour> sprBehaviourMap = new Dictionary<ObjectIf, SprBehaviour>();
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // 対応するSpringheadオブジェクト
 
     private ObjectIf sprObject_ = null;
@@ -79,17 +83,18 @@ public abstract class SprBehaviour : SprBehaviourBase {
 
     // --
     private bool awakeCalled = false;
-    public void Awake() {
+    public virtual void Awake() {
         if (!awakeCalled && GetDescStruct() != null) {
             if (!enabled) { return; }
             sprObject = Build();
+            sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
             awakeCalled = true;
         }
     }
 
     // --
     private bool startCalled = false;
-    public void Start() {
+    public virtual void Start() {
         if (!startCalled && GetDescStruct() != null) {
             Link();
             // オブジェクトの作成が一通り完了したら一度OnValidateを読んで設定を確実に反映しておく
@@ -113,6 +118,18 @@ public abstract class SprBehaviour : SprBehaviourBase {
             }
         }
     }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // その他のメソッド
+
+    // Springheadオブジェクトに対応するGameObjectを返す
+    public static Type GetBehaviour<Type>(ObjectIf springheadObject) where Type : SprBehaviour {
+        if (sprBehaviourMap.ContainsKey(springheadObject)) {
+            return sprBehaviourMap[springheadObject] as Type;
+        }
+        return null;
+    }
+
 }
 
 public abstract class SprSceneObjBehaviour : SprBehaviour {

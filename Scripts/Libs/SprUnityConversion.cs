@@ -60,5 +60,12 @@ namespace SprUnity {
         public static Quaternion ToQuaternion(this Quaterniond q) {
             return new Quaternion((float)q.x, (float)q.y, (float)q.z, (float)q.w);
         }
+
+        // ----- ----- ----- ----- -----
+        // ObjectIf --> SprBehaviour
+
+        public static Type GetBehaviour<Type>(this ObjectIf springheadObject) where Type : SprBehaviour {
+            return SprBehaviour.GetBehaviour<Type>(springheadObject);
+        }
     }
 }
