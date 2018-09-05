@@ -7,10 +7,13 @@ namespace InteraWare {
     public class EyeByTexture : MonoBehaviour {
         public Body body = null;
         public GameObject eye = null;
+        public int eyeMaterialId = 0;
+        public List<string> textures = new List<string>();
         public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
         // Use this for initialization
         void Start() {
+            if (textures.Count == 0) { textures.Add("_MainTex"); }
         }
 
         // Update is called once per frame
@@ -36,7 +39,9 @@ namespace InteraWare {
                 horiz = Mathf.Clamp(horiz, -1, 1);
                 verti = Mathf.Clamp(verti, -1, 1);
 
-                eye.GetComponent<Renderer>().materials[0].SetTextureOffset("_MainTex", new Vector2(-horiz * uvRatio.x, -verti * uvRatio.y));
+                foreach (var textureName in textures) {
+                    eye.GetComponent<Renderer>().materials[eyeMaterialId].SetTextureOffset(textureName, new Vector2(-horiz * uvRatio.x, -verti * uvRatio.y));
+                }
             }
         }
     }

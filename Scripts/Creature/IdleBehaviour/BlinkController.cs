@@ -69,7 +69,7 @@ public class BlinkController : MonoBehaviour {
         }
 
         // Update BlendShape
-        if (body != null) {
+		if (body != null && face != null) {
             float eyelidClose = 100.0f * (1.0f - ((openMovement.GetCurrentActiveness(blinkTimer) - closeMovement.GetCurrentActiveness(blinkTimer))));
 
             if (face.GetBlendShapeWeight(0) > 30) { eyelidClose = 0; }
