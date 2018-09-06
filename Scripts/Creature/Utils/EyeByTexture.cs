@@ -11,12 +11,10 @@ namespace InteraWare {
         public List<string> textures = new List<string>();
         public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
-        // Use this for initialization
         void Start() {
             if (textures.Count == 0) { textures.Add("_MainTex"); }
         }
 
-        // Update is called once per frame
         void FixedUpdate() {
             if (body != null && eye != null) {
                 var eyeRotationL = Quaternion.Inverse(body["Head"].gameObject.transform.rotation) * body["LeftEye"].gameObject.transform.rotation;

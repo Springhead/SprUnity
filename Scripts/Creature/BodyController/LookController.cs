@@ -133,7 +133,7 @@ namespace InteraWare {
                     // 目と頭が連動するのでdurationHeadに基づいてdurationEyeを決める
                     durationEye = durationHead * 0.8f;
                     // サッケード中＆終了後しばらくは、次の視線移動動作を抑制する
-                    waitTimer = durationHead * 2.0f;
+                    waitTimer = durationHead * 1.0f;
 
                     // 視線を大きく動かす前にはまばたきをする
                     if (diffAngleHead > 20.0f) {
