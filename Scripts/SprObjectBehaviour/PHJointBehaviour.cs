@@ -10,6 +10,8 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     public GameObject socket = null;
     public GameObject plug = null;
 
+    public GameObject jointPosition = null;
+
     // 関節で接続された剛体同士の衝突を無効ににするかどうか
     public bool disableCollision = false;
     // 関節のPlugPoseを剛体・関節オブジェクトの初期位置に合わせて自動設定するか
@@ -45,8 +47,11 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
         jo.SetName("jo:" + gameObject.name);
 
         if (autoSetSockPlugPose) {
-            jo.SetSocketPose(soSock.GetPose().Inv() * gameObject.transform.ToPosed());
-            jo.SetPlugPose(soPlug.GetPose().Inv() * gameObject.transform.ToPosed());
+            if (jointPosition == null) {
+                jointPosition = gameObject;
+            }
+            jo.SetSocketPose(soSock.GetPose().Inv() * jointPosition.transform.ToPosed());
+            jo.SetPlugPose(soPlug.GetPose().Inv() * jointPosition.transform.ToPosed());
         }
 
         return jo;
