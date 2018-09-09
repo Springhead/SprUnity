@@ -19,10 +19,10 @@ public class SubMovement {
     public float t1 = 0;
 
     public void AddNoise() {
-        p1 += (p1 - p0) * 0.02f * GaussianRandom.random();
+        p1 += (p1 - p0) * 0.08f * GaussianRandom.random();
         float rotNoise = 3.0f;
         q1 = Quaternion.Euler(rotNoise * GaussianRandom.random(), rotNoise * GaussianRandom.random(), rotNoise * GaussianRandom.random()) * q1;
-        t1 += GaussianRandom.random() * 0.2f;
+        // t1 += GaussianRandom.random() * 0.2f;
     }
 
     public void GetCurrentSpringDamper(float t, out Vector2 sp) {
