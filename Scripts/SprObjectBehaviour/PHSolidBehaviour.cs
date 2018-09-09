@@ -15,6 +15,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public PHSolidDescStruct desc;
     public GameObject centerOfMass = null;
 
+    public bool fixedSolid = false;
+
     // このGameObjectがScene Hierarchyでどれくらいの深さにあるか。浅いものから順にUpdatePoseするために使う
     [HideInInspector]
     public int treeDepth = 0;
@@ -84,12 +86,12 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public void UpdatePose () {
         if (sprObject != null) {
             PHSolidIf so = sprObject as PHSolidIf;
-            if (so.IsDynamical()) {
-                // Dynamicalな剛体はSpringheadのシミュレーション結果をUnityに反映
-                gameObject.transform.FromPosed(so.GetPose());
-            } else {
-                // Dynamicalでない剛体はUnityの位置をSpringheadに反映（操作可能）
+            if (!so.IsDynamical() && !fixedSolid) {
+                // Dynamicalでない（かつ、fixedでもない）剛体はUnityの位置をSpringheadに反映（操作可能）
                 so.SetPose(gameObject.transform.ToPosed());
+            } else {
+                // Dynamicalな（もしくはfixedな）剛体はSpringheadのシミュレーション結果をUnityに反映
+                gameObject.transform.FromPosed(so.GetPose());
             }
         }
 	}
