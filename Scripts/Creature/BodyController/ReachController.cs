@@ -61,6 +61,8 @@ public class SubMovement {
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
 public class ReachController : MonoBehaviour {
+	public bool suspend = false;
+
     public PHIKEndEffectorBehaviour ikEndEffector;
     public Queue<SubMovement> trajectory = new Queue<SubMovement>();
 	public Queue<SubMovement> subTrajectory = new Queue<SubMovement>();
@@ -134,6 +136,12 @@ public class ReachController : MonoBehaviour {
     }
 
     public void FixedUpdate() {
+		if (suspend) {
+			return;
+		}
+
+		// ----- ----- ----- ----- -----
+
         float dt = Time.fixedDeltaTime;
 
         while (trajectory.Count() >= 2 && trajectory.First().t1 < currTime) {
