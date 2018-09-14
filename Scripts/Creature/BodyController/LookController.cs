@@ -50,11 +50,16 @@ namespace InteraWare {
         private Quaternion initialLocalRot = Quaternion.identity;
         private Pose initialHeadPose = new Pose();
 
+		private Quaternion originRotation = Quaternion.identity;
+		private GameObject lastTarget = null;
+
         public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
         void Start() {
             initialLocalRot = body["Head"].transform.localRotation;
             initialHeadPose = new Pose(body["Head"].transform.position, body["Head"].transform.rotation);
+
+			originRotation = initialHeadPose.rotation;
         }
 
         void FixedUpdate() {
@@ -66,6 +71,11 @@ namespace InteraWare {
             if (body == null || target == null) {
                 return;
             }
+
+			if (target == lastTarget) {
+				return;
+			}
+			lastTarget = target;
 
             // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
             // ＜目を動かす＞
@@ -100,7 +110,8 @@ namespace InteraWare {
             // ＜頭を動かす＞
 
             // marginの量を設定
-            float margin = (saccade ? 60.0f : 70.0f) * (1 - stare); // Saccadeの時はmarginを小さくとる、stareパラメータで調節可能
+            // float margin = (saccade ? 60.0f : 70.0f) * (1 - stare); // Saccadeの時はmarginを小さくとる、stareパラメータで調節可能
+			float margin = 0;
 
             // marginを考慮した上での頭の目標方向と移動量を計算
             GameObject targetForHead = target;
@@ -149,10 +160,14 @@ namespace InteraWare {
             body["RightEye"].GetComponent<ReachController>().AddSubMovement(new Pose(new Vector3(), eyeTargetRotation), new Vector2(1, 1), durationEye, durationEye);
             if (headMove) {
 				// Debug.Log (headTargetPose.ToString() + durationHead);
-                body["Head"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(headTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
+				headTargetPose.rotation = Quaternion.Slerp(originRotation, headTargetPose.rotation, stare);
+				body["Head"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(headTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
+				if (stare > 0.8f) {
+					originRotation = headTargetPose.rotation;
+				}
 
                 Pose hipsTargetPose = new Pose();
-                hipsTargetPose.position = new Vector3(0.0f, 0.9f, 0.0f); // <!!>
+                hipsTargetPose.position = new Vector3(0.0f, 0.9f, 0.0f); // <!!> InitialHipsPoseとかが必要
                 hipsTargetPose.rotation = Quaternion.Slerp(body["Base"].transform.rotation, headTargetPose.rotation, 0.5f);
                 body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(hipsTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
             }
@@ -176,7 +191,11 @@ namespace InteraWare {
             Ray rayHead = new Ray(body["Head"].transform.position, currentTargetPose.rotation * new Vector3(0, 0, 1));
             Gizmos.DrawRay(rayHead);
 
-            if (target != null) {
+			Gizmos.color = Color.cyan;
+			Ray rayOrigin = new Ray(body["Head"].transform.position, originRotation * new Vector3(0, 0, 1));
+			Gizmos.DrawRay(rayOrigin);
+
+			if (target != null) {
                 Gizmos.color = Color.magenta;
                 Gizmos.DrawLine(body["Head"].transform.position, target.transform.position);
             }

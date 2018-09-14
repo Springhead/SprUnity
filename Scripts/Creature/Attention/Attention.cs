@@ -55,8 +55,19 @@ namespace InteraWare {
                 }
             }
 
-            CompAttention();
-            GazeTransition();
+			if (Input.GetKey (KeyCode.Space)) {
+				foreach (var person in Person.persons) {
+					if (person.human) {
+						if (currentAttentionTarget != person) {
+							OverrideGazeTarget (person, -1, true);
+						}
+						break;
+					}
+				}
+			} else {
+				CompAttention ();
+				GazeTransition ();
+			}
         }
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -79,6 +90,7 @@ namespace InteraWare {
         // Private Methods
 
         void CompAttention() {
+			float maxPersonAttention = 0.0f;
             foreach (var person in Person.persons) {
                 var attentionInfo = person.AddPerception<AttentionPerception>();
 
@@ -86,7 +98,7 @@ namespace InteraWare {
                     // 距離による注意
                     var pos = person.transform.position; pos.y = 0;
                     float distance = pos.magnitude;
-                    float min = 0.5f, max = 2.0f; // [m]
+                    float min = 1.0f, max = 2.0f; // [m]
                     float baseAttention = 0.07f;
                     attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
 
@@ -106,11 +118,20 @@ namespace InteraWare {
                     // 注意量
                     attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance, attentionInfo.attentionByDistanceDecrease);
 
-                } else {
-                    // 背景オブジェクトには一律の注意量を与える
-                    // attentionInfo.attention = 0.2f;
+					if (maxPersonAttention < attentionInfo.attention) {
+						maxPersonAttention = attentionInfo.attention;
+					}
                 }
             }
+
+			foreach (var person in Person.persons) {
+				var attentionInfo = person.AddPerception<AttentionPerception>();
+
+				if (!person.human) {
+					// 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
+					attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.2f, 1.0f);
+				}
+			}
         }
 
         void GazeTransition() {
@@ -241,8 +262,9 @@ namespace InteraWare {
                 nextGazeTransitionTime = x / 30.0f + newAttentionTarget.AddPerception<AttentionPerception>().attention * 0.5f;
                 timeFromGazeTransition = 0.0f;
 
-                // 次の視線移動までの時間から直視度を決定する（チラ見は一瞬、長時間なら直視）：とっても大事！
-                lookController.stare = Mathf.Max(0.7f, Mathf.Clamp01(nextGazeTransitionTime / 2.0f));
+                // 次の視線移動までの時間から直視度を決定する（チラ見は一瞬、長時間なら直視、ただし注意度が小さいときはチラ見しかしない）
+				// とっても大事！
+				lookController.stare = Mathf.Clamp(Mathf.Min(attention * 1.0f, nextGazeTransitionTime / 2.0f), 0.3f, 1.0f);
 
                 currentAttentionTarget = newAttentionTarget;
             }
