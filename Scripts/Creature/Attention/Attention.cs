@@ -104,7 +104,7 @@ namespace InteraWare {
                     attentionInfo.lastDistance = distance;
 
                     // 注意量
-                    // attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance, attentionInfo.attentionByDistanceDecrease);
+                    attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance, attentionInfo.attentionByDistanceDecrease);
 
                 } else {
                     // 背景オブジェクトには一律の注意量を与える
@@ -217,7 +217,6 @@ namespace InteraWare {
                 var attention = newAttentionTarget.AddPerception<AttentionPerception>().attention;
                 lookController.target = newAttentionTarget.gameObject;
                 lookController.speed = 1.0f;
-                lookController.stare = attention;
 				if (forceStraight || (newAttentionTarget.human && lookController.straight == false)) {
                     lookController.straight = true;
                 } else {
@@ -241,6 +240,9 @@ namespace InteraWare {
                 }
                 nextGazeTransitionTime = x / 30.0f + newAttentionTarget.AddPerception<AttentionPerception>().attention * 0.5f;
                 timeFromGazeTransition = 0.0f;
+
+                // 次の視線移動までの時間から直視度を決定する（チラ見は一瞬、長時間なら直視）：とっても大事！
+                lookController.stare = Mathf.Max(0.7f, Mathf.Clamp01(nextGazeTransitionTime / 2.0f));
 
                 currentAttentionTarget = newAttentionTarget;
             }

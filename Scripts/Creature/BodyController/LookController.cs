@@ -149,7 +149,12 @@ namespace InteraWare {
             body["RightEye"].GetComponent<ReachController>().AddSubMovement(new Pose(new Vector3(), eyeTargetRotation), new Vector2(1, 1), durationEye, durationEye);
             if (headMove) {
 				// Debug.Log (headTargetPose.ToString() + durationHead);
-                body["Head"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(headTargetPose, new Vector2(0.8f, 0.5f), durationHead, durationHead);
+                body["Head"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(headTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
+
+                Pose hipsTargetPose = new Pose();
+                hipsTargetPose.position = new Vector3(0.0f, 0.9f, 0.0f); // <!!>
+                hipsTargetPose.rotation = Quaternion.Slerp(body["Base"].transform.rotation, headTargetPose.rotation, 0.5f);
+                body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(hipsTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
             }
 
             // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
