@@ -5,6 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class PosRot {
     public PosRot() { }
+    public PosRot(GameObject g) { position = g.transform.position; rotation = g.transform.rotation; }
     public PosRot(Transform t) { position = t.position; rotation = t.rotation; }
     public PosRot(Vector3 p, Quaternion r) { position = p; rotation = r; }
     public PosRot(PosRot p) { position = p.position; rotation = p.rotation; }
@@ -13,6 +14,7 @@ public class PosRot {
     public Vector3 position = new Vector3();
     public Quaternion rotation = Quaternion.identity;
 
+    public void SetTo(GameObject g) { g.transform.position = position; g.transform.rotation = rotation; }
     public void SetTo(Transform t) { t.position = position; t.rotation = rotation; }
 
     public Vector3 InverseTransformPoint(Vector3 point) {
@@ -25,6 +27,20 @@ public class PosRot {
         point = rotation * point;
         point += position;
         return point;
+    }
+
+    public PosRot TransformPosRot(PosRot posrot) {
+        PosRot result = new PosRot();
+        result.position = position + rotation * posrot.position;
+        result.rotation = rotation * posrot.rotation;
+        return result;
+    }
+
+    public PosRot Inverse() {
+        PosRot result = new PosRot();
+        result.rotation = Quaternion.Inverse(rotation);
+        result.position = -(result.rotation * position);
+        return result;
     }
 
     // ----- ----- ----- ----- -----

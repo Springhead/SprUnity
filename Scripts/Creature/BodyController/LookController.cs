@@ -49,8 +49,9 @@ namespace InteraWare {
 
         private Quaternion initialLocalRot = Quaternion.identity;
         private Pose initialHeadPose = new Pose();
+        private Pose initialHipsPose = new Pose();
 
-		private Quaternion originRotation = Quaternion.identity;
+        private Quaternion originRotation = Quaternion.identity;
 		private GameObject lastTarget = null;
 
         public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
@@ -58,8 +59,9 @@ namespace InteraWare {
         void Start() {
             initialLocalRot = body["Head"].transform.localRotation;
             initialHeadPose = new Pose(body["Head"].transform.position, body["Head"].transform.rotation);
+            initialHipsPose = new Pose(body["Hips"].transform.position, body["Hips"].transform.rotation);
 
-			originRotation = initialHeadPose.rotation;
+            originRotation = initialHeadPose.rotation;
         }
 
         void FixedUpdate() {
@@ -167,7 +169,7 @@ namespace InteraWare {
 				}
 
                 Pose hipsTargetPose = new Pose();
-                hipsTargetPose.position = new Vector3(0.0f, 0.9f, 0.0f); // <!!> InitialHipsPoseとかが必要
+                hipsTargetPose.position = body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().trajectory.Last().p1;
                 hipsTargetPose.rotation = Quaternion.Slerp(body["Base"].transform.rotation, headTargetPose.rotation, 0.5f);
                 body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(hipsTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
             }
