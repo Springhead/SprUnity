@@ -34,11 +34,17 @@ namespace InteraWare {
 
         // Gaze Transition Timer (unit: second)
         private float timeFromGazeTransition = 0.0f;
-        private float timeUntilGazeTransition = 0.0f;
+        [HideInInspector]
+        public float timeUntilGazeTransition = 0.0f;
         private float nextGazeTransitionTime = 0.0f;
 
         [HideInInspector]
         public Person currentAttentionTarget = null;
+
+        [HideInInspector]
+        public bool attentionTargetChanged = false;
+        [HideInInspector]
+        public float attentionChangeAngle = 0.0f;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Methods
@@ -47,6 +53,8 @@ namespace InteraWare {
         }
 
         void FixedUpdate() {
+            attentionTargetChanged = false;
+
             if (currentAttentionTarget == null) {
                 if (Person.persons.Count > 0) {
                     currentAttentionTarget = Person.persons[0];
@@ -98,11 +106,15 @@ namespace InteraWare {
                     // 距離による注意
                     var pos = person.transform.position; pos.y = 0;
                     float distance = pos.magnitude;
-                    float min = 1.0f, max = 2.0f; // [m]
+                    float min = 1.5f, max = 3.0f; // [m]
                     float baseAttention = 0.07f;
                     attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
 
+                    // 注意量
+                    attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance);
+
                     // 距離の減少による注意
+                    /*
                     float distanceDecreaseVel = (attentionInfo.lastDistance - distance) / Time.fixedDeltaTime;
                     if (distanceDecreaseVel > 0) {
                         float maxVel = 10.0f; // [m/sec]
@@ -117,8 +129,9 @@ namespace InteraWare {
 
                     // 注意量
                     attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance, attentionInfo.attentionByDistanceDecrease);
+                    */
 
-					if (maxPersonAttention < attentionInfo.attention) {
+                    if (maxPersonAttention < attentionInfo.attention) {
 						maxPersonAttention = attentionInfo.attention;
 					}
                 }
@@ -228,11 +241,17 @@ namespace InteraWare {
 
             // ----- ----- ----- ----- -----
 
+            if (newAttentionTarget != null) {
+                attentionTargetChanged = true;
+                Vector3 newDir = (newAttentionTarget.transform.position - headPos);
+                attentionChangeAngle = Vector3.Angle(currDir, newDir);
+            }
+
             ChangeGazeTarget(newAttentionTarget);
 
         }
 
-		void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false) {
+        void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false) {
             if (newAttentionTarget != null) {
                 // 目を動かす
                 var attention = newAttentionTarget.AddPerception<AttentionPerception>().attention;
