@@ -106,30 +106,16 @@ namespace InteraWare {
                     // 距離による注意
                     var pos = person.transform.position; pos.y = 0;
                     float distance = pos.magnitude;
-                    float min = 1.5f, max = 3.0f; // [m]
-                    float baseAttention = 0.07f;
-                    attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
+                    float min = 1.5f, max = 4.0f; // [m]
+                    float baseAttention = 0;
+                    if (distance < 3.0f) {
+                        attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
+                    } else {
+                        attentionInfo.attentionByDistance = 0;
+                    }
 
                     // 注意量
                     attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance);
-
-                    // 距離の減少による注意
-                    /*
-                    float distanceDecreaseVel = (attentionInfo.lastDistance - distance) / Time.fixedDeltaTime;
-                    if (distanceDecreaseVel > 0) {
-                        float maxVel = 10.0f; // [m/sec]
-                        float attentionByDistanceDecrease = Mathf.Clamp01(distanceDecreaseVel / maxVel);
-                        attentionInfo.attentionByDistanceDecrease = Mathf.Max(attentionInfo.attentionByDistanceDecrease, attentionByDistanceDecrease);
-                    } else {
-                        float becomeZeroTime = 3.0f; // [sec]
-                        attentionInfo.attentionByDistanceDecrease -= (Time.fixedDeltaTime / becomeZeroTime);
-                        attentionInfo.attentionByDistanceDecrease = Mathf.Clamp01(attentionInfo.attentionByDistanceDecrease);
-                    }
-                    attentionInfo.lastDistance = distance;
-
-                    // 注意量
-                    attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance, attentionInfo.attentionByDistanceDecrease);
-                    */
 
                     if (maxPersonAttention < attentionInfo.attention) {
 						maxPersonAttention = attentionInfo.attention;
@@ -179,6 +165,9 @@ namespace InteraWare {
                     if (person != currentAttentionTarget) {
                         // 位置のおかしな対象はスキップする
                         if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
+
+                        // 注意量が小さすぎる対象はスキップする
+                        if (person.AddPerception<AttentionPerception>().attention < 1e-5) { continue; }
 
                         // 現在の注視対象とのなす角を求める
                         Vector3 candDir = (person.transform.position - headPos);
