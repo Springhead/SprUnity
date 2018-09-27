@@ -70,7 +70,7 @@ public class Person : MonoBehaviour {
 
     // ----- ----- ----- ----- -----
     // State Value for Character AI
-    public class StateValue { }
+	public class StateValue { public virtual void OnDrawGizmos(Person person) { } }
     public Dictionary<Type, StateValue> stateValue = new Dictionary<Type, StateValue>();
     public Type GetStateValue<Type>() where Type : StateValue {
         return (stateValue.ContainsKey(typeof(Type))) ? (stateValue[typeof(Type)] as Type) : null;
@@ -126,6 +126,14 @@ public class Person : MonoBehaviour {
             var footPos = head.transform.position; footPos.y = 0;
             Gizmos.DrawLine(head.transform.position, footPos);
         }
+		if (leftHand != null) {
+			Gizmos.color = Color.gray;
+			Gizmos.DrawWireSphere(leftHand.transform.position, 0.1f);
+		}
+		if (rightHand != null) {
+			Gizmos.color = Color.gray;
+			Gizmos.DrawWireSphere(rightHand.transform.position, 0.1f);
+		}
 
         foreach(var kv in sensorInfo) {
             kv.Value.OnDrawGizmos(this);
@@ -133,6 +141,9 @@ public class Person : MonoBehaviour {
         foreach (var kv in perception) {
             kv.Value.OnDrawGizmos(this);
         }
+		foreach (var kv in stateValue) {
+			kv.Value.OnDrawGizmos(this);
+		}
     }
 
     void OnDestroy() {
