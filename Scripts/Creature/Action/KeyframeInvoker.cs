@@ -8,8 +8,11 @@ using InteraWare;
 
 [Serializable]
 public class KeyframeInfo {
+	public delegate void OnStartCallback();
+
     public Vector2 time = new Vector2(0, 0); // mean, stddev : follows gaussian random.
     public List<KeyFrame> keyframes;
+	public OnStartCallback onStart;
 
     [HideInInspector]
     public float generatedTime = -1;
@@ -20,7 +23,7 @@ public class KeyframeInfo {
         return generatedTime;
     }
 
-    public KeyframeInfo(float timeMu, float timeSigma, List<string> kfs) {
+	public KeyframeInfo(float timeMu, float timeSigma, List<string> kfs, OnStartCallback onStart = null) {
         time = new Vector2(timeMu, timeSigma);
 
         keyframes = new List<KeyFrame>();
@@ -43,6 +46,8 @@ public class KeyframeInfo {
                 }
             }
         }
+
+		this.onStart = onStart;
     }
 }
 
@@ -72,6 +77,11 @@ public class KeyframeInvoker : MonoBehaviour {
             }
         }
 
+		foreach (var info in deleteList) {
+			if (info.onStart != null) {
+				info.onStart.Invoke ();
+			}
+		}
         foreach (var info in deleteList) {
             keyframes.Remove(info);
         }

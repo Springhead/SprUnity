@@ -51,10 +51,10 @@ public class KeyFrame : MonoBehaviour {
     }
 
     public void Action() {
-        PosRot moveTo = new PosRot(gameObject);
-        PosRot autoReturnTo = new PosRot(reachController.trajectory.Last().p1, reachController.trajectory.Last().q1);
+		PosRot moveTo = new PosRot (gameObject);
+		PosRot autoReturnTo = new PosRot (reachController.trajectory.Last ().p1, reachController.trajectory.Last ().q1);
 
-        // ----- ----- -----
+		// ----- ----- -----
 
         PosRot relativeKeyPosRot = new PosRot(lookController.body["Base"].transform).Inverse().TransformPosRot(moveTo);
         Vector3 originPos = lookController.body["Base"].transform.position;
