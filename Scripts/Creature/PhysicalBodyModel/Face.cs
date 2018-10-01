@@ -74,18 +74,26 @@ namespace InteraWare {
                     smileClose = eyeSmileTarget.transform.localPosition.y;
                 }
 
+                if (smileClose > 0.1f) {
+                    blinkClose = Mathf.Min(blinkClose, 1 - smileClose);
+                }
+
                 // ----- ----- ----- ----- -----
 
-                var lowerBlinkCloseOffset = new Vector3(0, 0.01f, 0);
-                var lowerSmileCloseOffset = new Vector3(0, 0.025f, 0.00375f);
 
+
+                var lowerBlinkCloseOffset = new Vector3(0, 0.01f, 0);
                 var upperBlinkCloseOffset = new Vector3(0, -0.03f, 0);
-                var upperSmileCloseOffset = new Vector3(0, -0.015f, 0.00375f);
+
+                var lowerSmileCloseOffset = new Vector3(0, 0.0648f - 0.02314313f, 0.0738f - 0.06974218f);
+                var upperSmileCloseOffset = new Vector3(0, 0.053f - 0.06020558f, 0.0794f - 0.07581014f);
 
                 float s = 1.0f;
                 if (blinkClose + smileClose > 1) {
                     s = (blinkClose + smileClose);
                 }
+
+                float u = 1 - Mathf.Max(blinkClose, smileClose);
 
                 Vector3 lowerCloseOffset = (blinkClose * lowerBlinkCloseOffset + smileClose * lowerSmileCloseOffset) * (1 / s);
                 Vector3 upperCloseOffset = (blinkClose * upperBlinkCloseOffset + smileClose * upperSmileCloseOffset) * (1 / s);
@@ -95,28 +103,28 @@ namespace InteraWare {
                     Mathf.Clamp(+angleL.y * lowerCoeff.y, lowerLimitMin.y, lowerLimitMax.y),
                     Mathf.Clamp(+angleL.y * lowerCoeff.y * lowerCoeff.z, lowerLimitMin.z, lowerLimitMax.z)
                     );
-                leftLowerEye.transform.localPosition = leftLowerEyeBasePos + leftLowerEyeOffset + lowerCloseOffset;
+                leftLowerEye.transform.localPosition = leftLowerEyeBasePos + leftLowerEyeOffset * u + lowerCloseOffset * (1 - u);
 
                 Vector3 leftUpperEyeOffset = new Vector3(
                     Mathf.Clamp(-angleL.x * upperCoeff.x, upperLimitMin.x, upperLimitMax.x),
                     Mathf.Clamp(+angleL.y * upperCoeff.y, upperLimitMin.y, upperLimitMax.y),
                     Mathf.Clamp(+angleL.y * upperCoeff.y * upperCoeff.z, upperLimitMin.z, upperLimitMax.z)
                     );
-                leftUpperEye.transform.localPosition = leftUpperEyeBasePos + leftUpperEyeOffset + upperCloseOffset;
+                leftUpperEye.transform.localPosition = leftUpperEyeBasePos + leftUpperEyeOffset * u + upperCloseOffset * (1 - u);
 
                 Vector3 rightLowerEyeOffset = new Vector3(
                     Mathf.Clamp(-angleR.x * lowerCoeff.x, lowerLimitMin.x, lowerLimitMax.x),
                     Mathf.Clamp(+angleR.y * lowerCoeff.y, lowerLimitMin.y, lowerLimitMax.y),
                     Mathf.Clamp(+angleR.y * lowerCoeff.y * lowerCoeff.z, lowerLimitMin.z, lowerLimitMax.z)
                     );
-                rightLowerEye.transform.localPosition = rightLowerEyeBasePos + rightLowerEyeOffset + lowerCloseOffset;
+                rightLowerEye.transform.localPosition = rightLowerEyeBasePos + rightLowerEyeOffset * u + lowerCloseOffset * (1 - u);
 
                 Vector3 rightUpperEyeOffset = new Vector3(
                     Mathf.Clamp(-angleR.x * upperCoeff.x, upperLimitMin.x, upperLimitMax.x),
                     Mathf.Clamp(+angleR.y * upperCoeff.y, upperLimitMin.y, upperLimitMax.y),
                     Mathf.Clamp(+angleR.y * upperCoeff.y * upperCoeff.z, upperLimitMin.z, upperLimitMax.z)
                     );
-                rightUpperEye.transform.localPosition = rightUpperEyeBasePos + rightUpperEyeOffset + upperCloseOffset;
+                rightUpperEye.transform.localPosition = rightUpperEyeBasePos + rightUpperEyeOffset * u + upperCloseOffset * (1 - u);
             }
         }
     }
