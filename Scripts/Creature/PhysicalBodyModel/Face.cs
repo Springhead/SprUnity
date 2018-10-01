@@ -30,6 +30,11 @@ namespace InteraWare {
 
         // ----- ----- ----- ----- -----
 
+        public GameObject eyeBlinkTarget = null;
+        public GameObject eyeSmileTarget = null;
+
+        // ----- ----- ----- ----- -----
+
         private Vector3 leftLowerEyeBasePos = new Vector3();
         private Vector3 leftUpperEyeBasePos = new Vector3();
         private Vector3 rightLowerEyeBasePos = new Vector3();
@@ -59,6 +64,15 @@ namespace InteraWare {
                 var eyeDirectionRHoriz = eyeDirectionR; eyeDirectionRHoriz.y = 0; eyeDirectionRHoriz.Normalize();
                 var eyeDirectionRVerti = eyeDirectionR; eyeDirectionRVerti.x = 0; eyeDirectionRVerti.Normalize();
                 var angleR = new Vector2(Vector3.SignedAngle(eyeDirectionRHoriz, Vector3.forward, Vector3.up), Vector3.SignedAngle(eyeDirectionRVerti, Vector3.forward, Vector3.right));
+
+                // ----- ----- ----- ----- -----
+
+                if (eyeBlinkTarget != null) {
+                    blinkClose = eyeBlinkTarget.transform.localPosition.y;
+                }
+                if (eyeSmileTarget != null) {
+                    smileClose = eyeSmileTarget.transform.localPosition.y;
+                }
 
                 // ----- ----- ----- ----- -----
 

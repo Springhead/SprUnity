@@ -26,6 +26,8 @@ public class BlinkController : MonoBehaviour {
     public SkinnedMeshRenderer face;
     public int eyeCloseMorph = 3;
 
+    public KeyFrame blinkKey = null;
+
     // ----- ----- ----- ----- -----
 
     private float timeFromBlink = 0;
@@ -79,6 +81,8 @@ public class BlinkController : MonoBehaviour {
     }
 
     public void Action() {
+        blinkKey.Action();
+
         if (blinkTimer > 0.20f) {
             blinkTimer = 0;
             timeFromBlink = 0;
