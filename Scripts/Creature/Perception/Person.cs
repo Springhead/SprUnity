@@ -11,6 +11,8 @@ public class Person : MonoBehaviour {
     // Basic Setting
     public bool human = true;
 
+    public bool ignoredByAttention = false; // このフラグが有効な場合はAttentionの対象としては無視される
+
     public bool autoEliminate = false; // このPersonは自動的に消滅する
     public float autoEliminateTime = -1; // [秒]
 

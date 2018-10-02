@@ -81,11 +81,11 @@ namespace InteraWare {
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // Public APIs
 
-		public void OverrideGazeTarget(Person person, float attention = -1, bool forceStraight = false) {
+		public void OverrideGazeTarget(Person person, float attention = -1, bool forceStraight = false, float overrideStare = -1) {
             if (attention >= 0.0f) {
                 person.AddPerception<AttentionPerception>().attention = attention;
             }
-			ChangeGazeTarget(person, forceStraight);
+			ChangeGazeTarget(person, forceStraight, overrideStare);
         }
 
         public void OverrideGazeTransitionTime(float time) {
@@ -101,6 +101,7 @@ namespace InteraWare {
 			float maxPersonAttention = 0.0f;
             foreach (var person in Person.persons) {
                 var attentionInfo = person.AddPerception<AttentionPerception>();
+                if (person.ignoredByAttention) { continue; }
 
                 if (person.human) {
                     // 距離による注意
@@ -125,8 +126,9 @@ namespace InteraWare {
 
 			foreach (var person in Person.persons) {
 				var attentionInfo = person.AddPerception<AttentionPerception>();
+                if (person.ignoredByAttention) { continue; }
 
-				if (!person.human) {
+                if (!person.human) {
 					// 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
 					attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.2f, 1.0f);
 				}
@@ -162,6 +164,7 @@ namespace InteraWare {
                 List<float> probs = new List<float>();
 
                 foreach (Person person in Person.persons) {
+                    if (person.ignoredByAttention) { continue; }
                     if (person != currentAttentionTarget) {
                         // 位置のおかしな対象はスキップする
                         if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
@@ -240,7 +243,7 @@ namespace InteraWare {
 
         }
 
-        void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false) {
+        void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false, float overrideStare = -1) {
             if (newAttentionTarget != null) {
                 // 目を動かす
                 var attention = newAttentionTarget.AddPerception<AttentionPerception>().attention;
@@ -273,6 +276,10 @@ namespace InteraWare {
                 // 次の視線移動までの時間から直視度を決定する（チラ見は一瞬、長時間なら直視、ただし注意度が小さいときはチラ見しかしない）
 				// とっても大事！
 				lookController.stare = Mathf.Clamp(Mathf.Min(attention * 1.0f, nextGazeTransitionTime / 2.0f), 0.3f, 1.0f);
+
+                if (overrideStare >= 0) {
+                    lookController.stare = overrideStare;
+                }
 
                 currentAttentionTarget = newAttentionTarget;
             }

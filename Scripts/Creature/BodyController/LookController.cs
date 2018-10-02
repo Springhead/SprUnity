@@ -143,8 +143,9 @@ namespace InteraWare {
 
             if (saccade) {
                 if (headMove) {
-                    // 目と頭が連動するのでdurationHeadに基づいてdurationEyeを決める
-                    durationEye = durationHead * 0.8f;
+                    // 目と頭が連動するのでdurationHeadに基づいてdurationEyeを決める　→　目の動きが遅すぎるのでやめましたよ！<!!>
+                    // durationEye = durationHead * 0.8f;
+
                     // サッケード中＆終了後しばらくは、次の視線移動動作を抑制する
                     waitTimer = durationHead * 1.0f;
 

@@ -80,7 +80,8 @@ namespace InteraWare {
 
                 // ----- ----- ----- ----- -----
 
-
+                blinkClose = Mathf.Clamp01(blinkClose);
+                smileClose = Mathf.Clamp01(smileClose);
 
                 var lowerBlinkCloseOffset = new Vector3(0, 0.01f, 0);
                 var upperBlinkCloseOffset = new Vector3(0, -0.03f, 0);
