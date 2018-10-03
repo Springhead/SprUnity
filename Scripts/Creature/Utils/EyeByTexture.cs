@@ -9,6 +9,7 @@ namespace InteraWare {
         public GameObject eye = null;
         public int eyeMaterialId = 0;
         public List<string> textures = new List<string>();
+        public List<float> ratio = new List<float>();
         public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
         void Start() {
@@ -37,8 +38,10 @@ namespace InteraWare {
                 horiz = Mathf.Clamp(horiz, -1, 1);
                 verti = Mathf.Clamp(verti, -1, 1);
 
-                foreach (var textureName in textures) {
-                    eye.GetComponent<Renderer>().materials[eyeMaterialId].SetTextureOffset(textureName, new Vector2(-horiz * uvRatio.x, -verti * uvRatio.y));
+                for (int i=0; i<textures.Count; i++) {
+                    var textureName = textures[i];
+                    var textureMoveRatio = ratio[i];
+                    eye.GetComponent<Renderer>().materials[eyeMaterialId].SetTextureOffset(textureName, new Vector2(-horiz * uvRatio.x * textureMoveRatio, -verti * uvRatio.y * textureMoveRatio));
                 }
             }
         }
