@@ -32,6 +32,11 @@ namespace InteraWare {
 
         public GameObject eyeBlinkTarget = null;
         public GameObject eyeSmileTarget = null;
+        public GameObject eyeMeshControllerObject = null;
+        [HideInInspector]
+        public MeshController eyeSmileMeshLeft = null;
+        [HideInInspector]
+        public MeshController eyeSmileMeshRight = null;
 
         // ----- ----- ----- ----- -----
 
@@ -45,6 +50,21 @@ namespace InteraWare {
             leftUpperEyeBasePos = leftUpperEye.transform.localPosition;
             rightLowerEyeBasePos = rightLowerEye.transform.localPosition;
             rightUpperEyeBasePos = rightUpperEye.transform.localPosition;
+            if (eyeMeshControllerObject)
+            {
+                MeshController[] meshes = eyeMeshControllerObject.GetComponents<MeshController>();
+                foreach(MeshController m in meshes)
+                {
+                    if (m.label.Equals("LeftEye"))
+                    {
+                        eyeSmileMeshLeft = m;
+                    }
+                    else if (m.label.Equals("RightEye"))
+                    {
+                        eyeSmileMeshRight = m;
+                    }
+                }
+            }
         }
 
         void FixedUpdate() {
@@ -86,8 +106,10 @@ namespace InteraWare {
                 var lowerBlinkCloseOffset = new Vector3(0, 0.01f, 0);
                 var upperBlinkCloseOffset = new Vector3(0, -0.03f, 0);
 
-                var lowerSmileCloseOffset = new Vector3(0, 0.0648f - 0.02314313f, 0.0738f - 0.06974218f);
-                var upperSmileCloseOffset = new Vector3(0, 0.053f - 0.06020558f, 0.0794f - 0.07581014f);
+                //var lowerSmileCloseOffset = new Vector3(0, 0.0648f - 0.02314313f, 0.0738f - 0.06974218f);
+                //var upperSmileCloseOffset = new Vector3(0, 0.053f - 0.06020558f, 0.0794f - 0.07581014f);
+                var lowerSmileCloseOffset = new Vector3(0, 0.0455f - 0.02314313f, 0.0788f - 0.06974218f);
+                var upperSmileCloseOffset = new Vector3(0, 0.0407f - 0.06020558f, 0.0794f - 0.07581014f);
 
                 float s = 1.0f;
                 if (blinkClose + smileClose > 1) {
@@ -126,6 +148,15 @@ namespace InteraWare {
                     Mathf.Clamp(+angleR.y * upperCoeff.y * upperCoeff.z, upperLimitMin.z, upperLimitMax.z)
                     );
                 rightUpperEye.transform.localPosition = rightUpperEyeBasePos + rightUpperEyeOffset * u + upperCloseOffset * (1 - u);
+
+                if (eyeSmileMeshLeft)
+                {
+                    eyeSmileMeshLeft.SetBlendShapeWeight(0, (1 - u) * 100);
+                }
+                if (eyeSmileMeshRight)
+                {
+                    eyeSmileMeshRight.SetBlendShapeWeight(0, (1 - u) * 100);
+                }
             }
         }
     }
