@@ -29,6 +29,12 @@ public class SprBehaviourBase : MonoBehaviour {
                         newDirCands.Clear();
                         break;
 
+                    } else if (File.Exists(dir + "/Plugins/SprExport.dll")) {
+                        SetDllDirectory(dir + "/Plugins");
+                        dllPathAlreadySet = true;
+                        newDirCands.Clear();
+                        break;
+
                     } else {
                         foreach (var subDir in Directory.GetDirectories(dir)) {
                             newDirCands.Add(subDir);
