@@ -108,8 +108,8 @@ namespace InteraWare {
 
                 //var lowerSmileCloseOffset = new Vector3(0, 0.0648f - 0.02314313f, 0.0738f - 0.06974218f);
                 //var upperSmileCloseOffset = new Vector3(0, 0.053f - 0.06020558f, 0.0794f - 0.07581014f);
-                var lowerSmileCloseOffset = new Vector3(0, 0.0455f - 0.02314313f, 0.0788f - 0.06974218f);
-                var upperSmileCloseOffset = new Vector3(0, 0.0407f - 0.06020558f, 0.0794f - 0.07581014f);
+                var lowerSmileCloseOffset = new Vector3(0, 0.0432f - 0.02314313f, 0.0783f - 0.06974218f);
+                var upperSmileCloseOffset = new Vector3(0, 0.0388f - 0.06020558f, 0.0788f - 0.07581014f);
 
                 float s = 1.0f;
                 if (blinkClose + smileClose > 1) {
@@ -151,11 +151,11 @@ namespace InteraWare {
 
                 if (eyeSmileMeshLeft)
                 {
-                    eyeSmileMeshLeft.SetBlendShapeWeight(0, (1 - u) * 100);
+                    eyeSmileMeshLeft.SetBlendShapeWeight(0, smileClose * 100);
                 }
                 if (eyeSmileMeshRight)
                 {
-                    eyeSmileMeshRight.SetBlendShapeWeight(0, (1 - u) * 100);
+                    eyeSmileMeshRight.SetBlendShapeWeight(0, smileClose * 100);
                 }
             }
         }
