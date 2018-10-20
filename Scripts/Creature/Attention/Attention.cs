@@ -63,19 +63,8 @@ namespace InteraWare {
                 }
             }
 
-			if (Input.GetKey (KeyCode.Space)) {
-				foreach (var person in Person.persons) {
-					if (person.human) {
-						if (currentAttentionTarget != person) {
-							OverrideGazeTarget (person, -1, true);
-						}
-						break;
-					}
-				}
-			} else {
-				CompAttention ();
-				GazeTransition ();
-			}
+			CompAttention ();
+			GazeTransition ();
         }
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -102,6 +91,7 @@ namespace InteraWare {
             foreach (var person in Person.persons) {
                 var attentionInfo = person.AddPerception<AttentionPerception>();
                 if (person.ignoredByAttention) { continue; }
+                if (!person.gameObject.activeInHierarchy) { continue; }
 
                 if (person.human) {
                     // 距離による注意
@@ -127,6 +117,7 @@ namespace InteraWare {
 			foreach (var person in Person.persons) {
 				var attentionInfo = person.AddPerception<AttentionPerception>();
                 if (person.ignoredByAttention) { continue; }
+                if (!person.gameObject.activeInHierarchy) { continue; }
 
                 if (!person.human) {
 					// 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
@@ -165,6 +156,7 @@ namespace InteraWare {
 
                 foreach (Person person in Person.persons) {
                     if (person.ignoredByAttention) { continue; }
+                    if (!person.gameObject.activeInHierarchy) { continue; }
                     if (person != currentAttentionTarget) {
                         // 位置のおかしな対象はスキップする
                         if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
