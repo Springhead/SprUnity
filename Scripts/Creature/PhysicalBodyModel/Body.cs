@@ -58,7 +58,7 @@ namespace InteraWare {
         void Start() {
             // Record Relative Pose
             foreach (var pair in bones) {
-                if (pair.avatarBone != null) {
+                if (pair.avatarBone != null && pair.bone != null && pair.bone.solid != null) {
                     var so = pair.bone.solid.transform.rotation;
                     var av = pair.avatarBone.transform.rotation;
                     // pair.solidAvatarRelRot = av * Quaternion.Inverse(so);
@@ -70,7 +70,7 @@ namespace InteraWare {
         void FixedUpdate() {
             // Apply Body Pose to Avatar
             foreach (var pair in bones) {
-                if (pair.avatarBone != null && pair.bone != null) {
+                if (pair.avatarBone != null && pair.bone != null && pair.bone.solid != null) {
                     if (pair.label == "Hips" || pair.label.Contains("Leg") || pair.label.Contains("Foot")) {
                         pair.avatarBone.transform.position = pair.bone.solid.transform.position;
                     }
