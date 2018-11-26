@@ -10,7 +10,7 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
 
-    private List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
+    protected List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
 
     private static PHSdkIf phSdk = null;
 
