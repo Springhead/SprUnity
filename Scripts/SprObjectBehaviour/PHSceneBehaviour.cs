@@ -11,6 +11,7 @@ public class PHSceneBehaviour : SprBehaviour {
     // メンバ変数
 
     protected List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
+    protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
     private static PHSdkIf phSdk = null;
 
@@ -79,6 +80,12 @@ public class PHSceneBehaviour : SprBehaviour {
 
     void FixedUpdate () {
         if (sprObject != null && enableStep) {
+            foreach(var phSolidBehaviour in phSolidBehaviours){
+                phSolidBehaviour.BeforeStep();
+            }
+            foreach(var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours){
+                phIKEndEffectorBehaviour.BeforeStep();
+            }
             lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
             }
@@ -142,4 +149,7 @@ public class PHSceneBehaviour : SprBehaviour {
         phSolidBehaviours.Sort((a, b) => a.treeDepth.CompareTo(b.treeDepth));
     }
 
+    public void RegisterPHIKEndEffectorBehaviour(PHIKEndEffectorBehaviour phIKEndEffector) {
+        phIKEndEffectorBehaviours.Add(phIKEndEffector);
+    }
 }

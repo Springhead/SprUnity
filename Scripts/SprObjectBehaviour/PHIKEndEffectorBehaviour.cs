@@ -52,8 +52,7 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
         if (solidBehaviour != null && solidBehaviour.sprObject != null) {
             phIKee.AddChildObject(solidBehaviour.sprObject);
         }
-
-        UpdateIKTargetPosition();
+        phSceneBehaviour.RegisterPHIKEndEffectorBehaviour(this);
 
         return phIKee;
     }
@@ -71,18 +70,20 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
         if (ha != null && ha.sprObject != null && sprObject != null) {
             ha.sprObject.AddChildObject(sprObject);
         }
+        UpdateIKTargetPosition();
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
-    // UnityのUpdate　<!!> これFixedUpdateの方が良くないか？
-    void Update () {
-        UpdateIKTargetPosition();
-    }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // その他のメソッド
+    
+    // PHSceneのStepが呼ばれる前に呼ばれる
+    public void BeforeStep() {
+        UpdateIKTargetPosition();
+    }
 
     public void UpdateIKTargetPosition() {
         if (iktarget != null) {

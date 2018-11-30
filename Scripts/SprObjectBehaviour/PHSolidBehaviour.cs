@@ -68,11 +68,6 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
-    // UnityのFixedUpdate
-    void FixedUpdate() {
-        UpdateCenterOfMass();
-    }
-
     // UnityのOnValidate
     public override void OnValidate() {
         base.OnValidate();
@@ -81,6 +76,11 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // その他のメソッド
+
+    // PHSceneのStepが呼ばれる前に呼ばれる
+    public void BeforeStep() {
+        UpdateCenterOfMass();
+    }
 
     // Springhead剛体とGameObjectの間での位置姿勢の同期：　更新順を制御するためPHSceneからまとめて呼び出す
     public void UpdatePose () {
