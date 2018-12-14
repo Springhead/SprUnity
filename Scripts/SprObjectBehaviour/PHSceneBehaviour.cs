@@ -22,6 +22,13 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableStep = true;
     public bool enableUpdate = true;
 
+    [Serializable]
+    public struct CollisionSetting {
+        public PHSolidBehaviour solid1;
+        public PHSolidBehaviour solid2;
+        public PHSceneDesc.ContactMode mode;
+    }
+    public List<CollisionSetting> collision = new List<CollisionSetting>();
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -73,6 +80,11 @@ public class PHSceneBehaviour : SprBehaviour {
         }
 
         return phScene;
+    }
+
+    // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
+    public override void Link() {
+        OnValidate();
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -136,6 +148,22 @@ public class PHSceneBehaviour : SprBehaviour {
 
             // IKの有効・無効の切り替え
             phScene.GetIKEngine().Enable(enableIK);
+        }
+
+        // <!!> PHJointBehaviourのdisableCollisionと衝突するので要検討
+        if (sprObject != null) {
+            for (int i = 0; i < collision.Count; i++) {
+                CollisionSetting c = collision[i];
+                if (c.solid1 == null && c.solid2 == null) {
+                    phScene.SetContactMode(c.mode);
+                } else if (c.solid1 == null) {
+                    if (c.solid2.sprObject != null) phScene.SetContactMode(c.solid2.phSolid, c.mode);
+                } else if (c.solid2 == null) {
+                    if(c.solid1.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.mode);
+                } else {
+                    if (c.solid1.sprObject != null && c.solid2.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.solid2.phSolid, c.mode);
+                }
+            }
         }
     }
 
