@@ -89,6 +89,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             if (!so.IsDynamical() && !fixedSolid) {
                 // Dynamicalでない（かつ、fixedでもない）剛体はUnityの位置をSpringheadに反映（操作可能）
                 so.SetPose(gameObject.transform.ToPosed());
+                //so.SetVelocity(new Vec3d(0, 0, 0));
+                //so.SetAngularVelocity(new Vec3d(0, 0, 0));
             } else {
                 // Dynamicalな（もしくはfixedな）剛体はSpringheadのシミュレーション結果をUnityに反映
                 gameObject.transform.FromPosed(so.GetPose());
