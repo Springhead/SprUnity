@@ -71,7 +71,9 @@ namespace InteraWare {
             // Apply Body Pose to Avatar
             foreach (var pair in bones) {
                 if (pair.avatarBone != null && pair.bone != null && pair.bone.solid != null) {
+                    if (pair.label == "Hips" || pair.label.Contains("Leg") || pair.label.Contains("Foot")) {
                         pair.avatarBone.transform.position = pair.bone.solid.transform.position;
+                    }
                     pair.avatarBone.transform.rotation = pair.bone.solid.transform.rotation * pair.solidAvatarRelRot;
                 }
             }
