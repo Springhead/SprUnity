@@ -40,6 +40,9 @@ namespace InteraWare {
         [HideInInspector]
         public Pose currentTargetPose = new Pose();
 
+        // Target Position Output Object. Use this with VRMLookAtHead
+        public GameObject eyeTargetOutput = null;
+
         public Body body = null;
         public BlinkController blinkController = null;
 
@@ -173,6 +176,13 @@ namespace InteraWare {
                 hipsTargetPose.position = body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().trajectory.Last().p1;
                 hipsTargetPose.rotation = Quaternion.Slerp(body["Base"].transform.rotation, headTargetPose.rotation, 0.5f);
                 body["Hips"].ikEndEffector.iktarget.GetComponent<ReachController>().AddSubMovement(hipsTargetPose, new Vector2(0.8f, 0.5f), durationHead + 0.1f, durationHead);
+            }
+
+            //
+            if (eyeTargetOutput != null) {
+                Vector3 eyeDir = (body["LeftEye"].transform.TransformDirection(Vector3.forward) + body["RightEye"].transform.TransformDirection(Vector3.forward)) * 0.5f;
+                Vector3 eyePos = (body["LeftEye"].transform.position + body["RightEye"].transform.position) * 0.5f;
+                eyeTargetOutput.transform.position = eyePos + eyeDir * 2.0f;
             }
 
             // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
