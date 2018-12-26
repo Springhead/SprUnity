@@ -75,6 +75,10 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
 
     // UnityのOnValidate
     public override void OnValidate() {
+        if (desc.mass == 0) {
+            desc.mass = 1e-5;
+            Debug.LogWarning("PHSolidBehaviour(" + gameObject.name + ") has 0 mass.");
+        }
         base.OnValidate();
         UpdateCenterOfMass();
     }
