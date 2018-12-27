@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 275c31091ebe1ee459a314a1056ab35f, type: 3}
+  m_Name: RaiseHandCenter
+  m_EditorClassIdentifier: 
+  name: RaiseHandCenter
+  keyframes:
+  - bone: 18
+    pose: {fileID: 11400000, guid: 68a6b32128ab1834fae2eea83c6d0226, type: 2}
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    startDelay: 0
+    duration: 4
+    springDamper: {x: 0.5, y: 0.3}
+  transitions:
+  - {fileID: 11400000, guid: 1ff4593e87ce211408a29042549a2c4a, type: 2}
+  timeFromEnter: 0.32

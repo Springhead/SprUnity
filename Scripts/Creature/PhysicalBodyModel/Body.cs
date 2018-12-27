@@ -141,6 +141,8 @@ namespace InteraWare {
                     var pair = bones.Find(p => p.label == boneId.ToString());
                     if (pair != null) {
                         pair.avatarBone = trn.gameObject;
+                    } else {
+
                     }
                 }
             }

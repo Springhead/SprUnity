@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5686ab7be0f67e14c967e5824f4f13e9, type: 3}
+  m_Name: WaveAction
+  m_EditorClassIdentifier: 
+  states:
+  - {fileID: 11400000, guid: 4dc353c986d82d24ab5844616bde6a9d, type: 2}
+  - {fileID: 11400000, guid: 1469567ad5ed59c469e32a3682be069d, type: 2}
+  - {fileID: 11400000, guid: f599620126a14af41aa12d579872aff9, type: 2}
+  enabled: 0

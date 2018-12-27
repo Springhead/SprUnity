@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 275c31091ebe1ee459a314a1056ab35f, type: 3}
+  m_Name: Moveleft
+  m_EditorClassIdentifier: 
+  name: MoveLeft
+  keyframes:
+  - bone: 18
+    pose: {fileID: 11400000, guid: 3b790282032afc648b5c9bca0b226789, type: 2}
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+    startDelay: 0
+    duration: 0.3
+    springDamper: {x: 0.5, y: 0.3}
+  transitions:
+  - {fileID: 11400000, guid: 6b86dbcdc9fa03546a9bd6dc201e92cf, type: 2}
+  timeFromEnter: 0.32
