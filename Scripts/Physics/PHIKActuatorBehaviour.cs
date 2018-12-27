@@ -2,6 +2,7 @@
 using System.Collections;
 using SprCs;
 using System;
+using System.Linq;
 
 /*
   
@@ -65,12 +66,20 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
                 if (joParent != null && jo != joParent) {
                     // 親関節に付随するIKActuatorを親Actuatorとして登録する
                     PHIKActuatorBehaviour act = joParent.GetComponent<PHIKActuatorBehaviour>();
-                    if (act != null && act.sprObject != null && sprObject != act.sprObject) {
+                    if (act != null && act.sprObject != null && sprObject != act.sprObject && act.enabled) {
                         act.sprObject.AddChildObject(sprObject);
                         break;
                     }
                     if (act == null) {
                         jo = joParent;
+                    }
+                    if(act.sprObject == null) {
+                        Debug.LogWarning("sprObject of " + act.name + " is null.");
+                        break;
+                    }
+                    if(sprObject == act.sprObject) {
+                        Debug.LogWarning("this IKObject is same with parent actuator");
+                        break;
                     }
                 } else {
                     break;
