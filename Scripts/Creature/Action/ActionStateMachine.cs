@@ -42,13 +42,21 @@ public class TransitionFlagList : List<TransitionFlag> {
 
 // 参照：uGUIではじめるUnity UIデザインの教科書p244
 public class RenameWindow : EditorWindow {
-    public string CaptionText { get; set; }
-    public string ButtonText { get; set; }
-    public string NewName { get; set; }
-    public System.Action<string> OnClickButtonDelegate { get; set; }
+    public string captionText { get; set; }
+    public string buttonText { get; set; }
+    public string newName { get; set; }
+    public System.Action<string> onClickButtonDelegate { get; set; }
 
     void OnGUI() {
+        newName = EditorGUILayout.TextField(captionText, newName);
+        if (GUILayout.Button(buttonText)) {
+            if(onClickButtonDelegate != null) {
+                onClickButtonDelegate.Invoke(newName.Trim());
+            }
 
+            Close();
+            GUIUtility.ExitGUI();
+        }
     }
 }
 
