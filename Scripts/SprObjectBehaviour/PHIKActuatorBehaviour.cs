@@ -79,6 +79,7 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
                     if (act == null)
                     {
                         jo = joParent;
+                        continue; //ここで次に行かないとエラー処理しとかないとactがnullだけどact.sprObjectにアクセスしてエラー
                     }
                     if (act.sprObject == null)
                     {
