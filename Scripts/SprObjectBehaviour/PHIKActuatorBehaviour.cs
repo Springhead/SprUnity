@@ -2,6 +2,7 @@
 using System.Collections;
 using SprCs;
 using System;
+using System.Linq;
 
 /*
   
@@ -47,32 +48,51 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
     // SprBehaviourの派生クラスで実装するメソッド
 
     // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
-    public override void Link() {
+    public override void Link()
+    {
         // まず、このIKActuatorに付随する関節を探す。同じGameObjectに付いているはず
         PHJointBehaviour jo = gameObject.GetComponent<PHJointBehaviour>();
-        
-        if (jo != null && jo.sprObject != null && sprObject != null) {
+
+        if (jo != null && jo.sprObject != null && sprObject != null)
+        {
             // 次に、関節の親関節を探す。関節のソケット剛体を探し、それを基準に探す
             // （親関節　＝　この関節のソケット剛体をプラグ剛体として持つ関節）
             // 親関節がないかどんどん上に行って探す
-            while (true) {
+            while (true)
+            {
                 PHJointBehaviour joParent = null;
                 var jos = jo.socket.GetComponentsInChildren<PHJointBehaviour>(); //InChildrenで探す必要はないはず
-                foreach (var j in jos) {
+                foreach (var j in jos)
+                {
                     if (j.plug == jo.socket) { joParent = j; break; }
                 }
 
-                if (joParent != null && jo != joParent) {
+                if (joParent != null && jo != joParent)
+                {
                     // 親関節に付随するIKActuatorを親Actuatorとして登録する
                     PHIKActuatorBehaviour act = joParent.GetComponent<PHIKActuatorBehaviour>();
-                    if (act != null && act.sprObject != null && sprObject != act.sprObject) {
+                    if (act != null && act.sprObject != null && sprObject != act.sprObject && act.enabled)
+                    {
                         act.sprObject.AddChildObject(sprObject);
                         break;
                     }
-                    if(act == null) {
+                    if (act == null)
+                    {
                         jo = joParent;
                     }
-                } else {
+                    if (act.sprObject == null)
+                    {
+                        Debug.LogWarning("sprObject of " + act.name + " is null.");
+                        break;
+                    }
+                    if (sprObject == act.sprObject)
+                    {
+                        Debug.LogWarning("this IKObject is same with parent actuator");
+                        break;
+                    }
+                }
+                else
+                {
                     break;
                 }
             }
