@@ -9,7 +9,15 @@ public class RoundConeEditor : Editor {
         DrawDefaultInspector();
     }
 
-    void OnSceneGUI () {
+    void OnEnable() { //デフォルトのトランスフォームをオフにする
+        Tools.hidden = true;
+    }
+
+    void OnDisable() {
+        Tools.hidden = false;
+    }
+
+    void OnSceneGUI() {
         MeshRoundCone mrc = target as MeshRoundCone;
         Transform trans = mrc.gameObject.transform;
 
@@ -51,6 +59,26 @@ public class RoundConeEditor : Editor {
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(target, "Change Length");
             mrc.length = length;
+            mrc.Reshape();
+        }
+
+        EditorGUI.BeginChangeCheck();
+        Vector3 r1_position = Handles.PositionHandle(mrc.transform.position, Quaternion.identity); //Quaternion.identityがGlobalかLocalかで変化する
+        if (EditorGUI.EndChangeCheck()) {
+            Undo.RecordObject(target, "Change R1Center");
+            Vector3 r2_positionCalc = mrc.transform.position + mrc.length * (mrc.transform.rotation * Vector3.right);
+            mrc.transform.rotation = Quaternion.FromToRotation(Vector3.right,r2_positionCalc - r1_position);
+            //mrc.transform.position = r1_position + (r2_positionCalc - r1_position)*((r2_positionCalc - r1_position).sqrMagnitude - length); //大きさを固定 誤差が大きい？
+            mrc.transform.position = (r1_position - r2_positionCalc).normalized * length + r2_positionCalc;
+            mrc.Reshape();
+        }
+
+        EditorGUI.BeginChangeCheck();
+        Vector3 r2_position = Handles.PositionHandle(mrc.transform.position + mrc.length * (mrc.transform.rotation * Vector3.right), Quaternion.identity); //Quaternion.identityがGlobalかLocalかで変化する
+        if (EditorGUI.EndChangeCheck()) {
+            Undo.RecordObject(target, "Change R2Center");
+            //length = (r2_position - mrc.transform.position).sqrMagnitude; //これはDistance()やmagnitudeより速い 変わらない？
+            mrc.transform.rotation = Quaternion.FromToRotation(Vector3.right, r2_position - mrc.transform.position);
             mrc.Reshape();
         }
     }
