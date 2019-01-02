@@ -73,7 +73,7 @@ namespace InteraWare {
                 if (pair.avatarBone != null && pair.bone != null && pair.bone.solid != null) {
                     //if (pair.label == "Hips" || pair.label.Contains("Leg") || pair.label.Contains("Foot")) {
                         pair.avatarBone.transform.position = pair.bone.solid.transform.position;
-                    //}
+                    //} 物理身体と描画身体の座標系が違う
                     pair.avatarBone.transform.rotation = pair.bone.solid.transform.rotation * pair.solidAvatarRelRot;
                 }
             }
