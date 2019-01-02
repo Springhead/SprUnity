@@ -40,7 +40,7 @@ namespace InteraWare {
         // ----- ----- ----- ----- -----
 
         [System.Serializable]
-        public class StringBonePair {
+        public class StringBonePair { // <!!!> Boneの配列を直接持てばいいのでは？
             public string label;
             public Bone bone;
             public GameObject avatarBone;
@@ -68,6 +68,7 @@ namespace InteraWare {
         }
 
         void FixedUpdate() {
+            // <!!!> 各ボーンがやればいいのでは？
             // Apply Body Pose to Avatar
             foreach (var pair in bones) {
                 if (pair.avatarBone != null && pair.bone != null) {
