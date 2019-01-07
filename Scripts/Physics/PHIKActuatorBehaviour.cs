@@ -66,12 +66,13 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
                 if (joParent != null && jo != joParent) {
                     // 親関節に付随するIKActuatorを親Actuatorとして登録する
                     PHIKActuatorBehaviour act = joParent.GetComponent<PHIKActuatorBehaviour>();
-                    if (act != null && act.sprObject != null && sprObject != act.sprObject && act.enabled) {
+                    if (act != null && act.sprObject != null && sprObject != act.sprObject && act.isActiveAndEnabled) {
                         act.sprObject.AddChildObject(sprObject);
                         break;
                     }
                     if (act == null) {
                         jo = joParent;
+                        continue;
                     }
                     if(act.sprObject == null) {
                         Debug.LogWarning("sprObject of " + act.name + " is null.");

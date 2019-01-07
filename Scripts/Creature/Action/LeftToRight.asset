@@ -11,9 +11,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c224446bb7d7ddc4481f1f9ca524e07f, type: 3}
   m_Name: LeftToRight
   m_EditorClassIdentifier: 
+  stateMachine: {fileID: 0}
   toState: {fileID: 11400000, guid: f599620126a14af41aa12d579872aff9, type: 2}
   fromState: {fileID: 11400000, guid: 1469567ad5ed59c469e32a3682be069d, type: 2}
+  priority: 0
   conditions:
   - parent: {fileID: 11400000}
     type: 0
     transitTime: 0.3
+    flagName: 

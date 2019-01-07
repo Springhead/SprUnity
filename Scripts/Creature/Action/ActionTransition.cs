@@ -5,6 +5,21 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 
+[CustomEditor(typeof(ActionTransition))]
+public class ActionTransitionEditor : Editor {
+    public override void OnInspectorGUI() {
+        EditorGUI.BeginChangeCheck();
+        target.name = EditorGUILayout.TextField("Name", target.name);
+        base.OnInspectorGUI();
+        if (EditorGUI.EndChangeCheck()) {
+            EditorUtility.SetDirty(target);
+            string mainPath = AssetDatabase.GetAssetPath(this);
+            //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((ActionTransition)target));
+        }
+    }
+}
+
 [CreateAssetMenu(menuName = "Action/ Create ActionTransition Instance")]
 public class ActionTransition : ScriptableObject {
 
@@ -13,6 +28,9 @@ public class ActionTransition : ScriptableObject {
     [SerializeField]
     public ActionState toState;
     public ActionState fromState;
+
+    [HideInInspector]
+    public int priority;
 
     [System.Serializable]
     public class Condition {
@@ -24,16 +42,17 @@ public class ActionTransition : ScriptableObject {
         };
         public ConditionType type;
         public float transitTime;
-        string flagName;
+        public string flagName;
         public Condition() {
         }
-        public bool IsSatisfied() {
+        public bool IsSatisfied(ActionStateMachine s) {
             // 外部からフラグをオンオフできるようにする？
-            if(type == ConditionType.time) return parent.fromState.timeFromEnter >= transitTime ? true : false;
+            if(type == ConditionType.time) return s.currentState.timeFromEnter >= transitTime ? true : false;
             if(type == ConditionType.flag) {
                 // 親アセットのStateMachineにflagNameをキーとする変数を探す
-                if (parent.stateMachine) {
-                    return parent.stateMachine.flags[flagName];
+                if (true) {
+                    Debug.Log(s.flags[flagName] ? "flag on" : "flag off");
+                    return s.flags[flagName];
                 }
             }
             return false;
@@ -42,17 +61,49 @@ public class ActionTransition : ScriptableObject {
     [SerializeField]
     List<Condition> conditions;
 
+
+    // ----- ----- ----- ----- ----- -----
+    // State Machine Events
     public void Transit() {
 
     }
 
     public bool IsTransitable() {
         foreach(var condition in conditions) {
-            if (!condition.IsSatisfied()) {
+            if (!condition.IsSatisfied(fromState.stateMachine)) {
                 return false;
             }
         }
         return true;
+    }
+
+    // ----- ----- ----- ----- ----- -----
+    // Editor
+
+    //
+    public void Draw() {
+        if (toState != null && fromState != null) {
+            Vector3 startPos = new Vector3(fromState.stateNodeRect.xMax, fromState.stateNodeRect.yMin + 25 + priority * 20, 0);
+            Vector3 endPos = new Vector3(toState.stateNodeRect.xMin, toState.stateNodeRect.y, 0);
+            Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
+            Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
+            Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
+        }
+        
+        else if(fromState == null && toState != null) {
+            Vector3 startPos = new Vector3(stateMachine.entryRect.xMax, stateMachine.entryRect.yMin + 25, 0);
+            Vector3 endPos = new Vector3(toState.stateNodeRect.xMin, toState.stateNodeRect.y, 0);
+            Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
+            Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
+            Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
+        }
+        else if(toState == null && fromState != null) {
+            Vector3 startPos = new Vector3(fromState.stateNodeRect.xMax, fromState.stateNodeRect.yMin + 25 + priority * 20, 0);
+            Vector3 endPos = new Vector3(stateMachine.exitRect.xMin, stateMachine.exitRect.y, 0);
+            Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
+            Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
+            Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
+        }
     }
 }
 

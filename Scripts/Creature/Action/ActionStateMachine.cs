@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 
+[System.Serializable]
 public class TransitionFlag {
     public string label;
     public bool enabled;
@@ -16,21 +17,23 @@ public class TransitionFlag {
     }
 }
 
-public class TransitionFlagList : List<TransitionFlag> {
+[System.Serializable]
+public class TransitionFlagList {
+    public List<TransitionFlag> flags = new List<TransitionFlag>();
     public bool this[string key] {
         set {
             bool found = false;
-            int l = this.Count;
-            foreach(var flag in this) {
+            int l = flags.Count;
+            foreach(var flag in flags) {
                 if (flag.label == key) {
                     flag.enabled = value;
                     found = true;
                 }
             }
-            if (!found) this.Add(new TransitionFlag(key, value));
+            if (!found) flags.Add(new TransitionFlag(key, value));
         }
         get {
-            foreach (var flag in this) {
+            foreach (var flag in flags) {
                 if (flag.label == key) {
                     return flag.enabled;
                 }
@@ -64,17 +67,48 @@ public class RenameWindow : EditorWindow {
 public class ActionStateMachine : ScriptableObject {
 
     [SerializeField]
-    List<ActionState> states;
+    //public List<ActionState> states;
 
-    ActionState currentState;
+    [HideInInspector]
+    public ActionState currentState;
 
     // どこからでも遷移できるグローバルステートいる？
-    // 
-    //public List<TransitionFlag> flags = new List<TransitionFlag>();
-    //public Dictionary<string, TransitionFlag> flags = new Dictionary<string, TransitionFlag>();
     public TransitionFlagList flags;
 
     public bool enabled = false;
+
+    //
+    [HideInInspector]
+    public Rect entryRect = new Rect(0, 0, 100, 50);
+    public List<ActionTransition> entryTransitions;
+
+    [HideInInspector]
+    public Rect exitRect = new Rect(0, 100, 100, 50);
+
+    // ----- ----- ----- ----- -----
+    public int nStates {
+        get {
+            return this.GetSubAssets().Where(value => value as ActionState != null).Count();
+        }
+    }
+
+    public int nTransitions {
+        get {
+            return this.GetSubAssets().Where(value => value as ActionTransition != null).Count();
+        }
+    }
+
+    public List<ActionState> states {
+        get {
+            return this.GetSubAssets().OfType<ActionState>().ToList();
+        }
+    }
+
+    public List<ActionTransition> transitions {
+        get {
+            return this.GetSubAssets().OfType<ActionTransition>().ToList();
+        }
+    }
 
     // ----- ----- ----- ----- -----
     /*
@@ -93,9 +127,9 @@ public class ActionStateMachine : ScriptableObject {
     */
 
     // ----- ----- ----- ----- ----- -----
-    // Create
+    // Create ActionStateMachine
 
-	[MenuItem("Action/Create ActionStateMachine")]
+    [MenuItem("Action/Create ActionStateMachine")]
     static void CreateAsset() {
         var action = CreateInstance<ActionStateMachine>();
 
@@ -104,19 +138,29 @@ public class ActionStateMachine : ScriptableObject {
         AssetDatabase.Refresh();
     }
 
+
+    // ----- ----- ----- ----- ----- -----
+    // Create/Delete ActionState
+
     [MenuItem("CONTEXT/ActionStateMachine/New State")]
     static void CreateState() {
-        /*var parentStateMachine = Selection.activeObject as ActionStateMachine;
+        var parentStateMachine = Selection.activeObject as ActionStateMachine;
 
         if(parentStateMachine == null) {
             Debug.LogWarning("No ActionStateMachine object selected");
+            return;
         }
 
         var state =  ScriptableObject.CreateInstance<ActionState>();
+        state.name = "state";
 
         AssetDatabase.AddObjectToAsset(state, parentStateMachine);
 
-        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(parentStateMachine));*/
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(parentStateMachine));
+    }
+
+    static void DeleteState(ActionState state) {
+
     }
 
     // ----- ----- ----- ----- ----- -----
@@ -140,13 +184,16 @@ public class ActionStateMachine : ScriptableObject {
     }
 
     // ----- ----- ----- ----- ----- -----
-    // 
+    // ステートマシン関係のイベント
 
     // 
     public void Begin(InteraWare.Body body) {
         enabled = true;
 
-        currentState = states[0];
+        // Entry Nodeを作っておいてそこからの遷移先にまず遷移？
+
+        // <!!> とりあえず最初のステートでいいや！
+        currentState = entryTransitions[0].toState;
         currentState.OnEnter(body);
     }
 
@@ -187,6 +234,7 @@ public class ActionStateMachine : ScriptableObject {
     }
 
     // ----- ----- ----- ----- -----
+    // その他
     
     static string GetCurrentDirectory() {
         // source : https://qiita.com/r-ngtm/items/13d609cbd6a30e39f83a
@@ -195,6 +243,11 @@ public class ActionStateMachine : ScriptableObject {
         var typeProjectBrowser = asm.GetType("UnityEditor.ProjectBrowser");
         var projectBrowserWindow = EditorWindow.GetWindow(typeProjectBrowser);
         return (string)typeProjectBrowser.GetMethod("GetActiveFolderPath", flag).Invoke(projectBrowserWindow, null);
+    }
+
+    public Object[] GetSubAssets() {
+        string path = AssetDatabase.GetAssetPath(this);
+        return AssetDatabase.LoadAllAssetsAtPath(path);
     }
 }
 
