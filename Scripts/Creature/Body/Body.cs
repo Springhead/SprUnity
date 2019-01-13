@@ -36,7 +36,7 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
             // Select Animator(with Avatar) and Fit to Avatar Button
-            EditorGUILayout.ObjectField(body.animator, typeof(Animator), true);
+            body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
 
             if (GUILayout.Button("Fit To Avatar")) {
                 body.FitToAvatar();
@@ -86,6 +86,11 @@ namespace SprUnity {
 
         // Fit each bone positions to given humanoid avatar
         public void FitToAvatar() {
+            // Find Animator if it is not set
+            if (animator == null) {
+                animator = GameObject.FindObjectOfType<Animator>();
+            }
+
             // Make Table to convert Label String To HumanBodyBones
             Dictionary<string, HumanBodyBones> labelToBoneId = new Dictionary<string, HumanBodyBones>();
             for (int i = 0; i < (int)HumanBodyBones.LastBone; i++) {

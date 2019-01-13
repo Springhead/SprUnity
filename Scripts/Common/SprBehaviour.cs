@@ -58,6 +58,26 @@ public abstract class SprBehaviour : SprBehaviourBase {
     public static Dictionary<ObjectIf, SprBehaviour> sprBehaviourMap = new Dictionary<ObjectIf, SprBehaviour>();
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // AwakeとStartをすぐに実行せずに外部から指示があるまで待つ機能
+
+    // AwakeとStartの実行待ち行列
+    public static Queue<SprBehaviour> lateAwakeQueue = new Queue<SprBehaviour>();
+    public static Queue<SprBehaviour> lateStartQueue = new Queue<SprBehaviour>();
+
+    // AwakeとStartの実行待ちを有効化するフラグ
+    public bool lateAwakeStart = false;
+
+    // 実行待ち中のAwakeとStartを実行する
+    public static void ExecLateAwakeStart() {
+        while (lateAwakeQueue.Count > 0) {
+            lateAwakeQueue.Dequeue().AwakeImpl(fromLateExecQueue: true);
+        }
+        while (lateStartQueue.Count > 0) {
+            lateStartQueue.Dequeue().StartImpl(fromLateExecQueue: true);
+        }
+    }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // 対応するSpringheadオブジェクト
 
     private ObjectIf sprObject_ = null;
@@ -89,23 +109,37 @@ public abstract class SprBehaviour : SprBehaviourBase {
 
     // --
     private bool awakeCalled = false;
-    public virtual void Awake() {
-        if (!awakeCalled && GetDescStruct() != null) {
-            if (!enabled) { return; }
-            sprObject = Build();
-            sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
-            awakeCalled = true;
+    public virtual void Awake() { AwakeImpl(); }
+    public void AwakeImpl(bool fromLateExecQueue = false) {
+        if (lateAwakeStart && !(fromLateExecQueue)) {
+            // 今すぐ実行せず、待ち行列に入れる
+            lateAwakeQueue.Enqueue(this);
+
+        } else {
+            if (!awakeCalled && GetDescStruct() != null) {
+                if (!enabled) { return; }
+                sprObject = Build();
+                sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
+                awakeCalled = true;
+            }
         }
     }
 
     // --
     private bool startCalled = false;
-    public virtual void Start() {
-        if (!startCalled && GetDescStruct() != null) {
-            Link();
-            // オブジェクトの作成が一通り完了したら一度OnValidateを読んで設定を確実に反映しておく
-            OnValidate();
-            startCalled = true;
+    public virtual void Start() { StartImpl(); }
+    public virtual void StartImpl(bool fromLateExecQueue = false) {
+        if (lateAwakeStart && !(fromLateExecQueue)) {
+            // 今すぐ実行せず、待ち行列に入れる
+            lateStartQueue.Enqueue(this);
+
+        } else {
+            if (!startCalled && GetDescStruct() != null) {
+                Link();
+                // オブジェクトの作成が一通り完了したら一度OnValidateを読んで設定を確実に反映しておく
+                OnValidate();
+                startCalled = true;
+            }
         }
     }
 

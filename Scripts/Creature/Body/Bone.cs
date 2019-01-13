@@ -84,7 +84,7 @@ namespace SprUnity {
             {
                 Gizmos.color = Color.blue;
                 Vector3 pos;
-                if (solid != null) {
+                if (solid != null && solid.desc != null) {
                     pos = solid.transform.position + solid.transform.rotation * ((Vec3d)(solid.desc.center)).ToVector3();
                 } else {
                     pos = transform.position;

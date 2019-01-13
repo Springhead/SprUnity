@@ -5,6 +5,24 @@ using System.Runtime.InteropServices;
 using System;
 using System.Linq;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHSceneBehaviour))]
+public class PHSceneBehaviourEditor : Editor {
+
+    public override void OnInspectorGUI() {
+        PHSceneBehaviour phSceneBehaviour = (PHSceneBehaviour)target;
+
+        DrawDefaultInspector();
+
+        if (GUILayout.Button("Late Awake/Start")) {
+            SprBehaviour.ExecLateAwakeStart();
+        }
+    }
+}
+#endif
+
 [DefaultExecutionOrder(1)]
 public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
