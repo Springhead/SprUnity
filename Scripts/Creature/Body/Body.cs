@@ -50,10 +50,14 @@ namespace SprUnity {
         // List of Bones
         public List<Bone> bones = new List<Bone>();
 
+        // Root Bone
+        public Bone rootBone = null;
+
         // Animator with humanoid avatar to be synchronized with this body
         public Animator animator = null;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // MonoBehaviour Functions
 
         void Start() {
             // Record Relative Pose between PHSolid and Avatar
@@ -70,6 +74,7 @@ namespace SprUnity {
         }
 
         // ----- ----- ----- ----- -----
+        // Public Functions
 
         public Bone this[string key] {
             get {
@@ -81,8 +86,6 @@ namespace SprUnity {
         public Bone this[HumanBodyBones key] {
             get { return this[key.ToString()]; }
         }
-
-        // ----- ----- ----- ----- -----
 
         // Fit each bone positions to given humanoid avatar
         public void FitToAvatar() {
@@ -97,41 +100,88 @@ namespace SprUnity {
                 labelToBoneId[((HumanBodyBones)i).ToString()] = (HumanBodyBones)i;
             }
 
+            // Find Corresponding Avatar Bone
             foreach (var bone in bones) {
-                // Find Corresponding Avatar Bone
                 if (labelToBoneId.ContainsKey(bone.label)) {
                     var trn = animator.GetBoneTransform(labelToBoneId[bone.label]);
                     if (trn != null) {
-                        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-                        // Corresponding Avatar Bone Found
                         bone.avatarBone = trn.gameObject;
-
-                        // -- Fit Bone Position
-                        bone.transform.position = trn.position;
-                        bone.transform.rotation = Quaternion.identity;
-
-                        // -- Fit Center of Mass Position
-                        if (bone.children.Count > 0) {
-                            Vector3 CoM = bone.transform.position; float cnt = 1.0f;
-                            foreach (var child in bone.children) { CoM += child.transform.position; cnt += 1.0f; }
-                            CoM /= cnt;
-
-                            var CoMLocal = bone.transform.ToPosed().Inv() * CoM.ToVec3d();
-                            bone.solid.desc.center = CoMLocal;
-                            bone.solid.OnValidate();
-                        }
-
-                        // -- Fit Collision Shape Length
-
-                        // <TBD>
-
-                    } else {
-                        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-                        // Corresponding Avatar Bone Not Found --> Remove and Reconnect Bone
-
-                        // <TBD>
                     }
                 }
+            }
+
+            // Remove Missing Bone and Reconnect Bones
+            RemoveMissingBoneRecursive(rootBone);
+
+            // Fit Bones to Avatar
+            foreach (var bone in bones) {
+                if (bone.avatarBone != null) {
+                    // -- Fit Bone Position
+                    bone.transform.position = bone.avatarBone.transform.position;
+                    bone.transform.rotation = Quaternion.identity;
+
+                    // -- Fit Center of Mass Position
+                    if (bone.children.Count > 0) {
+                        Vector3 CoM = bone.transform.position; float cnt = 1.0f;
+                        foreach (var child in bone.children) { CoM += child.transform.position; cnt += 1.0f; }
+                        CoM /= cnt;
+
+                        var CoMLocal = bone.transform.ToPosed().Inv() * CoM.ToVec3d();
+                        bone.solid.desc.center = CoMLocal;
+                        bone.solid.OnValidate();
+                    }
+
+                    // -- Fit Collision Shape Length
+
+                    // <TBD>
+                }
+            }
+        }
+
+        // ----- ----- ----- ----- -----
+        // Private Functions
+
+        // Remove Missing Bone and Reconnect Bones
+        private void RemoveMissingBoneRecursive(Bone bone) {
+            List<Bone> childBones = new List<Bone>();
+            foreach (var child in bone.children) {
+                childBones.Add(child);
+            }
+
+            bool destroy = false;
+            if (bone.parent != null && bone.removeIfNotInAvatar && bone.avatarBone == null) {
+                foreach (var child in childBones) {
+                    // Pass Child Bone to the Parent
+                    bone.parent.children.Add(child);
+                    child.parent = bone.parent;
+
+                    // Reconnect GameObject Tree
+                    child.transform.parent = bone.parent.transform;
+
+                    // Reconnect Joint
+                    if (child.joint != null) {
+                        child.joint.socket = bone.parent.solid.gameObject;
+                    }
+                }
+
+                // Conbine Mass
+                bone.parent.solid.desc.mass += bone.solid.desc.mass;
+
+                // Remove from body
+                bones.Remove(bone);
+
+                // Set Destroy Flag
+                destroy = true;
+            }
+
+            // Do Recursively
+            foreach (var child in childBones) {
+                RemoveMissingBoneRecursive(child);
+            }
+
+            // Destroy
+            if (destroy) {
+                Destroy(bone.gameObject);
             }
         }
 

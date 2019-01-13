@@ -47,7 +47,6 @@ namespace SprUnity {
             body = obj.AddComponent<Body>();
 
             // Bones
-            Bone root = null;
             Bone hips = null;
 
             if (generateUnifiedLeg) {
@@ -55,24 +54,24 @@ namespace SprUnity {
                 Bone unifiedLowerLeg = GenerateBone(unifiedFoot, "UnifiedLowerLeg");
                 Bone unifiedUpperLeg = GenerateBone(unifiedLowerLeg, "UnifiedUpperLeg");
                 hips = GenerateBone(unifiedUpperLeg, "Hips");
-                root = unifiedFoot;
+                body.rootBone = unifiedFoot;
             } else {
                 hips = GenerateBone(null, "Hips", dynamical: false);
-                root = hips;
+                body.rootBone = hips;
             }
 
-            Bone spine = GenerateBone(hips, "Spine");
-            Bone chest = GenerateBone(spine, "Chest");
-            Bone upperChest = GenerateBone(chest, "UpperChest");
-            Bone neck = GenerateBone(upperChest, "Neck");
+            Bone spine = GenerateBone(hips, "Spine", removeIfNotInAvatar: true);
+            Bone chest = GenerateBone(spine, "Chest", removeIfNotInAvatar: true);
+            Bone upperChest = GenerateBone(chest, "UpperChest", removeIfNotInAvatar: true);
+            Bone neck = GenerateBone(upperChest, "Neck", removeIfNotInAvatar: true);
             Bone head = GenerateBone(neck, "Head");
 
-            Bone leftShoulder = GenerateBone(upperChest, "LeftShoulder");
+            Bone leftShoulder = GenerateBone(upperChest, "LeftShoulder", removeIfNotInAvatar: true);
             Bone leftUpperArm = GenerateBone(leftShoulder, "LeftUpperArm");
             Bone leftLowerArm = GenerateBone(leftUpperArm, "LeftLowerArm", hinge: true);
             Bone leftHand = GenerateBone(leftLowerArm, "LeftHand", eePos: true);
 
-            Bone rightShoulder = GenerateBone(upperChest, "RightShoulder");
+            Bone rightShoulder = GenerateBone(upperChest, "RightShoulder", removeIfNotInAvatar: true);
             Bone rightUpperArm = GenerateBone(rightShoulder, "RightUpperArm");
             Bone rightLowerArm = GenerateBone(rightUpperArm, "RightLowerArm", hinge: true);
             Bone rightHand = GenerateBone(rightLowerArm, "RightHand", eePos: true);
@@ -80,12 +79,12 @@ namespace SprUnity {
             Bone leftUpperLeg = GenerateBone(hips, "LeftUpperLeg");
             Bone leftLowerLeg = GenerateBone(leftUpperLeg, "LeftLowerLeg", hinge:true);
             Bone leftFoot = GenerateBone(leftLowerLeg, "LeftFoot");
-            Bone leftToe = GenerateBone(leftFoot, "LeftToe");
+            Bone leftToe = GenerateBone(leftFoot, "LeftToe", removeIfNotInAvatar: true);
 
             Bone rightUpperLeg = GenerateBone(hips, "RightUpperLeg");
             Bone rightLowerLeg = GenerateBone(rightUpperLeg, "RightLowerLeg", hinge:true);
             Bone rightFoot = GenerateBone(rightLowerLeg, "RightFoot");
-            Bone rightToe = GenerateBone(rightFoot, "RightToe");
+            Bone rightToe = GenerateBone(rightFoot, "RightToe", removeIfNotInAvatar: true);
 
             if (generateFingers) {
                 // <TBD>
@@ -93,14 +92,14 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
 
-            root.gameObject.transform.parent = obj.transform;
+            body.rootBone.gameObject.transform.parent = obj.transform;
 
             hips.syncPosition = true;
 
             return hips.gameObject;
         }
 
-        private Bone GenerateBone(Bone parent, string label, bool hinge=false, bool eePos=false, bool eeOri=false, bool dynamical = true) {
+        private Bone GenerateBone(Bone parent, string label, bool hinge=false, bool eePos=false, bool eeOri=false, bool dynamical = true, bool removeIfNotInAvatar = false) {
             // GameObject
             var obj = new GameObject(label);
             if (parent != null) {
@@ -115,6 +114,7 @@ namespace SprUnity {
             if (bone.parent != null) {
                 bone.parent.children.Add(bone);
             }
+            bone.removeIfNotInAvatar = removeIfNotInAvatar;
 
             // Solid
             bone.solid = obj.AddComponent<PHSolidBehaviour>();

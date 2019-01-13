@@ -31,6 +31,9 @@ namespace SprUnity {
         public bool syncPosition = false; // shold be true for some bones e.g.) Hips, Leg, Foot
         public bool syncRotation = true;
 
+        // Automatically remove this if corresponding avatar bone is missing (by Body)
+        public bool removeIfNotInAvatar = false;
+
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         // Relative Rotation between PHSolid and Avatar Bone

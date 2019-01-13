@@ -70,10 +70,16 @@ public abstract class SprBehaviour : SprBehaviourBase {
     // 実行待ち中のAwakeとStartを実行する
     public static void ExecLateAwakeStart() {
         while (lateAwakeQueue.Count > 0) {
-            lateAwakeQueue.Dequeue().AwakeImpl(fromLateExecQueue: true);
+            var sprBehaviour = lateAwakeQueue.Dequeue();
+            if (sprBehaviour != null) {
+                sprBehaviour.AwakeImpl(fromLateExecQueue: true);
+            }
         }
         while (lateStartQueue.Count > 0) {
-            lateStartQueue.Dequeue().StartImpl(fromLateExecQueue: true);
+            var sprBehaviour = lateStartQueue.Dequeue();
+            if (sprBehaviour != null) {
+                sprBehaviour.StartImpl(fromLateExecQueue: true);
+            }
         }
     }
 
