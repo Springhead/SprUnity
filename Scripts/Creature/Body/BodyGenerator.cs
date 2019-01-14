@@ -69,7 +69,7 @@ namespace SprUnity {
                 Bone unifiedFoot = GenerateBone(null, "UnifiedFoot", dynamical: false, massPercent: massPercentFoot);
                 Bone unifiedLowerLeg = GenerateBone(unifiedFoot, "UnifiedLowerLeg", massPercent: massPercentLowerLeg);
                 Bone unifiedUpperLeg = GenerateBone(unifiedLowerLeg, "UnifiedUpperLeg",hinge: true, massPercent: massPercentUpperLeg);
-                hips = GenerateBone(unifiedUpperLeg, "Hips", massPercent: massPercentTorso * (1.0f / 6.0f));
+                hips = GenerateBone(unifiedUpperLeg, "Hips", eePos: true, massPercent: massPercentTorso * (1.0f / 6.0f));
                 body.rootBone = unifiedFoot;
             } else {
                 hips = GenerateBone(null, "Hips", dynamical: false, massPercent: massPercentTorso * (1.0f / 6.0f));
@@ -80,7 +80,7 @@ namespace SprUnity {
             Bone chest = GenerateBone(spine, "Chest", removeIfNotInAvatar: true, massPercent: massPercentTorso * (2.0f / 6.0f));
             Bone upperChest = GenerateBone(chest, "UpperChest", removeIfNotInAvatar: true, massPercent: massPercentTorso * (0.7f / 6.0f));
             Bone neck = GenerateBone(upperChest, "Neck", removeIfNotInAvatar: true, massPercent: massPercentHead * (1.0f / 5.0f));
-            Bone head = GenerateBone(neck, "Head", massPercent: massPercentHead * (4.0f / 5.0f));
+            Bone head = GenerateBone(neck, "Head", eeOri: true, massPercent: massPercentHead * (4.0f / 5.0f));
 
             Bone leftShoulder = GenerateBone(upperChest, "LeftShoulder", removeIfNotInAvatar: true, massPercent: massPercentTorso * (0.15f / 6.0f));
             Bone leftUpperArm = GenerateBone(leftShoulder, "LeftUpperArm", massPercent: massPercentUpperArm);
@@ -116,15 +116,40 @@ namespace SprUnity {
             // ----- ----- ----- ----- -----
             // IK Pullback Target
 
+            /*
             ((PHIKHingeActuatorBehaviour)(body["UnifiedUpperLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * -60.0f;
             ((PHIKHingeActuatorBehaviour)(body["LeftLowerLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 60.0f;
             ((PHIKHingeActuatorBehaviour)(body["RightLowerLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 60.0f;
 
             ((PHIKHingeActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 100.0f;
             ((PHIKHingeActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 100.0f;
+            */
+
+            ((PHIKBallActuatorBehaviour)(body["UnifiedUpperLeg"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * -60.0f));
+            ((PHIKBallActuatorBehaviour)(body["LeftLowerLeg"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * 60.0f));
+            ((PHIKBallActuatorBehaviour)(body["RightLowerLeg"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * 60.0f));
+
+            ((PHIKBallActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * 100.0f)); 
+            ((PHIKBallActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * 100.0f));
 
             ((PHIKBallActuatorBehaviour)(body["LeftUpperArm"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(Mathf.Deg2Rad * -70.0f, 0, 0));
             ((PHIKBallActuatorBehaviour)(body["RightUpperArm"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(Mathf.Deg2Rad * -70.0f, 0, 0));
+
+            // ----- ----- ----- ----- -----
+            // IK Pullback Rate
+
+            ((PHIKBallActuatorBehaviour)(body["LeftShoulder"].ikActuator)).desc.pullbackRate = 1.0f;
+            ((PHIKBallActuatorBehaviour)(body["RightShoulder"].ikActuator)).desc.pullbackRate = 1.0f;
+
+            ((PHIKBallActuatorBehaviour)(body["LeftUpperArm"].ikActuator)).desc.pullbackRate = 0.1f;
+            ((PHIKBallActuatorBehaviour)(body["RightUpperArm"].ikActuator)).desc.pullbackRate = 0.1f;
+
+            /*
+            ((PHIKHingeActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
+            ((PHIKHingeActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
+            */
+            ((PHIKBallActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
+            ((PHIKBallActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
 
             // ----- ----- ----- ----- -----
             // Sample Bone Position & Rotation
@@ -169,6 +194,8 @@ namespace SprUnity {
         }
 
         private Bone GenerateBone(Bone parent, string label, bool hinge=false, bool eePos=false, bool eeOri=false, bool dynamical = true, bool removeIfNotInAvatar = false, float massPercent = 10.0f) {
+            hinge = false; // <!!>
+
             // GameObject
             var obj = new GameObject(label);
             if (parent != null) {
@@ -222,9 +249,13 @@ namespace SprUnity {
 
                 // IK Actuator
                 if (hinge) {
-                    bone.ikActuator = obj.AddComponent<PHIKHingeActuatorBehaviour>();
+                    var ikAct = obj.AddComponent<PHIKHingeActuatorBehaviour>();
+                    ikAct.desc.pullbackRate = 1.0f;
+                    bone.ikActuator = ikAct;
                 } else {
-                    bone.ikActuator = obj.AddComponent<PHIKBallActuatorBehaviour>();
+                    var ikAct = obj.AddComponent<PHIKBallActuatorBehaviour>();
+                    ikAct.desc.pullbackRate = 1.0f;
+                    bone.ikActuator = ikAct;
                 }
                 bone.ikActuator.lateAwakeStart = true;
 

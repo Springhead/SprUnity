@@ -151,19 +151,17 @@ namespace SprUnity {
                 if (bone.avatarBone != null) {
                     bone.transform.position = bone.avatarBone.transform.position;
                     bone.transform.rotation = Quaternion.identity;
-                    if (bone.GetComponent<PHHingeJointBehaviour>() != null) {
-                        if (bone.label == "LeftLowerArm") {
-                            bone.transform.rotation = Quaternion.Euler(-90, 0, 0);
-                        }
-                        if (bone.label == "RightLowerArm") {
-                            bone.transform.rotation = Quaternion.Euler(+90, 0, 0);
-                        }
-                        if (bone.label == "LeftLowerLeg") {
-                            bone.transform.rotation = Quaternion.Euler(0, 90, 0);
-                        }
-                        if (bone.label == "RightLowerLeg") {
-                            bone.transform.rotation = Quaternion.Euler(0, 90, 0);
-                        }
+                    if (bone.label == "LeftLowerArm") {
+                        bone.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                    }
+                    if (bone.label == "RightLowerArm") {
+                        bone.transform.rotation = Quaternion.Euler(+90, 0, 0);
+                    }
+                    if (bone.label == "LeftLowerLeg") {
+                        bone.transform.rotation = Quaternion.Euler(0, 90, 0);
+                    }
+                    if (bone.label == "RightLowerLeg") {
+                        bone.transform.rotation = Quaternion.Euler(0, 90, 0);
                     }
 
                 } else {
@@ -274,6 +272,23 @@ namespace SprUnity {
                     if (fitIKBiasOnFitSpring) {
                         float sqrtBias = (float)(inertiaMomentSum[bone]) * momentToSqrtBiasCoeff;
                         float ikBias = 1.0f + Mathf.Pow(sqrtBias, 2);
+
+                        // Special Rule
+                        if (bone.label.Contains("Shoulder")) {
+                            ikBias = 5000.0f;
+                        } else if (bone.label.Contains("Spine")) {
+                            ikBias = 5000.0f;
+                        } else if (bone.label.Contains("Chest")) {
+                            ikBias = 1000.0f;
+                        } else if (bone.label.Contains("UpperArm")) {
+                            ikBias = 10.0f;
+                        } else if (bone.label.Contains("LowerArm")) {
+                            ikBias = 1.0f;
+                        } else if (bone.label.Contains("Hand")) {
+                            ikBias = 1.0f;
+                        } else {
+                            ikBias = 10000.0f;
+                        }
 
                         PHIKHingeActuatorBehaviour hik = bone.ikActuator as PHIKHingeActuatorBehaviour;
                         if (hik != null) {
