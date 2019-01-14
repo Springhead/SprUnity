@@ -37,10 +37,36 @@ namespace SprUnity {
             // ----- ----- ----- ----- -----
             // Select Animator(with Avatar) and Fit to Avatar Button
             body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
+            body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
+            if (body.fitSpringDamper) {
+                body.momentToSpringCoeff = EditorGUILayout.FloatField("Moment to Spring", body.momentToSpringCoeff);
+                body.springToDamperCoeff = EditorGUILayout.FloatField("Spring to Damper", body.springToDamperCoeff);
+                body.minSpring = EditorGUILayout.FloatField("Min Spring Value", body.minSpring);
+
+                body.fitIKBiasOnFitSpring = EditorGUILayout.Toggle("Fit IK Bias", body.fitIKBiasOnFitSpring);
+                if (body.fitIKBiasOnFitSpring) {
+                    body.momentToSqrtBiasCoeff = EditorGUILayout.FloatField("Moment to Sqrt(Bias)", body.momentToSqrtBiasCoeff);
+                }
+            }
 
             if (GUILayout.Button("Fit To Avatar")) {
                 body.FitToAvatar();
             }
+
+            /*
+            // For BodyGenerator
+            if (GUILayout.Button("Print Bone Positions")) {
+                string str = "";
+                foreach (var bone in body.bones) {
+                    str += "body[\"" + bone.label + "\"].transform.position = new Vector3(";
+                    str += bone.transform.position.x + "f, ";
+                    str += bone.transform.position.y + "f, ";
+                    str += bone.transform.position.z + "f);";
+                    str += "\r\n";
+                }
+                Debug.Log(str);
+            }
+            */
         }
     }
 #endif
@@ -56,14 +82,21 @@ namespace SprUnity {
         // Animator with humanoid avatar to be synchronized with this body
         public Animator animator = null;
 
+        // Fit Target Flag
+        public bool fitSpringDamper = false;
+        public float momentToSpringCoeff = 500.0f;
+        public float springToDamperCoeff = 0.1f;
+        public float minSpring = 100.0f;
+
+        public bool fitIKBiasOnFitSpring = false;
+        public float momentToSqrtBiasCoeff = 100.0f;
+
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Functions
 
         void Start() {
             // Record Relative Pose between PHSolid and Avatar
-            foreach (var bone in bones) {
-                bone.RecordRelativeRotSolidAvatar();
-            }
+            RecordRelativeRotSolidAvatar();
         }
 
         void FixedUpdate() {
@@ -113,33 +146,161 @@ namespace SprUnity {
             // Remove Missing Bone and Reconnect Bones
             RemoveMissingBoneRecursive(rootBone);
 
-            // Fit Bones to Avatar
+            // Fit Bone Position to Avatar
             foreach (var bone in bones) {
                 if (bone.avatarBone != null) {
-                    // -- Fit Bone Position
                     bone.transform.position = bone.avatarBone.transform.position;
                     bone.transform.rotation = Quaternion.identity;
+                    if (bone.GetComponent<PHHingeJointBehaviour>() != null) {
+                        if (bone.label == "LeftLowerArm") {
+                            bone.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                        }
+                        if (bone.label == "RightLowerArm") {
+                            bone.transform.rotation = Quaternion.Euler(+90, 0, 0);
+                        }
+                        if (bone.label == "LeftLowerLeg") {
+                            bone.transform.rotation = Quaternion.Euler(0, 90, 0);
+                        }
+                        if (bone.label == "RightLowerLeg") {
+                            bone.transform.rotation = Quaternion.Euler(0, 90, 0);
+                        }
+                    }
 
-                    // -- Fit Center of Mass Position
+                } else {
+                    if (bone.label == "UnifiedUpperLeg") {
+                        // Use Position of LowerLeg (not UpperLeg)
+                        bone.transform.position = (this["LeftLowerLeg"].avatarBone.transform.position + this["RightLowerLeg"].avatarBone.transform.position) * 0.5f;
+                        bone.transform.rotation = Quaternion.Euler(0, 90, 0);
+                    }
+                    if (bone.label == "UnifiedLowerLeg") {
+                        // Use Position of Foot (not LowerLeg)
+                        bone.transform.position = (this["LeftFoot"].avatarBone.transform.position + this["RightFoot"].avatarBone.transform.position) * 0.5f;
+                        bone.transform.rotation = Quaternion.identity;
+                    }
+                    if (bone.label == "UnifiedFoot") {
+                        bone.transform.position = (this["LeftFoot"].avatarBone.transform.position + this["RightFoot"].avatarBone.transform.position) * 0.5f;
+                        bone.transform.rotation = Quaternion.identity;
+                    }
+                }
+            }
+
+            // Fit Center of Mass Position
+            foreach (var bone in bones) {
+                if (bone.avatarBone != null) {
+                    Vector3 CoM = bone.transform.position;
                     if (bone.children.Count > 0) {
-                        Vector3 CoM = bone.transform.position; float cnt = 1.0f;
+                        // Have Child
+                        float cnt = 1.0f;
                         foreach (var child in bone.children) { CoM += child.transform.position; cnt += 1.0f; }
                         CoM /= cnt;
 
-                        var CoMLocal = bone.transform.ToPosed().Inv() * CoM.ToVec3d();
-                        bone.solid.desc.center = CoMLocal;
-                        bone.solid.OnValidate();
+                    } else {
+                        // No Child (=End Bone (Head, Hand, Foot))
+                        if (bone.label == "Head") {
+                            // Guess from Eye Position
+                            var trnLEye = animator.GetBoneTransform(HumanBodyBones.LeftEye);
+                            var trnREye = animator.GetBoneTransform(HumanBodyBones.RightEye);
+                            if (trnLEye != null && trnREye != null) {
+                                Vector3 eyeCenter = (trnLEye.position + trnREye.position) * 0.5f;
+                                CoM = new Vector3(bone.transform.position.x, eyeCenter.y, bone.transform.position.z);
+                            }
+                        }
+
+                        if (bone.label.Contains("Hand")) {
+                            // Guess from LowerArm Length and Direction
+                            Vector3 wristPos = bone.transform.position;
+                            Vector3 elbowPos = bone.parent.transform.position;
+                            CoM = elbowPos + (wristPos - elbowPos) * (1.0f + (1.0f / 4.0f));
+                        }
                     }
 
-                    // -- Fit Collision Shape Length
-
-                    // <TBD>
+                    // Set CoM to Solid
+                    var CoMLocal = bone.transform.ToPosed().Inv() * CoM.ToVec3d();
+                    bone.solid.desc.center = CoMLocal;
+                    bone.solid.OnValidate();
                 }
             }
+
+            // Fit IK Target Position
+            foreach (var bone in bones) {
+                var phIKEEBehaviour = bone.GetComponent<PHIKEndEffectorBehaviour>();
+                if (phIKEEBehaviour != null) {
+                    phIKEEBehaviour.desc.targetLocalPosition = bone.solid.desc.center;
+                    phIKEEBehaviour.desc.targetPosition = bone.transform.ToPosed() * bone.solid.desc.center;
+                }
+            }
+
+            // -- Fit Collision Shape Length
+            // <TBD>
+
+            // Auto Set Spring and Damper
+            if (fitSpringDamper) {
+                // Initialize Moment Sum Table
+                Dictionary<Bone, double> inertiaMomentSum = new Dictionary<Bone, double>();
+                foreach (var bone in bones) {
+                    inertiaMomentSum[bone] = 0.0f;
+                }
+
+                // Sum-up Inertia Moment for each Joint
+                foreach (var bone in bones) {
+                    Vector3 solidCenter = (bone.transform.ToPosed() * bone.solid.desc.center).ToVector3();
+                    var b = bone;
+                    while (b != null) {
+                        Vector3 jointCenter = b.transform.position;
+                        double distance = (solidCenter - jointCenter).magnitude;
+                        inertiaMomentSum[b] += (distance * b.solid.desc.mass);
+                        b = b.parent;
+                    }
+                }
+
+                // Set Spring and Damper
+                foreach (var bone in bones) {
+                    float spring = Mathf.Max(minSpring, (float)(inertiaMomentSum[bone]) * momentToSpringCoeff);
+                    float damper = spring * springToDamperCoeff;
+
+                    PHHingeJointBehaviour hj = bone.joint as PHHingeJointBehaviour;
+                    if (hj != null) {
+                        hj.desc.spring = spring;
+                        hj.desc.damper = damper;
+                    }
+
+                    PHBallJointBehaviour bj = bone.joint as PHBallJointBehaviour;
+                    if (bj != null) {
+                        bj.desc.spring = spring;
+                        bj.desc.damper = damper;
+                    }
+
+                    // Also Fit IK Bias
+                    if (fitIKBiasOnFitSpring) {
+                        float sqrtBias = (float)(inertiaMomentSum[bone]) * momentToSqrtBiasCoeff;
+                        float ikBias = 1.0f + Mathf.Pow(sqrtBias, 2);
+
+                        PHIKHingeActuatorBehaviour hik = bone.ikActuator as PHIKHingeActuatorBehaviour;
+                        if (hik != null) {
+                            hik.desc.bias = ikBias;
+                        }
+
+                        PHIKBallActuatorBehaviour bik = bone.ikActuator as PHIKBallActuatorBehaviour;
+                        if (bik != null) {
+                            bik.desc.bias = ikBias;
+                        }
+                    }
+                }
+            }
+
+            // Re-initialize Relative Rotation Info
+            RecordRelativeRotSolidAvatar();
         }
 
         // ----- ----- ----- ----- -----
         // Private Functions
+
+        // Record Relative Pose between PHSolid and Avatar
+        private void RecordRelativeRotSolidAvatar() {
+            foreach (var bone in bones) {
+                bone.RecordRelativeRotSolidAvatar();
+            }
+        }
 
         // Remove Missing Bone and Reconnect Bones
         private void RemoveMissingBoneRecursive(Bone bone) {

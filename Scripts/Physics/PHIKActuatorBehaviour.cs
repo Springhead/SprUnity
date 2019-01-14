@@ -1,8 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
-using SprCs;
+﻿using System.Collections;
 using System;
 using System.Linq;
+
+using UnityEngine;
+
+using SprCs;
+using SprUnity;
 
 /*
   
@@ -88,4 +91,15 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
             }
         }
     }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // MonoBehaviourのメソッド
+
+    void OnDrawGizmos() {
+        if (phIKActuator != null) {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(phIKActuator.GetSolidTempPose().Pos().ToVector3(), 0.03f);
+        }
+    }
+
 }

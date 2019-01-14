@@ -4,6 +4,34 @@ using SprCs;
 using SprUnity;
 using System;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHIKEndEffectorBehaviour))]
+public class PHIKEndEffectorBehaviourEditor : Editor {
+    public void OnSceneGUI() {
+        PHIKEndEffectorBehaviour phIKEEBehaviour = (PHIKEndEffectorBehaviour)target;
+
+        // ----- ----- ----- ----- -----
+        // Target Position Handle
+        if (phIKEEBehaviour.iktarget == null) {
+            if (phIKEEBehaviour.phIKEndEffector != null) {
+                Vector3 currTargetPos = phIKEEBehaviour.phIKEndEffector.GetTargetPosition().ToVector3();
+                Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
+                phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
+                phIKEEBehaviour.phIKEndEffector.SetTargetPosition(handlePos.ToVec3d());
+
+            } else if (phIKEEBehaviour.desc != null) {
+                Vector3 currTargetPos = ((Vec3d)(phIKEEBehaviour.desc.targetPosition)).ToVector3();
+                Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
+                phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
+            }
+        }
+    }
+}
+
+#endif
+
 [DefaultExecutionOrder(7)]
 public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -45,8 +73,6 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
     public override ObjectIf Build() {
         PHIKEndEffectorIf phIKee = phScene.CreateIKEndEffector((PHIKEndEffectorDesc)desc);
         phIKee.SetName("ike:" + gameObject.name);
-        phIKee.Enable(true);
-        phIKee.EnableOrientationControl(true);
 
         PHSolidBehaviour solidBehaviour = gameObject.GetComponent<PHSolidBehaviour>();
         if (solidBehaviour != null && solidBehaviour.sprObject != null) {
