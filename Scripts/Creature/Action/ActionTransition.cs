@@ -35,7 +35,7 @@ public class ActionTransition : ScriptableObject {
     [System.Serializable]
     public class Condition {
         // この値を保持しているTransitionインスタンスは取得できる？
-        public ActionTransition parent;
+        //public ActionTransition parent;
         public enum ConditionType{
             time,
             flag,
@@ -63,7 +63,28 @@ public class ActionTransition : ScriptableObject {
 
 
     // ----- ----- ----- ----- ----- -----
+    // 
+
+    static void CreateTransition(ActionState from, ActionState to) {
+        var transition = ScriptableObject.CreateInstance<ActionTransition>();
+        transition.name = "transition";
+        transition.fromState = from;
+        transition.toState = to;
+
+        if (from != null) {
+            AssetDatabase.AddObjectToAsset(transition, from);
+            from.transitions.Add(transition);
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(from));
+        } else {
+            AssetDatabase.AddObjectToAsset(transition, to.stateMachine);
+            to.stateMachine.entryTransitions.Add(transition);
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(to.stateMachine));
+        }
+    }
+
+    // ----- ----- ----- ----- ----- -----
     // State Machine Events
+
     public void Transit() {
 
     }
@@ -88,22 +109,23 @@ public class ActionTransition : ScriptableObject {
             Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
             Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
             Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
-        }
-        
-        else if(fromState == null && toState != null) {
+        } else if(fromState == null && toState != null) {
             Vector3 startPos = new Vector3(stateMachine.entryRect.xMax, stateMachine.entryRect.yMin + 25, 0);
             Vector3 endPos = new Vector3(toState.stateNodeRect.xMin, toState.stateNodeRect.y, 0);
             Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
             Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
             Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
-        }
-        else if(toState == null && fromState != null) {
+        } else if(toState == null && fromState != null) {
             Vector3 startPos = new Vector3(fromState.stateNodeRect.xMax, fromState.stateNodeRect.yMin + 25 + priority * 20, 0);
             Vector3 endPos = new Vector3(stateMachine.exitRect.xMin, stateMachine.exitRect.y, 0);
             Vector3 startTangent = startPos + new Vector3(100f, 0f, 0f);
             Vector3 endTangent = endPos + new Vector3(-100f, 0f, 0f);
             Handles.DrawBezier(startPos, endPos, startTangent, endTangent, Color.red, null, 4f);
         }
+    }
+
+    public bool ProcessEvents() {
+        return false;
     }
 }
 

@@ -72,15 +72,30 @@ public class ActionStateMachine : ScriptableObject {
     [HideInInspector]
     public ActionState currentState;
 
-    // どこからでも遷移できるグローバルステートいる？
+    // Bool型のフラグリスト
     public TransitionFlagList flags;
 
     public bool enabled = false;
 
+    // 適用するBody
+    // Start時に対応させる
+    [HideInInspector]
+    public InteraWare.Body body;
+
+    // キャラクタ身体データ
+    // 現在適用キャラクタ
+    Vector3 headPositionHipBase;
+    Vector3 footCenterPositionHipBase;
+    Vector3 HandPositionHipBase;
+    // 最終編集時に使用したキャラクタ
+    Vector3 headPositionHipBaseInLastEdit;
+    Vector3 footCenterPositionHipBaseInLastEdit;
+    Vector3 HandPositionHipBaseInLastEdit;
+
     //
     [HideInInspector]
     public Rect entryRect = new Rect(0, 0, 100, 50);
-    public List<ActionTransition> entryTransitions;
+    public List<ActionTransition> entryTransitions = new List<ActionTransition>();
 
     [HideInInspector]
     public Rect exitRect = new Rect(0, 100, 100, 50);
@@ -130,7 +145,7 @@ public class ActionStateMachine : ScriptableObject {
     // Create ActionStateMachine
 
     [MenuItem("Action/Create ActionStateMachine")]
-    static void CreateAsset() {
+    static void CreateStateMachine() {
         var action = CreateInstance<ActionStateMachine>();
 
         string currrentDirectory = GetCurrentDirectory();
@@ -153,10 +168,22 @@ public class ActionStateMachine : ScriptableObject {
 
         var state =  ScriptableObject.CreateInstance<ActionState>();
         state.name = "state";
+        state.stateMachine = parentStateMachine;
 
         AssetDatabase.AddObjectToAsset(state, parentStateMachine);
 
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(parentStateMachine));
+    }
+
+    public void CreateState(Vector2 pos = default(Vector2)) {
+        var state = ScriptableObject.CreateInstance<ActionState>();
+        state.name = "new state";
+        state.stateMachine = this;
+        state.stateNodeRect.position = pos;
+
+        AssetDatabase.AddObjectToAsset(state, this);
+
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this));
     }
 
     static void DeleteState(ActionState state) {
@@ -187,18 +214,19 @@ public class ActionStateMachine : ScriptableObject {
     // ステートマシン関係のイベント
 
     // 
-    public void Begin(InteraWare.Body body) {
+    public void Begin() {
         enabled = true;
 
         // Entry Nodeを作っておいてそこからの遷移先にまず遷移？
 
         // <!!> とりあえず最初のステートでいいや！
+        if (entryTransitions.Count == 0) return;
         currentState = entryTransitions[0].toState;
-        currentState.OnEnter(body);
+        currentState.OnEnter();
     }
 
     // Update StateMachine if it's enabled
-    public void UpdateStateMachine(InteraWare.Body body) {
+    public void UpdateStateMachine() {
         // Update timer
         currentState.timeFromEnter += Time.fixedDeltaTime;
 
@@ -212,7 +240,7 @@ public class ActionStateMachine : ScriptableObject {
                 if (currentState == null) {
                     End();
                 } else {
-                    currentState.OnEnter(body);
+                    currentState.OnEnter();
                 }
                 break;
             }

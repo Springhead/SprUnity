@@ -24,13 +24,13 @@ public class ActionStateEditor : Editor {
 public class ActionState : ScriptableObject {
     // member values
     public ActionStateMachine stateMachine;
-    public List<ActionKeyFrame> keyframes;
-    public List<ActionTransition> transitions;
+    public List<ActionKeyFrame> keyframes = new List<ActionKeyFrame>();
+    public List<ActionTransition> transitions = new List<ActionTransition>();
     [HideInInspector]
     public float timeFromEnter;
 
     //[HideInInspector]
-    public Rect stateNodeRect = new Rect(0, 0, 100, 50);
+    public Rect stateNodeRect = new Rect(0, 0, 200, 50);
     public bool isDragged;
     public bool isSelected;
 
@@ -44,7 +44,6 @@ public class ActionState : ScriptableObject {
     // ----- ----- ----- ----- ----- -----
     // Creator
 
-
     [MenuItem("CONTEXT/ActionState/New Transition")]
     static void CreateTransition() {
         var fromState = Selection.activeObject as ActionState;
@@ -53,48 +52,52 @@ public class ActionState : ScriptableObject {
             Debug.LogWarning("No ActionState object selected");
         }
 
-        var transition = ScriptableObject.CreateInstance<ActionTransition>();
-        transition.name = "transition";
-        transition.fromState = fromState;
-        //transition.toState = to;
-
-
-        AssetDatabase.AddObjectToAsset(transition, fromState);
-
-        fromState.transitions.Add(transition);
-
-        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(fromState));
+        CreateTransition(fromState, null);
     }
 
-    static void CreateTransition(ActionState from, ActionState to) {
+    static ActionTransition CreateTransition(ActionState from, ActionState to) {
         var transition = ScriptableObject.CreateInstance<ActionTransition>();
         transition.name = "transition";
         transition.fromState = from;
         transition.toState = to;
 
         if (from != null) {
+            // ActionStateからの遷移
             AssetDatabase.AddObjectToAsset(transition, from);
             from.transitions.Add(transition);
+            transition.stateMachine = from.stateMachine;
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(from));
         }
         else {
+            // Entryからの遷移
             AssetDatabase.AddObjectToAsset(transition, to.stateMachine);
             to.stateMachine.entryTransitions.Add(transition);
+            transition.stateMachine = to.stateMachine;
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(to.stateMachine));
         }
+
+        return transition;
+    }
+
+    static void CreateKeyFrame(ActionState state) {
+        var keyframe = ScriptableObject.CreateInstance<ActionKeyFrame>();
+        keyframe.name = "keyframe";
+
+        AssetDatabase.AddObjectToAsset(keyframe, state);
+        state.keyframes.Add(keyframe);
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(state.stateMachine));
     }
 
     // ----- ----- ----- ----- ----- -----
     // State Machine Events
     // Enter
     // Exit
-    // 
 
     // Enter event of the state
-    public void OnEnter(InteraWare.Body body) {
+    public void OnEnter() {
         timeFromEnter = 0.0f;
         foreach (var keyframe in keyframes) {
-            keyframe.generateSubMovement(body);
+            keyframe.GenerateSubMovement(stateMachine.body);
         }
         Debug.Log("Enter state:" + name + " at time:" + Time.time);
     }
@@ -183,6 +186,12 @@ public class ActionState : ScriptableObject {
             ActionTransition transition = transitions[i]; // 
             genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name), false, () => OnRemoveTransition(transition));
         }
+        genericMenu.AddItem(new GUIContent("Add KeyFrame"), false, () => OnClickAddKeyFrame());
+        int nKeyframes = keyframes.Count;
+        for (int i = 0; i < nKeyframes; i++) {
+            ActionKeyFrame keyframe = keyframes[i]; // 
+            genericMenu.AddItem(new GUIContent("Remove KeyFrame/" + keyframe.name), false, () => OnRemoveKeyFrame(keyframe));
+        }
         genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
         genericMenu.ShowAsContext();
     }
@@ -191,13 +200,25 @@ public class ActionState : ScriptableObject {
         CreateTransition(from, to);
     }
 
-    private void OnRemoveState() {
-        
+    private void OnClickAddKeyFrame() {
+        CreateKeyFrame(this);
     }
 
-    private void OnRemoveTransition(ActionTransition t) {
-        transitions.Remove(t);
-        Object.DestroyImmediate(t, true);
+    private void OnRemoveState() {
+        // ステートマシンの関係する遷移を全部消す
+        // キーフレームは
+    }
+
+    private void OnRemoveTransition(ActionTransition transition) {
+        transitions.Remove(transition);
+        Object.DestroyImmediate(transition, true);
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this.stateMachine));
+    }
+
+    private void OnRemoveKeyFrame(ActionKeyFrame keyframe) {
+        keyframes.Remove(keyframe);
+        Object.DestroyImmediate(keyframe, true);
+        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this.stateMachine));
     }
 
     public void SetDefaultNodeStyle(GUIStyle style) {

@@ -6,31 +6,46 @@ using UnityEngine;
 using UnityEditor;
 
 [System.Serializable]
-public class ActionKeyFrame{
+public class ActionKeyFrame : ScriptableObject {
+    // ScriptableObjectにするべきか
+    // 利点：多分Inspectorに単独表示できる
+    // 欠点：管理が面倒
+    // 　　　もしかしたらStateからKeyframe情報が見れたほうがいいか
 
     //public ReachController reachController;
+    // 動かすBone
     public HumanBodyBones bone;
-    //public PHIKEndEffectorBehaviour ikEndEffector;
-    //public Bone bone;
 
-    //public GameObject poseObject;
-    //public Transform pose;
+    // 実行時の座標変換用
+    // 親
+    public enum CoordinateType {
+        World,
+        Bone
+    }
+    public CoordinateType coordinate = CoordinateType.Bone;
+    public HumanBodyBones coordinateBaseBone;
+    // ターゲット
+    public Vector3 centerForTranslate;
+    public Vector3 baseTargetPosition;
+    public float effectRate;
+
+    public Vector3 currentTargetPosition;
+
     public KeyFramePose pose;
-    public Vector3 position;
-    public Vector3 rotation;
-    //public GameObject origin;
 
     public float startDelay;
-    public float duration;
+    public float duration = 0.5f;
 
     public Vector2 springDamper = new Vector2(1, 1);
     
-    public void generateSubMovement(InteraWare.Body body) {
+    public void GenerateSubMovement(InteraWare.Body body) {
         // 目標位置の変換
-        PosRot moveTo = new PosRot(pose.localPosition, Quaternion.Euler(pose.localEulerRotation));
+        Vector3 position = body[coordinateBaseBone].transform.TransformPoint(pose.localPosition);
+        Quaternion rotation = Quaternion.Euler(pose.localEulerRotation) * body[coordinateBaseBone].transform.rotation;
+        //PosRot moveTo = new PosRot(pose.worldPosition, Quaternion.Euler(pose.worldEulerRotation));
+        Pose moveTo = new Pose(position, rotation);
 
         // 駆動対象のBoneを探す
-        // 4階層も上からBodyを受け取るのはどうかと思う
         PHIKEndEffectorBehaviour ikEndEffector = body[bone].ikEndEffector;
         if (ikEndEffector == null) return;
         ReachController reachController = ikEndEffector.iktarget.GetComponent<ReachController>();
