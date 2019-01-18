@@ -150,7 +150,8 @@ public class ActionStateMachineWindow : EditorWindow {
                     if(action != null) {
                         editingAction = action;
                     }
-                    var body = DragAndDrop.objectReferences[0] as InteraWare.Body;
+                    var bodyObject = DragAndDrop.objectReferences[0] as GameObject;
+                    var body = bodyObject.GetComponent<InteraWare.Body>();
                     if(body != null) {
                         bodyUsedEditing = body;
                     }
