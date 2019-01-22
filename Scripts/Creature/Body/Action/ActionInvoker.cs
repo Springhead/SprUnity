@@ -51,26 +51,42 @@ public class ActionInvoker : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        if (inActionSequence != null) {
-            if (inActionSequence.keyPoseTimings[index].start <= time) { 
-                var kp = inActionSequence.keyPoseTimings[index];
-                kp.keyPose.Action(
-                    body: body,
-                    startTime: 0,
-                    duration: kp.duration,
-                    spring: kp.springDamper.x,
-                    damper: kp.springDamper.y
-                    );
-                index++;
-            }
+        if (body == null || body.initialized) {
+            if (inActionSequence != null) {
+                if (inActionSequence.keyPoseTimings[index].start <= time) {
+                    var kp = inActionSequence.keyPoseTimings[index];
+                    kp.keyPose.Action(
+                        body: body,
+                        startTime: 0,
+                        duration: kp.duration,
+                        spring: kp.springDamper.x,
+                        damper: kp.springDamper.y
+                        );
+                    index++;
+                }
 
-            time += Time.fixedDeltaTime;
+                time += Time.fixedDeltaTime;
 
-            if (inActionSequence.keyPoseTimings.Count() <= index) {
-                time = 0.0f;
-                index = 0;
-                inActionSequence = null;
+                if (inActionSequence.keyPoseTimings.Count() <= index) {
+                    time = 0.0f;
+                    index = 0;
+                    inActionSequence = null;
+                }
             }
         }
     }
+
+    // ----- ----- ----- ----- -----
+
+    public void Action(string name) {
+        print("Action: " + name);
+        foreach(var sequence in keyPoseSequences) {
+            if (sequence.name == name) {
+                inActionSequence = sequence;
+                time = 0.0f;
+                index = 0;
+            }
+        }
+    }
+
 }
