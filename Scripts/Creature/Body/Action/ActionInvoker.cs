@@ -54,7 +54,7 @@ public class ActionInvoker : MonoBehaviour {
 
     private void FixedUpdate() {
         if (body == null || body.initialized) {
-            if (inActionSequence != null) {
+            if (inActionSequence != null && inActionSequence.keyPoseTimings.Count() > 0) {
                 if (inActionSequence.keyPoseTimings[index].start <= time) {
                     var kp = inActionSequence.keyPoseTimings[index];
                     kp.keyPose.Action(
