@@ -25,11 +25,13 @@ public class ActionInvoker : MonoBehaviour {
     public Body body = null;
     public List<KeyPoseSequence> keyPoseSequences = new List<KeyPoseSequence>();
 
+    [HideInInspector]
+    public KeyPoseSequence inActionSequence = null;
+
     // ----- ----- ----- ----- -----
 
     private float time = 0.0f;
     private int index = 0;
-    private KeyPoseSequence inActionSequence = null;
         
     // ----- ----- ----- ----- -----
 
@@ -37,7 +39,7 @@ public class ActionInvoker : MonoBehaviour {
 	}
 	
 	void Update () {
-        KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E };
+        KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y };
 
         for (int i=0; i<hotKeys.Count(); i++) {
             if (Input.GetKeyDown(hotKeys[i])) {

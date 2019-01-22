@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace SprUnity {
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
     [CustomEditor(typeof(BodyBalancer))]
     public class BodyBalancerEditor : Editor {
         
@@ -22,7 +22,7 @@ namespace SprUnity {
         }
 
     }
-//#endif
+#endif
 
     public class BodyBalancer : MonoBehaviour {
 
