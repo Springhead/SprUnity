@@ -82,6 +82,9 @@ namespace SprUnity {
             Bone neck = GenerateBone(upperChest, "Neck", removeIfNotInAvatar: true, massPercent: massPercentHead * (1.0f / 5.0f));
             Bone head = GenerateBone(neck, "Head", eeOri: true, massPercent: massPercentHead * (4.0f / 5.0f));
 
+            Bone leftEye = GenerateBone(head, "LeftEye", noPhysics: true, eeOri: true);
+            Bone rightEye = GenerateBone(head, "RightEye", noPhysics: true, eeOri: true);
+
             Bone leftShoulder = GenerateBone(upperChest, "LeftShoulder", removeIfNotInAvatar: true, massPercent: massPercentTorso * (0.15f / 6.0f));
             Bone leftUpperArm = GenerateBone(leftShoulder, "LeftUpperArm", massPercent: massPercentUpperArm);
             Bone leftLowerArm = GenerateBone(leftUpperArm, "LeftLowerArm", hinge: true, massPercent: massPercentLowerArm);
@@ -92,12 +95,12 @@ namespace SprUnity {
 
             Bone leftUpperLeg = GenerateBone(hips, "LeftUpperLeg", massPercent: massPercentUpperLeg);
             Bone leftLowerLeg = GenerateBone(leftUpperLeg, "LeftLowerLeg", hinge:true, massPercent: massPercentLowerLeg);
-            Bone leftFoot = GenerateBone(leftLowerLeg, "LeftFoot", eePos: true, massPercent: massPercentFoot * (2.0f / 3.0f));
+            Bone leftFoot = GenerateBone(leftLowerLeg, "LeftFoot", eePos: true, eeOri: true, massPercent: massPercentFoot * (2.0f / 3.0f));
             Bone leftToes = GenerateBone(leftFoot, "LeftToes", removeIfNotInAvatar: true, massPercent: massPercentFoot * (1.0f / 3.0f));
 
             Bone rightUpperLeg = GenerateBone(hips, "RightUpperLeg", massPercent: massPercentUpperLeg);
             Bone rightLowerLeg = GenerateBone(rightUpperLeg, "RightLowerLeg", hinge:true, massPercent: massPercentLowerLeg);
-            Bone rightFoot = GenerateBone(rightLowerLeg, "RightFoot", eePos: true, massPercent: massPercentFoot * (2.0f / 3.0f));
+            Bone rightFoot = GenerateBone(rightLowerLeg, "RightFoot", eePos: true, eeOri: true, massPercent: massPercentFoot * (2.0f / 3.0f));
             Bone rightToes = GenerateBone(rightFoot, "RightToes", removeIfNotInAvatar: true, massPercent: massPercentFoot * (1.0f / 3.0f));
 
             if (generateFingers) {
@@ -115,15 +118,6 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
             // IK Pullback Target
-
-            /*
-            ((PHIKHingeActuatorBehaviour)(body["UnifiedUpperLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * -60.0f;
-            ((PHIKHingeActuatorBehaviour)(body["LeftLowerLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 60.0f;
-            ((PHIKHingeActuatorBehaviour)(body["RightLowerLeg"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 60.0f;
-
-            ((PHIKHingeActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 100.0f;
-            ((PHIKHingeActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackTarget = Mathf.Deg2Rad * 100.0f;
-            */
 
             ((PHIKBallActuatorBehaviour)(body["UnifiedUpperLeg"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * -60.0f));
             ((PHIKBallActuatorBehaviour)(body["LeftLowerLeg"].ikActuator)).desc.pullbackTarget = Quaterniond.Rot(new Vec3d(0, 0, Mathf.Deg2Rad * 60.0f));
@@ -144,10 +138,9 @@ namespace SprUnity {
             ((PHIKBallActuatorBehaviour)(body["LeftUpperArm"].ikActuator)).desc.pullbackRate = 0.1f;
             ((PHIKBallActuatorBehaviour)(body["RightUpperArm"].ikActuator)).desc.pullbackRate = 0.1f;
 
-            /*
-            ((PHIKHingeActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
-            ((PHIKHingeActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
-            */
+            ((PHIKBallActuatorBehaviour)(body["LeftLowerLeg"].ikActuator)).desc.pullbackRate = 0.1f;
+            ((PHIKBallActuatorBehaviour)(body["RightLowerLeg"].ikActuator)).desc.pullbackRate = 0.1f;
+
             ((PHIKBallActuatorBehaviour)(body["LeftLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
             ((PHIKBallActuatorBehaviour)(body["RightLowerArm"].ikActuator)).desc.pullbackRate = 0.1f;
 
@@ -160,6 +153,11 @@ namespace SprUnity {
             body["LeftLowerLeg"].transform.rotation = Quaternion.Euler(0, 90, 0);
             body["RightLowerLeg"].transform.rotation = Quaternion.Euler(0, 90, 0);
             body["UnifiedUpperLeg"].transform.rotation = Quaternion.Euler(0, 90, 0);
+            foreach (var bone in body.bones) {
+                if (!bone.label.Contains("LowerArm") && !bone.label.Contains("tLowerLeg") && !bone.label.Contains("UnifiedUpperLeg")) {
+                    bone.transform.rotation = Quaternion.identity;
+                }
+            }
 
             // -- Pos
             body["UnifiedFoot"].transform.position = new Vector3(0.0002727155f, 0.1237467f, -0.02814926f);
@@ -190,10 +188,39 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
 
+            body["Head"].controller.changeSpringDamperBones.Add(body["Head"]);
+            body["Head"].controller.changeSpringDamperBones.Add(body["Neck"]);
+            body["Head"].controller.changeSpringDamperBones.Add(body["UpperChest"]);
+            body["Head"].controller.changeSpringDamperBones.Add(body["Chest"]);
+            body["Head"].controller.changeSpringDamperBones.Add(body["Spine"]);
+
+            body["LeftHand"].controller.changeSpringDamperBones.Add(body["LeftHand"]);
+            body["LeftHand"].controller.changeSpringDamperBones.Add(body["LeftLowerArm"]);
+            body["LeftHand"].controller.changeSpringDamperBones.Add(body["LeftUpperArm"]);
+
+            body["RightHand"].controller.changeSpringDamperBones.Add(body["RightHand"]);
+            body["RightHand"].controller.changeSpringDamperBones.Add(body["RightLowerArm"]);
+            body["RightHand"].controller.changeSpringDamperBones.Add(body["RightUpperArm"]);
+
+            // ----- ----- ----- ----- -----
+
+            body["LeftEye"].controller.controlPosition = false;
+            body["RightEye"].controller.controlPosition = false;
+
+            // ----- ----- ----- ----- -----
+
+            body.lookController = body.gameObject.AddComponent<LookController>();
+            body.lookController.body = body;
+            var eyeTargetOutput = new GameObject("EyeTargetProxy");
+            eyeTargetOutput.transform.parent = body["Head"].transform;
+            body.lookController.eyeTargetOutput = eyeTargetOutput;
+
+            // ----- ----- ----- ----- -----
+
             return hips.gameObject;
         }
 
-        private Bone GenerateBone(Bone parent, string label, bool hinge=false, bool eePos=false, bool eeOri=false, bool dynamical = true, bool removeIfNotInAvatar = false, float massPercent = 10.0f) {
+        private Bone GenerateBone(Bone parent, string label, bool hinge=false, bool eePos=false, bool eeOri=false, bool dynamical = true, bool removeIfNotInAvatar = false, float massPercent = 10.0f, bool noPhysics = false) {
             hinge = false; // <!!>
 
             // GameObject
@@ -212,61 +239,79 @@ namespace SprUnity {
             }
             bone.removeIfNotInAvatar = removeIfNotInAvatar;
 
-            // Solid
-            bone.solid = obj.AddComponent<PHSolidBehaviour>();
-            bone.solid.lateAwakeStart = true;
-            if (!dynamical) {
-                bone.solid.desc.dynamical = false;
-            }
-            double mass = bodyMass * massPercent * 0.01f;
-            bone.solid.desc.mass = mass;
-            bone.solid.desc.inertia = new Matrix3d(
-                mass, 0, 0,
-                0, mass, 0,
-                0, 0, mass
-            );
-
-            // Shape
-            if (generateShape) {
-                bone.shape = obj.AddComponent<CDRoundConeBehavior>();
-                bone.shape.lateAwakeStart = true;
-            }
-
-            if (parent != null) {
-                // Joint
-                if (hinge) {
-                    bone.joint = obj.AddComponent<PHHingeJointBehaviour>();
-                    ((PHHingeJointBehaviour)(bone.joint)).desc.spring = 200.0f;
-                    ((PHHingeJointBehaviour)(bone.joint)).desc.damper = 20.0f;
-                } else {
-                    bone.joint = obj.AddComponent<PHBallJointBehaviour>();
-                    ((PHBallJointBehaviour)(bone.joint)).desc.spring = 200.0f;
-                    ((PHBallJointBehaviour)(bone.joint)).desc.damper = 20.0f;
+            if (!noPhysics) {
+                // Solid
+                bone.solid = obj.AddComponent<PHSolidBehaviour>();
+                bone.solid.lateAwakeStart = true;
+                if (!dynamical) {
+                    bone.solid.desc.dynamical = false;
                 }
-                bone.joint.lateAwakeStart = true;
-                bone.joint.socket = parent.solid.gameObject;
-                bone.joint.plug = bone.solid.gameObject;
+                double mass = bodyMass * massPercent * 0.01f;
+                bone.solid.desc.mass = mass;
+                bone.solid.desc.inertia = new Matrix3d(
+                    mass, 0, 0,
+                    0, mass, 0,
+                    0, 0, mass
+                );
 
-                // IK Actuator
-                if (hinge) {
-                    var ikAct = obj.AddComponent<PHIKHingeActuatorBehaviour>();
-                    ikAct.desc.pullbackRate = 1.0f;
-                    bone.ikActuator = ikAct;
-                } else {
-                    var ikAct = obj.AddComponent<PHIKBallActuatorBehaviour>();
-                    ikAct.desc.pullbackRate = 1.0f;
-                    bone.ikActuator = ikAct;
+                // Shape
+                if (generateShape) {
+                    bone.shape = obj.AddComponent<CDRoundConeBehavior>();
+                    bone.shape.lateAwakeStart = true;
                 }
-                bone.ikActuator.lateAwakeStart = true;
 
-                // IK Endeffector
-                if (eePos || eeOri) {
-                    bone.ikEndEffector = obj.AddComponent<PHIKEndEffectorBehaviour>();
-                    bone.ikEndEffector.lateAwakeStart = true;
-                    bone.ikEndEffector.desc.bEnabled = (eePos || eeOri);
-                    bone.ikEndEffector.desc.bPosition = eePos;
-                    bone.ikEndEffector.desc.bOrientation = eeOri;
+                if (parent != null) {
+                    // Joint
+                    if (hinge) {
+                        bone.joint = obj.AddComponent<PHHingeJointBehaviour>();
+                        ((PHHingeJointBehaviour)(bone.joint)).desc.spring = 200.0f;
+                        ((PHHingeJointBehaviour)(bone.joint)).desc.damper = 20.0f;
+                    } else {
+                        bone.joint = obj.AddComponent<PHBallJointBehaviour>();
+                        ((PHBallJointBehaviour)(bone.joint)).desc.spring = 200.0f;
+                        ((PHBallJointBehaviour)(bone.joint)).desc.damper = 20.0f;
+                    }
+                    bone.joint.lateAwakeStart = true;
+                    bone.joint.socket = parent.solid.gameObject;
+                    bone.joint.plug = bone.solid.gameObject;
+
+                    // IK Actuator
+                    if (hinge) {
+                        var ikAct = obj.AddComponent<PHIKHingeActuatorBehaviour>();
+                        ikAct.desc.pullbackRate = 1.0f;
+                        bone.ikActuator = ikAct;
+                    } else {
+                        var ikAct = obj.AddComponent<PHIKBallActuatorBehaviour>();
+                        ikAct.desc.pullbackRate = 1.0f;
+                        bone.ikActuator = ikAct;
+                    }
+                    bone.ikActuator.lateAwakeStart = true;
+
+                    // IK Endeffector
+                    if (eePos || eeOri) {
+                        bone.ikEndEffector = obj.AddComponent<PHIKEndEffectorBehaviour>();
+                        bone.ikEndEffector.lateAwakeStart = true;
+                        bone.ikEndEffector.desc.bEnabled = (eePos || eeOri);
+                        bone.ikEndEffector.desc.bPosition = eePos;
+                        bone.ikEndEffector.desc.bOrientation = eeOri;
+                    }
+
+                    // BoneController
+                    if (eePos || eeOri) {
+                        bone.controller = obj.AddComponent<BoneController>();
+                        bone.controller.ikEndEffector = bone.ikEndEffector;
+                    }
                 }
+
+            } else {
+
+                if (parent != null) {
+                    // BoneController
+                    if (eePos || eeOri) {
+                        bone.controller = obj.AddComponent<BoneController>();
+                    }
+                }
+
             }
 
             body.bones.Add(bone);

@@ -27,6 +27,13 @@ namespace SprUnity {
         public PHIKEndEffectorBehaviour ikEndEffector = null;
         public PHIKActuatorBehaviour ikActuator = null;
 
+        // Bone Controller
+        public BoneController controller = null;
+
+        // Spring and Damper Ratio
+        public float springRatio = 1.0f;
+        public float damperRatio = 1.0f;
+
         // Mode of pose synchronize
         public bool syncPosition = false; // shold be true for some bones e.g.) Hips, Leg, Foot
         public bool syncRotation = true;
@@ -39,31 +46,13 @@ namespace SprUnity {
         // Relative Rotation between PHSolid and Avatar Bone
         private Quaternion relativeRotSolidAvatar = Quaternion.identity;
 
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
-        // -> Move to Bone Controller
-        // private double initialSpring = 0.0f;
-        // private double initialDamper = 0.0f;
+        // Initial Spring and Damper
+        private double initialSpring = 0.0f;
+        private double initialDamper = 0.0f;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         void Start() {
-            // -> Move to Bone Controller
-            /*
-            if (joint != null) {
-                PHBallJointBehaviour bj = joint as PHBallJointBehaviour;
-                if (bj != null) {
-                    initialSpring = bj.phBallJoint.GetSpring();
-                    initialDamper = bj.phBallJoint.GetDamper();
-                }
-
-                PHHingeJointBehaviour hj = joint as PHHingeJointBehaviour;
-                if (hj != null) {
-                    initialSpring = hj.phHingeJoint.GetSpring();
-                    initialDamper = hj.phHingeJoint.GetDamper();
-                }
-            }
-            */
         }
 
         void OnDrawGizmos() {
@@ -99,32 +88,16 @@ namespace SprUnity {
             }
         }
 
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        void FixedUpdate() {
+            if (!body.initialized) { return; }
 
-        public void RecordRelativeRotSolidAvatar() {
-            if (avatarBone != null && solid != null) {
-                var so = solid.transform.rotation;
-                var av = avatarBone.transform.rotation;
-                relativeRotSolidAvatar = Quaternion.Inverse(so) * av;
-            }
-        }
+            if (controller != null && controller.bone == null) { controller.bone = this; }
 
-        public void SyncAvatarBoneFromSolid() {
-            if (avatarBone != null && solid != null) {
-                if (syncPosition) {
-                    avatarBone.transform.position = solid.transform.position;
-                }
-                if (syncRotation) {
-                    avatarBone.transform.rotation = solid.transform.rotation * relativeRotSolidAvatar;
-                }
-            }
-        }
+            // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
-        // -> Move to Bone Controller
-        /*
-        public void SetSpringDamperInRatio(Vector2 springDamperInRatio) {
-            var spring = initialSpring * springDamperInRatio[0];
-            var damper = initialDamper * springDamperInRatio[1];
+            // Change Spring and Damper
+            var spring = initialSpring * springRatio;
+            var damper = initialDamper * damperRatio;
 
             if (joint != null) {
                 PHBallJointBehaviour bj = joint as PHBallJointBehaviour;
@@ -146,7 +119,68 @@ namespace SprUnity {
                 }
             }
         }
-        */
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+        public void RecordRelativeRotSolidAvatar() {
+            if (avatarBone != null) {
+                if (solid != null) {
+                    var so = solid.transform.rotation;
+                    var av = avatarBone.transform.rotation;
+                    relativeRotSolidAvatar = Quaternion.Inverse(so) * av;
+                } else {
+                    var so = transform.rotation;
+                    var av = avatarBone.transform.rotation;
+                    relativeRotSolidAvatar = Quaternion.Inverse(so) * av;
+                }
+            }
+        }
+
+        public void SaveInitialSpringDamper() {
+            if (solid != null && solid.phSolid != null) {
+                // Get Initial Spring and Damper
+                if (joint != null) {
+                    PHBallJointBehaviour bj = joint as PHBallJointBehaviour;
+                    if (bj != null) {
+                        initialSpring = bj.phBallJoint.GetSpring();
+                        initialDamper = bj.phBallJoint.GetDamper();
+                    }
+
+                    PHHingeJointBehaviour hj = joint as PHHingeJointBehaviour;
+                    if (hj != null) {
+                        initialSpring = hj.phHingeJoint.GetSpring();
+                        initialDamper = hj.phHingeJoint.GetDamper();
+                    }
+                }
+            }
+        }
+
+        public void InitializeController() {
+            // Initialize Bone Controller
+            if (controller != null) {
+                controller.Initialize();
+            }
+        }
+
+        public void SyncAvatarBoneFromSolid() {
+            if (avatarBone != null) {
+                if (solid != null) {
+                    if (syncPosition) {
+                        avatarBone.transform.position = solid.transform.position;
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = solid.transform.rotation * relativeRotSolidAvatar;
+                    }
+                } else {
+                    if (syncPosition) {
+                        avatarBone.transform.position = transform.position;
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = transform.rotation * relativeRotSolidAvatar;
+                    }
+                }
+            }
+        }
 
     }
 

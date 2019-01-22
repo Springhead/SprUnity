@@ -16,7 +16,7 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(Body))]
     public class BodyEditor : Editor {
-        public bool showBoneList = true;
+        public bool showBoneList = false;
 
         public override void OnInspectorGUI() {
             Body body = (Body)target;
@@ -40,7 +40,7 @@ namespace SprUnity {
             body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
             if (body.fitSpringDamper) {
                 body.momentToSpringCoeff = EditorGUILayout.FloatField("Moment to Spring", body.momentToSpringCoeff);
-                body.springToDamperCoeff = EditorGUILayout.FloatField("Spring to Damper", body.springToDamperCoeff);
+                body.dampingRatio = EditorGUILayout.FloatField("Damping Ratio", body.dampingRatio);
                 body.minSpring = EditorGUILayout.FloatField("Min Spring Value", body.minSpring);
 
                 body.fitIKBiasOnFitSpring = EditorGUILayout.Toggle("Fit IK Bias", body.fitIKBiasOnFitSpring);
@@ -83,20 +83,27 @@ namespace SprUnity {
         public Animator animator = null;
 
         // Fit Target Flag
-        public bool fitSpringDamper = false;
+        public bool fitSpringDamper = true;
         public float momentToSpringCoeff = 500.0f;
-        public float springToDamperCoeff = 0.1f;
+        public float dampingRatio = 1.0f;
         public float minSpring = 100.0f;
 
-        public bool fitIKBiasOnFitSpring = false;
+        public bool fitIKBiasOnFitSpring = true;
         public float momentToSqrtBiasCoeff = 100.0f;
+
+        // Flag
+        public bool initialized = false;
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Controllers
+
+        public LookController lookController = null;
+        public BodyBalancer bodyBalancer = null;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Functions
 
         void Start() {
-            // Record Relative Pose between PHSolid and Avatar
-            RecordRelativeRotSolidAvatar();
         }
 
         void FixedUpdate() {
@@ -139,6 +146,11 @@ namespace SprUnity {
                     var trn = animator.GetBoneTransform(labelToBoneId[bone.label]);
                     if (trn != null) {
                         bone.avatarBone = trn.gameObject;
+                    } else {
+                        var go = FindChildObjectByNameRecursive(bone.label, animator.gameObject);
+                        if (go != null) {
+                            bone.avatarBone = go;
+                        }
                     }
                 }
             }
@@ -184,7 +196,7 @@ namespace SprUnity {
 
             // Fit Center of Mass Position
             foreach (var bone in bones) {
-                if (bone.avatarBone != null) {
+                if (bone.solid != null && bone.avatarBone != null) {
                     Vector3 CoM = bone.transform.position;
                     if (bone.children.Count > 0) {
                         // Have Child
@@ -241,20 +253,22 @@ namespace SprUnity {
 
                 // Sum-up Inertia Moment for each Joint
                 foreach (var bone in bones) {
-                    Vector3 solidCenter = (bone.transform.ToPosed() * bone.solid.desc.center).ToVector3();
-                    var b = bone;
-                    while (b != null) {
-                        Vector3 jointCenter = b.transform.position;
-                        double distance = (solidCenter - jointCenter).magnitude;
-                        inertiaMomentSum[b] += (distance * b.solid.desc.mass);
-                        b = b.parent;
+                    if (bone.solid != null) {
+                        Vector3 solidCenter = (bone.transform.ToPosed() * bone.solid.desc.center).ToVector3();
+                        var b = bone;
+                        while (b != null) {
+                            Vector3 jointCenter = b.transform.position;
+                            double distance = (solidCenter - jointCenter).magnitude;
+                            inertiaMomentSum[b] += (distance * b.solid.desc.mass);
+                            b = b.parent;
+                        }
                     }
                 }
 
                 // Set Spring and Damper
                 foreach (var bone in bones) {
                     float spring = Mathf.Max(minSpring, (float)(inertiaMomentSum[bone]) * momentToSpringCoeff);
-                    float damper = spring * springToDamperCoeff;
+                    float damper = 2 * Mathf.Sqrt(spring * (float)(inertiaMomentSum[bone])) * dampingRatio;
 
                     PHHingeJointBehaviour hj = bone.joint as PHHingeJointBehaviour;
                     if (hj != null) {
@@ -303,8 +317,16 @@ namespace SprUnity {
                 }
             }
 
-            // Re-initialize Relative Rotation Info
+            // Re-initialize Each Bone
             RecordRelativeRotSolidAvatar();
+        }
+
+        public void Initialize() {
+            foreach (var bone in bones) {
+                bone.SaveInitialSpringDamper();
+                bone.InitializeController();
+            }
+            initialized = true;
         }
 
         // ----- ----- ----- ----- -----
@@ -359,6 +381,17 @@ namespace SprUnity {
             if (destroy) {
                 Destroy(bone.gameObject);
             }
+        }
+
+        // Find Child Object by Name
+        private GameObject FindChildObjectByNameRecursive(string name, GameObject root) {
+            if (root.name == name) { return root; }
+            GameObject result = null;
+            for (int i = 0; i < root.transform.childCount; i++) {
+                result = FindChildObjectByNameRecursive(name, root.transform.GetChild(i).gameObject);
+                if (result != null) { return result; }
+            }
+            return null;
         }
 
     }

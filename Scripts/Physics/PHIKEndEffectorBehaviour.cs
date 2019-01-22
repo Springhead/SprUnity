@@ -14,17 +14,20 @@ public class PHIKEndEffectorBehaviourEditor : Editor {
 
         // ----- ----- ----- ----- -----
         // Target Position Handle
-        if (phIKEEBehaviour.iktarget == null) {
-            if (phIKEEBehaviour.phIKEndEffector != null) {
-                Vector3 currTargetPos = phIKEEBehaviour.phIKEndEffector.GetTargetPosition().ToVector3();
-                Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
-                phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
-                phIKEEBehaviour.phIKEndEffector.SetTargetPosition(handlePos.ToVec3d());
+        if (phIKEEBehaviour.showTargetPositionHandle) {
+            Tools.current = Tool.None;
+            if (phIKEEBehaviour.iktarget == null) {
+                if (phIKEEBehaviour.phIKEndEffector != null) {
+                    Vector3 currTargetPos = phIKEEBehaviour.phIKEndEffector.GetTargetPosition().ToVector3();
+                    Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
+                    phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
+                    phIKEEBehaviour.phIKEndEffector.SetTargetPosition(handlePos.ToVec3d());
 
-            } else if (phIKEEBehaviour.desc != null) {
-                Vector3 currTargetPos = ((Vec3d)(phIKEEBehaviour.desc.targetPosition)).ToVector3();
-                Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
-                phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
+                } else if (phIKEEBehaviour.desc != null) {
+                    Vector3 currTargetPos = ((Vec3d)(phIKEEBehaviour.desc.targetPosition)).ToVector3();
+                    Vector3 handlePos = Handles.PositionHandle(currTargetPos, Quaternion.identity);
+                    phIKEEBehaviour.desc.targetPosition = handlePos.ToVec3d();
+                }
             }
         }
     }
@@ -40,6 +43,9 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
     public PHIKEndEffectorDescStruct desc = null;
     public GameObject iktarget = null;
     public GameObject ikLocalTarget = null;
+
+    public bool showTargetPositionHandle = false;
+    public bool showTargetOrientationHandle = false;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト

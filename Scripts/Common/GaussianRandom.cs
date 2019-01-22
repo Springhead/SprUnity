@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace InteraWare {
+namespace SprUnity {
 
     public class GaussianRandom {
 
