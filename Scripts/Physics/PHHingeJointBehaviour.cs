@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using SprUnity;
 using SprCs;
 using System;
 
@@ -47,4 +48,39 @@ public class PHHingeJointBehaviour : PHJointBehaviour {
         return phScene.CreateJoint(soSock, soPlug, PHHingeJointIf.GetIfInfoStatic(), (PHHingeJointDesc)desc);
     }
 
+    // -- プラグ姿勢を取得する
+    public Posed plugPose {
+        get {
+            if (sprObject == null) {
+                if (autoSetSockPlugPose) {
+                    return (jointPosition ? jointPosition.transform : gameObject.transform).ToPosed();
+                } else {
+                   return plug.transform.ToPosed() * desc.posePlug;
+                }
+            } else {
+                PHSolidIf soPlug = phHingeJoint.GetPlugSolid();
+                Posed plugPose = new Posed();
+                phHingeJoint.GetPlugPose(plugPose);
+                return soPlug.GetPose() * plugPose;
+            }
+        }
+    }
+
+    // -- ソケット姿勢を取得する
+    public Posed socketPose {
+        get {
+            if (sprObject == null) {
+                if (autoSetSockPlugPose) {
+                    return (jointPosition ? jointPosition.transform : gameObject.transform).ToPosed();
+                } else {
+                    return socket.transform.ToPosed() * desc.poseSocket;
+                }
+            } else {
+                PHSolidIf soSocket = phHingeJoint.GetSocketSolid();
+                Posed socketPose = new Posed();
+                phHingeJoint.GetSocketPose(socketPose);
+                return soSocket.GetPose() * socketPose;
+            }
+        }
+    }
 }

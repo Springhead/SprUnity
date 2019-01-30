@@ -4,6 +4,9 @@ using SprCs;
 using SprUnity;
 using System;
 
+// CustomEditorは以下に定義
+// SprUnity/Editor/Physics/PHBallJointLimitBehaviorEditor.cs
+
 [DefaultExecutionOrder(5)]
 public class PHBallJointLimitBehavior : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -82,7 +85,7 @@ public class PHBallJointLimitBehavior : SprSceneObjBehaviour {
     }
 
     // 可視化
-    public void OnDrawGizmos() {
+    public void OnDrawGizmos() {/*
         //可動範囲(SwingDirとTwistは無視)の表示
         if (sprObject != null) {
             float length = 0.1f;
@@ -128,6 +131,6 @@ public class PHBallJointLimitBehavior : SprSceneObjBehaviour {
             Vec3d axis = plugPose * (length * new Vec3d(0, 0, 1));
             Gizmos.DrawLine(top, axis.ToVector3());
             //Gizmos.DrawLine(top, bottom);
-        }
+        }*/
     }
 }
