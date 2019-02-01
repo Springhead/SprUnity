@@ -3,8 +3,11 @@ using System.Collections;
 using SprCs;
 using System;
 
+// CustomEditorは以下に定義
+// SprUnity/Editor/Physics/PH1DJointLimitBehaviorEditor.cs
+
 [DefaultExecutionOrder(5)]
-public class PHHingeJointLimitBehavior : SprSceneObjBehaviour {
+public class PH1DJointLimitBehavior : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
 
@@ -12,7 +15,7 @@ public class PHHingeJointLimitBehavior : SprSceneObjBehaviour {
 
     public GameObject jointObject = null;
 
-    public Quaternion rot = new Quaternion(0,0,0,1);
+    public Quaternion rot = new Quaternion(0, 0, 0, 1);
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
@@ -45,12 +48,17 @@ public class PHHingeJointLimitBehavior : SprSceneObjBehaviour {
 
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
-        PHHingeJointIf jo = null;
+        PH1DJointIf jo = null;
 
-        var b = (jointObject ? jointObject : gameObject).GetComponent<PHHingeJointBehaviour>();
-        if (!b) { return null; }
+        PHJointBehaviour b = (jointObject ? jointObject : gameObject).GetComponent<PHHingeJointBehaviour>();
+        if (!b) {
+            b = (jointObject ? jointObject : gameObject).GetComponent<PHSliderJointBehavior>();
+            if (!b) {
+                return null;
+            }
+        }
 
-        jo = b.sprObject as PHHingeJointIf;
+        jo = b.sprObject as PH1DJointIf;
         if (jo == null) { return null; }
 
         PH1DJointLimitIf lim = jo.CreateLimit((PH1DJointLimitDesc)desc);
