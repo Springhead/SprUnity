@@ -44,6 +44,9 @@ namespace SprUnity {
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         // Relative Rotation between PHSolid and Avatar Bone
+
+        // SerializeFieldされていない変数が破棄される
+        [SerializeField]
         private Quaternion relativeRotSolidAvatar = Quaternion.identity;
 
         // Initial Spring and Damper
