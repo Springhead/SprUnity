@@ -3,6 +3,36 @@ using System.Collections;
 using SprCs;
 using SprUnity;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHJointBehaviour))]
+public class PHJointBehaviourEditor : Editor {
+    public void OnSceneGUI() {
+        PHJointBehaviour phJointBehaviour = (PHJointBehaviour)target;
+
+        // ----- ----- ----- ----- -----
+        // Target Position Handle
+        if (phJointBehaviour.showHandle) {
+            Tools.current = Tool.None;
+            // <!!> この方式だと微小変化が常に発生してあまりUndoなどが機能しない
+            Posed objectPose = phJointBehaviour.gameObject.transform.ToPosed();
+            Vector3 currJointPos = (objectPose * phJointBehaviour.jointPosition.ToVec3d()).ToVector3();
+            Quaternion currJointRot = phJointBehaviour.gameObject.transform.rotation * phJointBehaviour.jointOrientation;
+            EditorGUI.BeginChangeCheck();
+            Vector3 handlePos = Handles.PositionHandle(currJointPos, phJointBehaviour.gameObject.transform.rotation);
+            Quaternion handleRot = Handles.RotationHandle(currJointRot, currJointPos);
+            if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(phJointBehaviour, "Joint Pos/Rot Change");
+                phJointBehaviour.jointPosition = Quaternion.Inverse(phJointBehaviour.gameObject.transform.rotation) * (handlePos - phJointBehaviour.gameObject.transform.position);
+                phJointBehaviour.jointOrientation = Quaternion.Inverse(phJointBehaviour.gameObject.transform.rotation) * handleRot;
+            }
+        }
+    }
+}
+
+#endif
+
 public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
@@ -10,7 +40,10 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     public GameObject socket = null;
     public GameObject plug = null;
 
-    public GameObject jointPosition = null;
+    public GameObject jointObject = null;
+    public bool showHandle;
+    public Vector3 jointPosition = new Vector3();
+    public Quaternion jointOrientation =Quaternion.identity;
 
     // 関節で接続された剛体同士の衝突を無効ににするかどうか
     public bool disableCollision = false;
@@ -47,11 +80,16 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
         jo.SetName("jo:" + gameObject.name);
 
         if (autoSetSockPlugPose) {
-            if (jointPosition == null) {
-                jointPosition = gameObject;
+            // priority jointObject > jointPosition/Orientation > gameObject
+            Posed jointPose = new Posed();
+            if (jointObject == null) {
+                jointObject = gameObject;
+                jointPose = jointObject.transform.ToPosed() * new Posed(jointPosition.ToVec3d(), jointOrientation.ToQuaterniond());
+            } else {
+                jointPose = jointObject.transform.ToPosed();
             }
-            jo.SetSocketPose(soSock.GetPose().Inv() * jointPosition.transform.ToPosed());
-            jo.SetPlugPose(soPlug.GetPose().Inv() * jointPosition.transform.ToPosed());
+            jo.SetSocketPose(soSock.GetPose().Inv() * jointPose);
+            jo.SetPlugPose(soPlug.GetPose().Inv() * jointPose);
         }
 
         return jo;

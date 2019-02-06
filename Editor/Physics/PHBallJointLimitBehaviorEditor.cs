@@ -23,44 +23,11 @@ public class PHBallJointLimitBehaviorEditor : Editor {
         PHBallJointBehaviour phBallJointBehaviour = jointObject.GetComponent<PHBallJointBehaviour>();
 
         if (phBallJointBehaviour) {
-            GameObject jointPositionObject = phBallJointBehaviour.jointPosition ? phBallJointBehaviour.jointPosition : phBallJointBehaviour.gameObject;
+            GameObject jointPositionObject = phBallJointBehaviour.jointObject ? phBallJointBehaviour.jointObject : phBallJointBehaviour.gameObject;
             Transform jointTransform = jointPositionObject.transform;
             Posed plugPose = phBallJointBehaviour.plugPose;
             Posed socketPose = phBallJointBehaviour.socketPose;
 
-            /*
-            Vector3 plugPosition;
-            Vector3 socketPosition;
-            Quaternion plugRot;
-            Quaternion socketRot;
-            // 
-            if (limit.sprObject == null) {
-                if (phBallJointBehaviour.autoSetSockPlugPose) {
-                    plugPosition = socketPosition = jointPosition;
-                    plugRot = socketRot = jointPositionObject.transform.rotation;
-                    plugPose = new Posed(plugPosition.ToVec3d(), plugRot.ToQuaterniond());
-                    socketPose = new Posed(socketPosition.ToVec3d(), socketRot.ToQuaterniond());
-                } else {
-                    if (!phBallJointBehaviour.socket) { return; }
-                    if (!phBallJointBehaviour.plug) { return; }
-                    plugPose = phBallJointBehaviour.plug.transform.ToPosed() * phBallJointBehaviour.desc.posePlug;
-                    socketPose = phBallJointBehaviour.socket.transform.ToPosed() * phBallJointBehaviour.desc.poseSocket;
-                    plugPosition = plugPose.Pos().ToVector3();
-                    plugRot = plugPose.Ori().ToQuaternion();
-                    socketPosition = socketPose.Pos().ToVector3();
-                    socketRot = socketPose.Ori().ToQuaternion();
-                }
-            } else {
-                plugRot = jointPositionObject.transform.rotation;
-                phBallJointBehaviour.phBallJoint.GetSocketPose(socketPose);
-                socketPose = phBallJointBehaviour.socket.GetComponent<PHSolidBehaviour>().phSolid.GetPose() * socketPose;
-                plugPose = phBallJointBehaviour.plug.GetComponent<PHSolidBehaviour>().phSolid.GetPose() * plugPose;
-                plugPosition = plugPose.Pos().ToVector3();
-                plugRot = plugPose.Ori().ToQuaternion();
-                socketPosition = socketPose.Pos().ToVector3();
-                socketRot = socketPose.Ori().ToQuaternion();
-            }
-            */
             Vector3 jointPosition = socketPose.Pos().ToVector3();
             Vector3 twistAxis = plugPose.Ori().ToQuaternion() * new Vector3(0, 0, 1);
 
@@ -69,12 +36,15 @@ public class PHBallJointLimitBehaviorEditor : Editor {
             Vec2d swing = limit.desc.limitSwing;
             //Vec2d twist = new Vec2d(); limit.phJointLimit.GetTwistRange(twist);
             Vec2d twist = limit.desc.limitTwist;
+            Vec2i twistRap = new Vec2i((int)((twist[0] + Mathf.PI) / (2 * Mathf.PI)), (int)((twist[0] + Mathf.PI) / (2 * Mathf.PI)));
             Vec3d limitDir = limit.desc.limitDir;
+
+            double currTwistAngle = (phBallJointBehaviour.sprObject != null) ? (phBallJointBehaviour.phBallJoint.GetAngle())[2] : 0;
 
             Color baseColor;
 
-            if(limit.desc.bEnabled && limit.enabled) {
-                if(limit.phJointLimit == null) {
+            if (limit.desc.bEnabled && limit.enabled) {
+                if (limit.phJointLimit == null) {
                     baseColor = Color.green;
                 } else {
                     if (limit.phJointLimit.IsOnLimit()) {
@@ -83,6 +53,7 @@ public class PHBallJointLimitBehaviorEditor : Editor {
                         baseColor = Color.green;
                     }
                 }
+                baseColor.a = 0.3f;
             } else {
                 baseColor = Color.white;
             }
@@ -105,10 +76,16 @@ public class PHBallJointLimitBehaviorEditor : Editor {
             for (int i = 0; i < numDivision; i++) {
                 Handles.DrawLine((socketPose * swingDirBase1).ToVector3(), jointPosition);
                 Handles.DrawLine((socketPose * swingDirBase2).ToVector3(), jointPosition);
-                Handles.DrawLine((socketPose * swingDirBase1).ToVector3(), (socketPose * swingDirBase2).ToVector3());
+                //Handles.DrawLine((socketPose * swingDirBase1).ToVector3(), (socketPose * swingDirBase2).ToVector3());
+                Vector3 arcNormal = Vector3.Cross(((socketPose * swingDirBase1).ToVector3() - jointPosition), ((socketPose * swingDirBase2).ToVector3() - jointPosition));
+                //Handles.DrawWireArc(jointPosition, arcNormal, (socketPose * swingDirBase1).ToVector3() - jointPosition, (float)(swing[1] - swing[0]) * Mathf.Rad2Deg, length);
                 swingDirBase1 = rot * swingDirBase1;
                 swingDirBase2 = rot * swingDirBase2;
             }
+            Vec3d swingCircleCenter1 = socketPose * (length * Mathf.Cos((float)swing[0]) * limitDir);
+            Vec3d swingCircleCenter2 = socketPose * (length * Mathf.Cos((float)swing[1]) * limitDir);
+            Handles.DrawWireDisc(swingCircleCenter1.ToVector3(), swingBaseAxis.ToVector3() - jointPosition, length * Mathf.Abs(Mathf.Sin((float)swing[0])));
+            Handles.DrawWireDisc(swingCircleCenter2.ToVector3(), swingBaseAxis.ToVector3() - jointPosition, length * Mathf.Abs(Mathf.Sin((float)swing[1])));
             Handles.DrawLine(jointPosition, swingBaseAxis.ToVector3());
             // ハンドル
             Vector3 SwingXHandlePos = (socketPose * (length * Mathf.Cos((float)swing[0]) * limitDir)).ToVector3();
@@ -124,15 +101,15 @@ public class PHBallJointLimitBehaviorEditor : Editor {
             // ハンドル
             Vector3 discCenter = (plugPose * new Vec3d(0, 0, lengthTwist)).ToVector3();
             Vector3 discNormal = ((plugPose * new Vec3d(0, 0, lengthTwist)) - plugPose.Pos()).ToVector3();
-            Vector3 currentTwist = ((plugPose * new Vec3d(discRadius + 0.01f, 0, lengthTwist)).ToVector3());
+            Vector3 currentTwist = ((plugPose * new Vec3d((discRadius + 0.01f) * Mathf.Cos((float)currTwistAngle), (discRadius + 0.01f) * Mathf.Sin((float)currTwistAngle), lengthTwist)).ToVector3());
             Vector3 twistXHandlePos = (plugPose * (new Vec3d(0.03 * Mathf.Cos((float)twist[0]), 0.03 * Mathf.Sin((float)twist[0]), lengthTwist))).ToVector3();
             Vector3 twistXHandleDir = (plugPose * (new Vec3d(0.03 * -Mathf.Sin((float)twist[0]), 0.03 * Mathf.Cos((float)twist[0]), 0)) - plugPose.Pos()).ToVector3();
             Vector3 twistYHandlePos = (plugPose * (new Vec3d(0.03 * Mathf.Cos((float)twist[1]), 0.03 * Mathf.Sin((float)twist[1]), lengthTwist))).ToVector3();
             Vector3 twistYHandleDir = (plugPose * (new Vec3d(0.03 * -Mathf.Sin((float)twist[1]), 0.03 * Mathf.Cos((float)twist[1]), 0)) - plugPose.Pos()).ToVector3();
             Handles.DrawWireDisc(discCenter, discNormal, discRadius);
             Handles.DrawSolidArc(discCenter, discNormal, twistXHandlePos - discCenter, (float)(twist[1] - twist[0]) * Mathf.Rad2Deg, discRadius);
-            Vector3 twistX = Handles.Slider2D(twistXHandlePos, twistXHandleDir, twistXHandlePos - discCenter, twistXHandleDir, 0.01f, Handles.ArrowHandleCap, 0f);
-            Vector3 twistY = Handles.Slider2D(twistYHandlePos, twistYHandleDir, twistYHandlePos - discCenter, twistYHandleDir, 0.01f, Handles.ArrowHandleCap, 0f);
+            Vector3 twistX = Handles.Slider2D(twistXHandlePos, twistAxis, twistXHandlePos - discCenter, twistXHandleDir, 0.01f, Handles.CubeHandleCap, 0f);
+            Vector3 twistY = Handles.Slider2D(twistYHandlePos, twistAxis, twistYHandlePos - discCenter, twistYHandleDir, 0.01f, Handles.CubeHandleCap, 0f);
             Handles.color = Color.yellow;
             Handles.DrawLine(discCenter, currentTwist);
             if (twist[0] >= twist[1]) {
@@ -142,21 +119,14 @@ public class PHBallJointLimitBehaviorEditor : Editor {
             }
 
             if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(limit, "Undo Limit Chnage");
                 // Swing
                 limit.desc.limitSwing = new Vec2d(Mathf.Acos((Vector3.Dot((SwingX - socketPose.Pos().ToVector3()), (swingBaseAxis.ToVector3() - socketPose.Pos().ToVector3())) > 0 ? 1 : -1) * Mathf.Max(Mathf.Min((SwingX - socketPose.Pos().ToVector3()).magnitude / length, 1), -1)),
                     Mathf.Acos((Vector3.Dot((SwingY - socketPose.Pos().ToVector3()), (swingBaseAxis.ToVector3() - socketPose.Pos().ToVector3())) > 0 ? 1 : -1) * Mathf.Max(Mathf.Min((SwingY - socketPose.Pos().ToVector3()).magnitude / length, 1), -1)));
                 // Twist
-                float deltaTwistX = Quaternion.Angle(Quaternion.identity, Quaternion.FromToRotation(twistXHandlePos - discCenter, twistX - discCenter)) * Mathf.Deg2Rad;
-                float deltaTwistY = Quaternion.Angle(Quaternion.identity, Quaternion.FromToRotation(twistYHandlePos - discCenter, twistY - discCenter)) * Mathf.Deg2Rad;
-                Debug.Log("deltaTwistX:" + deltaTwistX + " deltaTwistY:" + deltaTwistY);
-                float d;
-                Vector3 a;
-                Quaternion.FromToRotation(twistXHandlePos - discCenter, twistX - discCenter).ToAngleAxis(out d, out a);
-
-                Debug.Log("angle:" + d + " axis:" + a + " axis?:" + (discCenter - plugPose.Pos().ToVector3()).normalized + "?:" + Vector3.Cross(twistXHandlePos - discCenter, twistX - discCenter).normalized);
-                Handles.color = Color.cyan;
-                Handles.DrawLine(discCenter, discCenter + (10 * a));
-                limit.desc.limitTwist = new Vec2d(twist[0] + deltaTwistX, twist[1] + deltaTwistY);
+                float deltaTwistX = Vector3.SignedAngle(twistXHandlePos - discCenter, twistX - discCenter, discCenter - plugPose.Pos().ToVector3()) * Mathf.Deg2Rad;
+                float deltaTwistY = Vector3.SignedAngle(twistYHandlePos - discCenter, twistY - discCenter, discCenter - plugPose.Pos().ToVector3()) * Mathf.Deg2Rad;
+                limit.desc.limitTwist = new Vec2d(deltaTwistX + twist[0], deltaTwistY + twist[1]);
                 limit.OnValidate();
             }
         }

@@ -3,6 +3,18 @@ using System.Collections;
 using SprCs;
 using System;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHSliderJointBehavior))]
+public class PHSliderJointBehaviorEditor : PHJointBehaviourEditor {
+    public void OnSceneGUI() {
+        base.OnSceneGUI();
+    }
+}
+
+#endif
+
 [DefaultExecutionOrder(4)]
 public class PHSliderJointBehavior : PHJointBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----

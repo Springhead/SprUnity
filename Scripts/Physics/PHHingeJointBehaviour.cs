@@ -4,6 +4,18 @@ using SprUnity;
 using SprCs;
 using System;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHHingeJointBehaviour))]
+public class PHHingeJointBehaviourEditor : PHJointBehaviourEditor {
+    public void OnSceneGUI() {
+        base.OnSceneGUI();
+    }
+}
+
+#endif
+
 [DefaultExecutionOrder(4)]
 public class PHHingeJointBehaviour : PHJointBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -53,7 +65,7 @@ public class PHHingeJointBehaviour : PHJointBehaviour {
         get {
             if (sprObject == null) {
                 if (autoSetSockPlugPose) {
-                    return (jointPosition ? jointPosition.transform : gameObject.transform).ToPosed();
+                    return (jointObject ? jointObject.transform.ToPosed() : gameObject.transform.ToPosed() * new Posed(jointPosition.ToVec3d(), jointOrientation.ToQuaterniond()));
                 } else {
                    return plug.transform.ToPosed() * desc.posePlug;
                 }
@@ -71,7 +83,7 @@ public class PHHingeJointBehaviour : PHJointBehaviour {
         get {
             if (sprObject == null) {
                 if (autoSetSockPlugPose) {
-                    return (jointPosition ? jointPosition.transform : gameObject.transform).ToPosed();
+                    return (jointObject ? jointObject.transform.ToPosed() : gameObject.transform.ToPosed() * new Posed(jointPosition.ToVec3d(), jointOrientation.ToQuaterniond()));
                 } else {
                     return socket.transform.ToPosed() * desc.poseSocket;
                 }

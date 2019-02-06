@@ -11,7 +11,7 @@ public class PH1DJointLimitBehaviorEditor : Editor {
     float discRadius = 0.03f;
     // 可視化する軸(zは0)
     Vector3 handDir = new Vector3(1, 0, 0);
-	void OnSceneGUI() {
+    void OnSceneGUI() {
         PH1DJointLimitBehavior limit = (PH1DJointLimitBehavior)target;
         Vec2d range = limit.desc.range;
 
@@ -20,7 +20,7 @@ public class PH1DJointLimitBehaviorEditor : Editor {
         PHHingeJointBehaviour phHingeJointBehaviour = jointObject.GetComponent<PHHingeJointBehaviour>();
 
         if (phHingeJointBehaviour) {
-            GameObject jointPositionObject = phHingeJointBehaviour.jointPosition ? phHingeJointBehaviour.jointPosition : phHingeJointBehaviour.gameObject;
+            GameObject jointPositionObject = phHingeJointBehaviour.jointObject ? phHingeJointBehaviour.jointObject : phHingeJointBehaviour.gameObject;
             Transform jointTransform = jointPositionObject.transform;
             Posed plugPose = phHingeJointBehaviour.plugPose;
             Posed socketPose = phHingeJointBehaviour.socketPose;
@@ -41,6 +41,7 @@ public class PH1DJointLimitBehaviorEditor : Editor {
                         baseColor = Color.green;
                     }
                 }
+                baseColor.a = 0.3f;
             } else {
                 baseColor = Color.white;
             }
@@ -59,15 +60,19 @@ public class PH1DJointLimitBehaviorEditor : Editor {
             Handles.DrawWireDisc(jointPosition, socketRot * new Vector3(0, 0, 1), discRadius);
             Handles.DrawSolidArc(jointPosition, jointAxis, rangeXHandlePos - jointPosition, (float)(range[1] - range[0]) * Mathf.Rad2Deg, discRadius);
 
-            Vector3 rangeX = Handles.Slider2D(rangeXHandlePos, rangeXHandleDir, rangeXHandlePos - jointPosition, rangeXHandleDir, 0.01f, Handles.ArrowHandleCap, 0f);
-            Vector3 rangeY = Handles.Slider2D(rangeYHandlePos, rangeYHandleDir, rangeYHandlePos - jointPosition, rangeYHandleDir, 0.01f, Handles.ArrowHandleCap, 0f);
+            Vector3 rangeX = Handles.Slider2D(rangeXHandlePos, jointAxis, rangeXHandlePos - jointPosition, rangeXHandleDir, 0.01f, Handles.CubeHandleCap, 0f);
+            Vector3 rangeY = Handles.Slider2D(rangeYHandlePos, jointAxis, rangeYHandlePos - jointPosition, rangeYHandleDir, 0.01f, Handles.CubeHandleCap, 0f);
 
             Handles.color = Color.yellow;
             Vector3 currentHand = plugPosition + (plugRot * ((discRadius + 0.01f) * handDir));
             Handles.DrawLine(plugPosition, currentHand);
 
             if (EditorGUI.EndChangeCheck()) {
-
+                Undo.RecordObject(limit, "Undo Limit Chnage");
+                float deltaRangeX = Vector3.SignedAngle(rangeXHandlePos - jointPosition, rangeX - jointPosition, jointAxis) * Mathf.Deg2Rad;
+                float deltaRangeY = Vector3.SignedAngle(rangeYHandlePos - jointPosition, rangeY - jointPosition, jointAxis) * Mathf.Deg2Rad;
+                limit.desc.range = new Vec2d(deltaRangeX + range[0], deltaRangeY + range[1]);
+                limit.OnValidate();
             }
         }
         // Slider
