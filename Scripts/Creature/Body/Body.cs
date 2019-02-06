@@ -21,6 +21,11 @@ namespace SprUnity {
         public override void OnInspectorGUI() {
             Body body = (Body)target;
 
+            EditorGUILayout.PrefixLabel("Root Bone");
+            body.rootBone = EditorGUILayout.ObjectField(body.rootBone, typeof(Bone), true) as Bone;
+
+            EditorGUILayout.Space();
+
             // ----- ----- ----- ----- -----
             // Bone List
             showBoneList = EditorGUILayout.Foldout(showBoneList, "Bones");
@@ -36,6 +41,7 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
             // Select Animator(with Avatar) and Fit to Avatar Button
+            EditorGUILayout.PrefixLabel("Avatar Animator");
             body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
             body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
             if (body.fitSpringDamper) {
