@@ -11,6 +11,7 @@ namespace SprUnity {
 
     // Bodyの骨組みを生成するクラス
     // -- 基本的にはBodyはprefab化されたものを使うが、そのprefab自体を作成する時に用いる補助クラス
+    // -- あまり一般ユーザが使うことを想定はしていないので普通はprefabの方を使うこと
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(BodyGenerator))]
@@ -23,6 +24,10 @@ namespace SprUnity {
 
             if (GUILayout.Button("Generate")) {
                 bodyGen.Generate();
+            }
+
+            if (GUILayout.Button("Add Collision")) {
+                bodyGen.GenerateCollision();
             }
         }
     }
@@ -40,7 +45,7 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
-        private Body body;
+        public Body body;
 
         // ----- ----- ----- ----- -----
 
@@ -317,6 +322,15 @@ namespace SprUnity {
             body.bones.Add(bone);
 
             return bone;
+        }
+
+        public void GenerateCollision() {
+            foreach (var bone in body.bones) {
+                bone.gameObject.AddComponent<MeshRoundCone>();
+                var cdRoundConeBehaviour = bone.gameObject.AddComponent<CDRoundConeBehavior>();
+
+                
+            }
         }
 
     }

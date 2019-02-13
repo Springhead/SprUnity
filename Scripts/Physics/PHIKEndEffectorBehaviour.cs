@@ -8,6 +8,7 @@ using System;
 using UnityEditor;
 
 [CustomEditor(typeof(PHIKEndEffectorBehaviour))]
+[CanEditMultipleObjects]
 public class PHIKEndEffectorBehaviourEditor : Editor {
     public void OnSceneGUI() {
         PHIKEndEffectorBehaviour phIKEEBehaviour = (PHIKEndEffectorBehaviour)target;

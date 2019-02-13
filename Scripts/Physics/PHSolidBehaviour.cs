@@ -7,6 +7,27 @@ using System.Reflection;
 using SprCs;
 using SprUnity;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(PHSolidBehaviour))]
+[CanEditMultipleObjects]
+public class PHSolidBehaviourEditor : Editor {
+    public void OnSceneGUI() {
+        PHSolidBehaviour pHSolidBehaviour = (PHSolidBehaviour)target;
+
+        // ----- ----- ----- ----- -----
+        // Fixed Solid Position Handle
+        if (pHSolidBehaviour.fixedSolid) {
+            Tools.current = Tool.None;
+            pHSolidBehaviour.fixedSolidPosition = Handles.PositionHandle(pHSolidBehaviour.fixedSolidPosition, Quaternion.identity);
+            pHSolidBehaviour.fixedSolidRotation = Handles.RotationHandle(pHSolidBehaviour.fixedSolidRotation, pHSolidBehaviour.fixedSolidPosition);
+        }
+    }
+}
+
+#endif
+
 [DefaultExecutionOrder(2)]
 public class PHSolidBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -16,6 +37,12 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public GameObject centerOfMass = null;
 
     public bool fixedSolid = false;
+
+    [HideInInspector]
+    public Vector3 fixedSolidPosition = new Vector3();
+
+    [HideInInspector]
+    public Quaternion fixedSolidRotation = new Quaternion();
 
     // このGameObjectがScene Hierarchyでどれくらいの深さにあるか。浅いものから順にUpdatePoseするために使う
     [HideInInspector]
@@ -55,6 +82,9 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         so.SetName("so:" + gameObject.name);
 		so.SetPose (gameObject.transform.ToPosed());
 
+        fixedSolidPosition = gameObject.transform.position;
+        fixedSolidRotation = gameObject.transform.rotation;
+
         // Scene Hierarchyでの深さを取得した上でPHSceneBehaviourに登録
         var t = transform;
         while (t.parent != null) { treeDepth++; t = t.parent; }
@@ -90,12 +120,23 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public void UpdatePose () {
         if (sprObject != null) {
             PHSolidIf so = sprObject as PHSolidIf;
-            if (!so.IsDynamical() && !fixedSolid) {
-                // Dynamicalでない（かつ、fixedでもない）剛体はUnityの位置をSpringheadに反映（操作可能）
-                so.SetPose(gameObject.transform.ToPosed());
+            if (fixedSolid) {
+                // Fixedな剛体はHandleの位置をSpringheadに反映
+                so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
+
             } else {
-                // Dynamicalな（もしくはfixedな）剛体はSpringheadのシミュレーション結果をUnityに反映
-                gameObject.transform.FromPosed(so.GetPose());
+                // Fixedでない剛体の場合
+
+                if (!so.IsDynamical()) {
+                    // Dynamicalでない剛体はUnityの位置をSpringheadに反映（操作可能）
+                    so.SetPose(gameObject.transform.ToPosed());
+                } else {
+                    // Dynamicalな剛体はSpringheadのシミュレーション結果をUnityに反映
+                    gameObject.transform.FromPosed(so.GetPose());
+                }
+
+                fixedSolidPosition = gameObject.transform.position;
+                fixedSolidRotation = gameObject.transform.rotation;
             }
         }
 	}

@@ -17,23 +17,28 @@ namespace SprUnity {
     [CustomEditor(typeof(Body))]
     public class BodyEditor : Editor {
         public bool showBoneList = false;
+        public bool showFitting = true;
 
         public override void OnInspectorGUI() {
             Body body = (Body)target;
-
-            EditorGUILayout.PrefixLabel("Root Bone");
-            body.rootBone = EditorGUILayout.ObjectField(body.rootBone, typeof(Bone), true) as Bone;
-
-            EditorGUILayout.Space();
 
             // ----- ----- ----- ----- -----
             // Bone List
             showBoneList = EditorGUILayout.Foldout(showBoneList, "Bones");
             if (showBoneList) {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Root Bone");
+                body.rootBone = EditorGUILayout.ObjectField(body.rootBone, typeof(Bone), true) as Bone;
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.Space();
+
                 foreach (var bone in body.bones) {
-                    EditorGUILayout.LabelField(bone.label);
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.PrefixLabel(bone.label);
                     EditorGUILayout.ObjectField(bone, typeof(Bone), true);
                     bone.avatarBone = EditorGUILayout.ObjectField(bone.avatarBone, typeof(GameObject), true) as GameObject;
+                    EditorGUILayout.EndHorizontal();
                 }
             }
 
@@ -41,22 +46,24 @@ namespace SprUnity {
 
             // ----- ----- ----- ----- -----
             // Select Animator(with Avatar) and Fit to Avatar Button
-            EditorGUILayout.PrefixLabel("Avatar Animator");
-            body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
-            body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
-            if (body.fitSpringDamper) {
-                body.momentToSpringCoeff = EditorGUILayout.FloatField("Moment to Spring", body.momentToSpringCoeff);
-                body.dampingRatio = EditorGUILayout.FloatField("Damping Ratio", body.dampingRatio);
-                body.minSpring = EditorGUILayout.FloatField("Min Spring Value", body.minSpring);
+            showFitting = EditorGUILayout.Foldout(showFitting, "Fitting");
+            if (showFitting) {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Avatar Animator");
+                body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
+                EditorGUILayout.EndHorizontal();
+                body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
+                if (body.fitSpringDamper) {
+                    body.momentToSpringCoeff = EditorGUILayout.FloatField("Moment to Spring", body.momentToSpringCoeff);
+                    body.dampingRatio = EditorGUILayout.FloatField("Damping Ratio", body.dampingRatio);
+                    body.minSpring = EditorGUILayout.FloatField("Min Spring Value", body.minSpring);
 
-                body.fitIKBiasOnFitSpring = EditorGUILayout.Toggle("Fit IK Bias", body.fitIKBiasOnFitSpring);
-                if (body.fitIKBiasOnFitSpring) {
-                    body.momentToSqrtBiasCoeff = EditorGUILayout.FloatField("Moment to Sqrt(Bias)", body.momentToSqrtBiasCoeff);
+                    body.fitIKBiasOnFitSpring = EditorGUILayout.Toggle("Fit IK Bias", body.fitIKBiasOnFitSpring);
+                    if (body.fitIKBiasOnFitSpring) {
+                        body.momentToSqrtBiasCoeff = EditorGUILayout.FloatField("Moment to Sqrt(Bias)", body.momentToSqrtBiasCoeff);
+                    }
                 }
-            }
-
-            if (GUILayout.Button("Fit To Avatar")) {
-                body.FitToAvatar();
+                if (GUILayout.Button("Fit To Avatar")) { body.FitToAvatar(); }
             }
 
             /*
@@ -327,6 +334,7 @@ namespace SprUnity {
             RecordRelativeRotSolidAvatar();
         }
 
+        // Initialize Body : Must be called after fitting
         public void Initialize() {
             foreach (var bone in bones) {
                 bone.SaveInitialSpringDamper();
@@ -334,6 +342,8 @@ namespace SprUnity {
             }
             initialized = true;
         }
+
+        // 
 
         // ----- ----- ----- ----- -----
         // Private Functions

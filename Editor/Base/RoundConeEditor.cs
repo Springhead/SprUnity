@@ -12,46 +12,56 @@ public class RoundConeEditor : Editor {
     void OnSceneGUI () {
         MeshRoundCone mrc = target as MeshRoundCone;
         Transform trans = mrc.gameObject.transform;
+        float scale = (trans.lossyScale.x + trans.lossyScale.y + trans.lossyScale.z) / 3.0f;
+
+        mrc.UpdateR1R2HandlePosition();
 
         float defLeng = HandleUtility.GetHandleSize(Vector3.left);
-        Vector3 pos = trans.position;
-        Vector3 scale = trans.localScale;
-        Quaternion rot = trans.rotation;
-
-        float offset1, offset2;
-        if (mrc.pivot == MeshRoundCone.Pivot.Center) {
-            offset1 = -0.5f * mrc.length;
-            offset2 = +0.5f * mrc.length;
-        } else if (mrc.pivot == MeshRoundCone.Pivot.R1) {
-            offset1 = 0;
-            offset2 = mrc.length;
-        } else {
-            offset1 = -mrc.length;
-            offset2 = 0;
-        }
 
         EditorGUI.BeginChangeCheck();
-        float r1 = Handles.RadiusHandle(rot, pos + rot * new Vector3(offset1, 0, 0), mrc.r1);
+        float r1 = Handles.RadiusHandle(trans.rotation, mrc.positionR1, mrc.r1 * scale);
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(target, "Change Radius 1");
-            mrc.r1 = r1;
+            mrc.r1 = r1 / scale;
             mrc.Reshape();
         }
 
         EditorGUI.BeginChangeCheck();
-        float r2 = Handles.RadiusHandle(rot, pos + rot * new Vector3(offset2, 0, 0), mrc.r2);
+        float r2 = Handles.RadiusHandle(trans.rotation, mrc.positionR2, mrc.r2 * scale);
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(target, "Change Radius 2");
-            mrc.r2 = r2;
+            mrc.r2 = r2 / scale;
             mrc.Reshape();
         }
 
         EditorGUI.BeginChangeCheck();
-        float length = Handles.ScaleSlider(mrc.length, pos, rot * new Vector3(0, 1, 0), rot, 1, 0.5f);
+        float length = Handles.ScaleSlider(mrc.length * scale, trans.position, trans.rotation * new Vector3(0, 1, 0), trans.rotation, 1, 0.5f);
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(target, "Change Length");
-            mrc.length = length;
+            mrc.length = length / scale;
             mrc.Reshape();
+        }
+
+        if (mrc.pivot != MeshRoundCone.Pivot.R1) {
+            EditorGUI.BeginChangeCheck();
+            Vector3 positionR1 = Handles.PositionHandle(mrc.positionR1, Quaternion.identity);
+            if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(target, "Change R1 Position");
+                mrc.positionR1 = positionR1;
+                mrc.Reposition();
+                mrc.Reshape();
+            }
+        }
+
+        if (mrc.pivot != MeshRoundCone.Pivot.R2) {
+            EditorGUI.BeginChangeCheck();
+            Vector3 positionR2 = Handles.PositionHandle(mrc.positionR2, Quaternion.identity);
+            if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(target, "Change R2 Position");
+                mrc.positionR2 = positionR2;
+                mrc.Reposition();
+                mrc.Reshape();
+            }
         }
     }
 }
