@@ -254,28 +254,40 @@ namespace SprUnity {
             }
 
             // -- Fit Collision Shape Length
-            // <TBD>
+            foreach (var bone in bones) {
+                if (bone.shape != null) {
+                    var shapeObj = bone.shape.shapeObject;
+                    if (shapeObj == null) { shapeObj = bone.shape.gameObject; }
+
+                    var meshRoundCone = shapeObj.GetComponent<MeshRoundCone>();
+                    if (meshRoundCone != null) {
+                        meshRoundCone.pivot = MeshRoundCone.Pivot.R1;
+                        meshRoundCone.positionR1 = bone.transform.position;
+
+                        if (bone.children.Count > 0) {
+                            Vector3 averagePos = new Vector3();
+                            foreach (var child in bone.children) {
+                                averagePos += child.transform.position;
+                            }
+                            averagePos /= bone.children.Count;
+                            meshRoundCone.positionR2 = averagePos;
+
+                        } else {
+                            meshRoundCone.positionR2 = bone.transform.position;
+                        }
+
+                        meshRoundCone.Reposition();
+                        meshRoundCone.Reshape();
+                    }
+                }
+            }
 
             // Auto Set Spring and Damper
             if (fitSpringDamper) {
-                // Initialize Moment Sum Table
+                // Sum-up Inertia Moment for each Joint
                 Dictionary<Bone, double> inertiaMomentSum = new Dictionary<Bone, double>();
                 foreach (var bone in bones) {
-                    inertiaMomentSum[bone] = 0.0f;
-                }
-
-                // Sum-up Inertia Moment for each Joint
-                foreach (var bone in bones) {
-                    if (bone.solid != null) {
-                        Vector3 solidCenter = (bone.transform.ToPosed() * bone.solid.desc.center).ToVector3();
-                        var b = bone;
-                        while (b != null) {
-                            Vector3 jointCenter = b.transform.position;
-                            double distance = (solidCenter - jointCenter).magnitude;
-                            inertiaMomentSum[b] += (distance * b.solid.desc.mass);
-                            b = b.parent;
-                        }
-                    }
+                    inertiaMomentSum[bone] = CompInertiaMomentSumRecursive(bone);
                 }
 
                 // Set Spring and Damper
@@ -410,6 +422,20 @@ namespace SprUnity {
             return null;
         }
 
+        private double CompInertiaMomentSumRecursive(Bone bone, Bone centerBone = null) {
+            double inertiaMomentSum = 0;
+            if (centerBone == null) { centerBone = bone; }
+            if (bone.solid != null) {
+                Vector3 solidCenter = (bone.transform.ToPosed() * bone.solid.desc.center).ToVector3();
+                Vector3 jointCenter = centerBone.transform.position;
+                double distance = (solidCenter - jointCenter).magnitude;
+                inertiaMomentSum += (distance * distance * bone.solid.desc.mass);
+            }
+            foreach (var child in bone.children) {
+                inertiaMomentSum += CompInertiaMomentSumRecursive(child, centerBone);
+            }
+            return inertiaMomentSum;
+        }
     }
 
 }

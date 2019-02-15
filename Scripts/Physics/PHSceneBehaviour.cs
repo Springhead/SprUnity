@@ -11,10 +11,69 @@ using UnityEditor;
 [CustomEditor(typeof(PHSceneBehaviour))]
 public class PHSceneBehaviourEditor : Editor {
 
+    public bool showCollision = false;
+
     public override void OnInspectorGUI() {
         PHSceneBehaviour phSceneBehaviour = (PHSceneBehaviour)target;
 
         DrawDefaultInspector();
+
+        showCollision = EditorGUILayout.Foldout(showCollision, "Collision Setting");
+        if (showCollision) {
+            int i = 0;
+            List<PHSceneBehaviour.CollisionSetting> removeList = new List<PHSceneBehaviour.CollisionSetting>();
+            foreach (var collisionItem in phSceneBehaviour.collisionList) {
+                i++;
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Rule " + i + ":");
+                if (GUILayout.Button(" - ")) {
+                    removeList.Add(collisionItem);
+                }
+                if (GUILayout.Button(" ↑ ")) {
+                    // -- TBD --
+                }
+                if (GUILayout.Button(" ↓ ")) {
+                    // -- TBD -- 
+                }
+                EditorGUILayout.EndHorizontal();
+
+                // -----
+
+                EditorGUILayout.BeginHorizontal();
+                collisionItem.targetSetMode1 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 1", collisionItem.targetSetMode1));
+                if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
+                    collisionItem.solid1 = EditorGUILayout.ObjectField(collisionItem.solid1, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                } else if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
+                    collisionItem.solid1Pattern = EditorGUILayout.TextField(collisionItem.solid1Pattern);
+                }
+                EditorGUILayout.EndHorizontal();
+
+                // --
+
+                EditorGUILayout.BeginHorizontal();
+                collisionItem.targetSetMode2 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 2", collisionItem.targetSetMode2));
+                if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
+                    collisionItem.solid2 = EditorGUILayout.ObjectField(collisionItem.solid2, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                } else if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
+                    collisionItem.solid2Pattern = EditorGUILayout.TextField(collisionItem.solid2Pattern);
+                }
+                EditorGUILayout.EndHorizontal();
+
+                // -----
+
+                collisionItem.mode = (PHSceneDesc.ContactMode)(EditorGUILayout.EnumPopup("Contact Mode", collisionItem.mode));
+            }
+
+            foreach (var removeItem in removeList) {
+                phSceneBehaviour.collisionList.Remove(removeItem);
+            }
+
+            if (GUILayout.Button("Add Collision Rule")) {
+                phSceneBehaviour.collisionList.Add(new PHSceneBehaviour.CollisionSetting());
+            }
+        }
+
+        EditorGUILayout.Space();
 
         if (GUILayout.Button("Late Awake/Start")) {
             SprBehaviour.ExecLateAwakeStart();
@@ -41,12 +100,22 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableUpdate = true;
 
     [Serializable]
-    public struct CollisionSetting {
-        public PHSolidBehaviour solid1;
-        public PHSolidBehaviour solid2;
-        public PHSceneDesc.ContactMode mode;
+    public class CollisionSetting {
+        public enum CollisionTargetSettingMode { All, One, NameMatching };
+
+        public CollisionTargetSettingMode targetSetMode1 = CollisionTargetSettingMode.All;
+        public PHSolidBehaviour solid1 = null;
+        public string solid1Pattern = "";
+
+        public CollisionTargetSettingMode targetSetMode2 = CollisionTargetSettingMode.All;
+        public PHSolidBehaviour solid2 = null;
+        public string solid2Pattern = "";
+
+        public PHSceneDesc.ContactMode mode = PHSceneDesc.ContactMode.MODE_LCP;
     }
-    public List<CollisionSetting> collision = new List<CollisionSetting>();
+    [HideInInspector]
+    public List<CollisionSetting> collisionList = new List<CollisionSetting>();
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -170,17 +239,68 @@ public class PHSceneBehaviour : SprBehaviour {
 
         // <!!> PHJointBehaviourのdisableCollisionと衝突するので要検討
         if (sprObject != null) {
-            for (int i = 0; i < collision.Count; i++) {
-                CollisionSetting c = collision[i];
+            for (int i = 0; i < collisionList.Count; i++) {
+                CollisionSetting c = collisionList[i];
+
+                // -----
+
+                List<PHSolidBehaviour> solid1s = new List<PHSolidBehaviour>();
+                List<PHSolidBehaviour> solid2s = new List<PHSolidBehaviour>();
+
+                if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.One) {
+                    solid1s.Add(c.solid1);
+                } else if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
+                    // -- TBD
+                }
+
+                if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.One) {
+                    solid1s.Add(c.solid2);
+                } else if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
+                    // -- TBD
+                }
+
+                // -----
+
+                if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.All &&
+                    c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.All) {
+                    phScene.SetContactMode(c.mode);
+
+                } else if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.All) {
+                    foreach (var solid2 in solid2s) {
+                        if (solid2.sprObject != null) {
+                            phScene.SetContactMode(solid2.phSolid, c.mode);
+                        }
+                    }
+
+                } else if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.All) {
+                    foreach (var solid1 in solid1s) {
+                        if (solid1.sprObject != null) {
+                            phScene.SetContactMode(solid1.phSolid, c.mode);
+                        }
+                    }
+
+                } else {
+                    foreach (var solid1 in solid1s) {
+                        foreach (var solid2 in solid2s) {
+                            if (solid1.sprObject != null && solid2.sprObject != null) {
+                                phScene.SetContactMode(solid1.phSolid, solid2.phSolid, c.mode);
+                            }
+                        }
+                    }
+
+                }
+
+                /*
                 if (c.solid1 == null && c.solid2 == null) {
                     phScene.SetContactMode(c.mode);
                 } else if (c.solid1 == null) {
                     if (c.solid2.sprObject != null) phScene.SetContactMode(c.solid2.phSolid, c.mode);
                 } else if (c.solid2 == null) {
-                    if(c.solid1.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.mode);
+                    if (c.solid1.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.mode);
                 } else {
                     if (c.solid1.sprObject != null && c.solid2.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.solid2.phSolid, c.mode);
                 }
+                */
             }
         }
     }

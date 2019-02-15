@@ -72,12 +72,14 @@ public abstract class SprBehaviour : SprBehaviourBase {
         while (lateAwakeQueue.Count > 0) {
             var sprBehaviour = lateAwakeQueue.Dequeue();
             if (sprBehaviour != null) {
+                // print("Awake : " + sprBehaviour.name);
                 sprBehaviour.AwakeImpl(fromLateExecQueue: true);
             }
         }
         while (lateStartQueue.Count > 0) {
             var sprBehaviour = lateStartQueue.Dequeue();
             if (sprBehaviour != null) {
+                // print("Start : " + sprBehaviour.name);
                 sprBehaviour.StartImpl(fromLateExecQueue: true);
             }
         }
@@ -125,6 +127,7 @@ public abstract class SprBehaviour : SprBehaviourBase {
             if (!awakeCalled && GetDescStruct() != null) {
                 if (!enabled) { return; }
                 sprObject = Build();
+                // print(name + " : sprObject = " + sprObject.ToString());
                 sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
                 awakeCalled = true;
             }

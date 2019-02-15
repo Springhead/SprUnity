@@ -34,6 +34,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     // メンバ変数
 
     public PHSolidDescStruct desc;
+    public bool autoSetInertiaTensor = false;
     public GameObject centerOfMass = null;
 
     public bool fixedSolid = false;
@@ -93,6 +94,69 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         UpdateCenterOfMass();
 
         return so;
+    }
+
+    // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
+    public override void Link() {
+        if (sprObject == null) { return; }
+
+        // 慣性テンソルを自動決定する
+        if (autoSetInertiaTensor && phSolid.NShape() > 0) {
+            float totalVolume = 0;
+            for (int i = 0; i < phSolid.NShape(); i++) {
+                var shape = phSolid.GetShape(i);
+                totalVolume += shape.CalcVolume();
+            }
+            for (int i = 0; i < phSolid.NShape(); i++) {
+                var shape = phSolid.GetShape(i);
+                shape.SetDensity((float)(phSolid.GetMass()) / totalVolume);
+            }
+            phSolid.CompInertia();
+
+            // --
+
+            // <!!> SpineとShoulderはCompInertiaすると落ちるのでデバッグ中
+            if (name == "Spine" || name.Contains("Shoulder")) {
+                var I = phSolid.GetInertia();
+                string str = name + " : \r\n";
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        str += I[i][j].ToString("F4") + ", ";
+                    }
+                    str += "\r\n";
+                }
+
+                CDRoundConeIf rc = phSolid.GetShape(0) as CDRoundConeIf;
+                if (rc != null) {
+                    float mass = (float)(phSolid.GetMass());
+                    float radius = (rc.GetRadius().x + rc.GetRadius().y) * 0.5f;
+                    float length = rc.GetLength() + rc.GetRadius().x + rc.GetRadius().y;
+                    float Ix = 0.5f * mass * radius * radius;
+                    float Iy = mass * ((radius * radius / 4.0f) + (length * length / 12.0f));
+                    float Iz = Iy;
+                    phSolid.SetInertia(new Matrix3d(Ix, 0, 0, 0, Iy, 0, 0, 0, Iz));
+                }
+
+                I = phSolid.GetInertia();
+                str += "\r\n";
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        str += I[i][j].ToString("F4") + ", ";
+                    }
+                    str += "\r\n";
+                }
+                Debug.Log(str);
+            }
+
+            // --
+
+            PHSolidDesc desc_ = new PHSolidDesc();
+            phSolid.GetDesc(desc_);
+            desc = desc_;
+        }
+
+        //float I = (float)(phSolid.GetMass());
+        //phSolid.SetInertia(new Matrix3d(I, 0, 0, 0, I, 0, 0, 0, I));
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----

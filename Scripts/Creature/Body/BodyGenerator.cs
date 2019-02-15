@@ -326,10 +326,47 @@ namespace SprUnity {
 
         public void GenerateCollision() {
             foreach (var bone in body.bones) {
-                bone.gameObject.AddComponent<MeshRoundCone>();
-                var cdRoundConeBehaviour = bone.gameObject.AddComponent<CDRoundConeBehavior>();
+                PHBallJointBehaviour phBallJointBehaviour = bone.joint as PHBallJointBehaviour;
+                if (phBallJointBehaviour != null) {
+                    phBallJointBehaviour.disableCollision = true;
+                }
+                PHHingeJointBehaviour phHingeJointBehaviour = bone.joint as PHHingeJointBehaviour;
+                if (phHingeJointBehaviour != null) {
+                    phHingeJointBehaviour.disableCollision = true;
+                }
+                var cdRoundConeBehaviour = bone.gameObject.GetComponent<CDRoundConeBehavior>();
+                if (cdRoundConeBehaviour != null) {
+                    bone.shape = cdRoundConeBehaviour;
+                }
 
-                
+                /*
+                var cdRoundConeBehaviour = bone.gameObject.GetComponent<CDRoundConeBehavior>();
+                if (cdRoundConeBehaviour != null) {
+                    cdRoundConeBehaviour.lateAwakeStart = true;
+                }
+                */
+
+                /*
+                var collisionObj = new GameObject(bone.name + "Collision");
+                collisionObj.transform.parent = bone.transform;
+
+                var meshRoundCone = collisionObj.gameObject.AddComponent<MeshRoundCone>();
+
+                var cdRoundConeBehaviour = bone.gameObject.AddComponent<CDRoundConeBehavior>();
+                cdRoundConeBehaviour.shapeObject = meshRoundCone.gameObject;
+
+                meshRoundCone.pivot = MeshRoundCone.Pivot.R1;
+                meshRoundCone.positionR1 = bone.transform.position;
+                if (bone.children.Count > 0) {
+                    meshRoundCone.positionR2 = bone.children[0].transform.position;
+                } else {
+                    meshRoundCone.positionR2 = bone.transform.position;
+                }
+                meshRoundCone.r1 = 0.02f;
+                meshRoundCone.r2 = 0.02f;
+                meshRoundCone.Reposition();
+                meshRoundCone.Reshape();
+                */
             }
         }
 
