@@ -22,6 +22,8 @@ namespace SprUnity {
         public override void OnInspectorGUI() {
             Body body = (Body)target;
 
+            body.initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
+
             // ----- ----- ----- ----- -----
             // Bone List
             showBoneList = EditorGUILayout.Foldout(showBoneList, "Bones");
@@ -104,6 +106,8 @@ namespace SprUnity {
         public bool fitIKBiasOnFitSpring = true;
         public float momentToSqrtBiasCoeff = 100.0f;
 
+        public bool initializeOnStart = false;
+
         // Flag
         public bool initialized = false;
 
@@ -117,6 +121,9 @@ namespace SprUnity {
         // MonoBehaviour Functions
 
         void Start() {
+            if (initializeOnStart) {
+                Initialize();
+            }
         }
 
         void FixedUpdate() {
