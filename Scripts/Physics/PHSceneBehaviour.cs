@@ -262,7 +262,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 }
 
                 if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.One) {
-                    solid1s.Add(c.solid2);
+                    solid2s.Add(c.solid2);
                 } else if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
                     // -- TBD
                 }
