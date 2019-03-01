@@ -126,6 +126,7 @@ public class BoneKeyPose {
     public Quaternion localRotation = Quaternion.identity;
     public bool usePosition = true;
     public bool useRotation = true;
+    public float lookAtRatio = 0;
 
     public void ConvertLocalToWorld(Body body = null) {
         if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
@@ -223,7 +224,9 @@ public class KeyPose : ScriptableObject {
         }
     }
 
-    public void Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1) {
+    public void Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
+        if (!rotate.HasValue) { rotate = Quaternion.identity; }
+        
         if (duration < 0) { duration = testDuration; }
         if (startTime < 0) { startTime = 0; }
         if (spring < 0) { spring = testSpring; }
@@ -234,7 +237,8 @@ public class KeyPose : ScriptableObject {
             foreach (var boneKeyPose in boneKeyPoses) {
                 if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
                     Bone bone = body[boneKeyPose.boneId];
-                    var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
+                    Quaternion ratioRotate = Quaternion.Slerp(Quaternion.identity, (Quaternion)rotate, boneKeyPose.lookAtRatio);
+                    var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
                     if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                         Bone baseBone = body[boneKeyPose.coordinateParent];
                         pose.position = baseBone.transform.position + baseBone.transform.rotation * boneKeyPose.localPosition;
