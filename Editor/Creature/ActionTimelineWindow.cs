@@ -301,6 +301,10 @@ public class ActionTimelineWindow : EditorWindow {
         DrawBone();
     }
 
+    public void OnSceneGUI(SceneView sceneView) {
+
+    }
+
     void DrawSpringDamperGraph(Rect area = new Rect()) {
         GUILayout.BeginArea(new Rect(0, 0, this.position.width, this.position.height / 3));
         GUILayout.Label("Spring & Damper");

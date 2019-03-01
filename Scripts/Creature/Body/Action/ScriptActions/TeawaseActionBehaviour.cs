@@ -111,6 +111,10 @@ public class TeawaseActionBehaviour : ScriptableAction {
         //GameObject.Find("LeftHandForwardQuick/Left").transform.position = leftOnlyTouchTarget;
         
     }
+
+    void OnDisable() {
+        continueBothForward = false;
+    }
     
     public void BothForward() {
         continueBothForward = true;
@@ -157,10 +161,10 @@ public class TeawaseActionBehaviour : ScriptableAction {
         }
         body[HumanBodyBones.Hips].controller.AddSubMovement(hipsPose, new Vector2(0.5f, 0.3f), 0.8f, 0.8f);
         if (bothForwardLeftEnable) {
-            body[HumanBodyBones.LeftHand].controller.AddSubMovement(new Pose(leftTouchTargetLPF, leftHandRot), new Vector2(0.5f, 0.3f), 1.5f, 1.5f);
+            body[HumanBodyBones.LeftHand].controller.AddSubMovement(new Pose(leftTouchTargetLPF, leftHandRot), new Vector2(1.0f, 0.3f), 1.5f, 1.5f);
         }
         if (bothForwardRightEnable) {
-            body[HumanBodyBones.RightHand].controller.AddSubMovement(new Pose(rightTouchTargetLPF, rightHandRot), new Vector2(0.5f, 0.3f), 1.5f, 1.5f);
+            body[HumanBodyBones.RightHand].controller.AddSubMovement(new Pose(rightTouchTargetLPF, rightHandRot), new Vector2(1.0f, 0.3f), 1.5f, 1.5f);
         }
     }
 

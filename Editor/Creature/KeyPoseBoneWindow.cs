@@ -38,16 +38,46 @@ public class KeyPoseBoneWindow : EditorWindow {
     //
     static KeyPoseBoneWindow window;
 
-    struct BoneBoxPair {
-        HumanBodyBones boneId;
-        Vector2 pos;
+    public class BoneBoxPair {
+        public HumanBodyBones boneId;
+        public Vector2 position;
+        public BoneBoxPair(HumanBodyBones bone, Vector2 pos) {
+            boneId = bone;
+            position = pos;
+        }
     }
-    private BoneBoxPair[] boneBoxPairs;
+    private static BoneBoxPair[] boneBoxPairs;
 
     [MenuItem("Window/KeyPoseBone Window")]
     static void Open() {
         window = GetWindow<KeyPoseBoneWindow>();
         ActionEditorWindowManager.instance.keyPoseBoneWindow = window;
+        boneBoxPairs = new BoneBoxPair[]{
+            new BoneBoxPair(HumanBodyBones.Head, new Vector2(0.5f, 0.1f)),
+            new BoneBoxPair(HumanBodyBones.Neck, new Vector2(0.5f, 0.2f)),
+
+            new BoneBoxPair(HumanBodyBones.Chest, new Vector2(0.5f, 0.3f)),
+            new BoneBoxPair(HumanBodyBones.Spine, new Vector2(0.5f, 0.4f)),
+            new BoneBoxPair(HumanBodyBones.Hips, new Vector2(0.5f, 0.5f)),
+
+            new BoneBoxPair(HumanBodyBones.LeftShoulder, new Vector2(0.6f, 0.28f)),
+            new BoneBoxPair(HumanBodyBones.LeftUpperArm, new Vector2(0.7f, 0.35f)),
+            new BoneBoxPair(HumanBodyBones.LeftLowerArm, new Vector2(0.7f, 0.45f)),
+            new BoneBoxPair(HumanBodyBones.LeftHand, new Vector2(0.7f, 0.55f)),
+
+            new BoneBoxPair(HumanBodyBones.RightShoulder, new Vector2(0.4f, 0.28f)),
+            new BoneBoxPair(HumanBodyBones.RightUpperArm, new Vector2(0.3f, 0.35f)),
+            new BoneBoxPair(HumanBodyBones.RightLowerArm, new Vector2(0.3f, 0.45f)),
+            new BoneBoxPair(HumanBodyBones.RightHand, new Vector2(0.3f, 0.55f)),
+
+            new BoneBoxPair(HumanBodyBones.LeftUpperLeg, new Vector2(0.6f, 0.65f)),
+            new BoneBoxPair(HumanBodyBones.LeftLowerLeg, new Vector2(0.6f, 0.8f)),
+            new BoneBoxPair(HumanBodyBones.LeftFoot, new Vector2(0.65f, 0.85f)),
+
+            new BoneBoxPair(HumanBodyBones.RightUpperLeg, new Vector2(0.4f, 0.65f)),
+            new BoneBoxPair(HumanBodyBones.RightLowerLeg, new Vector2(0.4f, 0.8f)),
+            new BoneBoxPair(HumanBodyBones.RightFoot, new Vector2(0.35f, 0.85f)),
+        };
     }
 
     public void OnEnable() {
@@ -87,10 +117,10 @@ public class KeyPoseBoneWindow : EditorWindow {
             HumanBodyBones.RightFoot,
         };
 
-        int i = 0;
-        foreach(var bone in bones) {
-            KeyPoseBone.Draw(bone, new Vector2(20, 20 + i));
-            i += 40;
+        float height = position.height;
+        float width = position.width;
+        foreach(var bone in boneBoxPairs) {
+            KeyPoseBone.Draw(bone.boneId, new Vector2(width * bone.position.x, height * bone.position.y));
         }
     }
 }
