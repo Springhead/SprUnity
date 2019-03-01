@@ -31,6 +31,27 @@ public class PHIKEndEffectorBehaviourEditor : Editor {
                 }
             }
         }
+
+        // ----- ----- ----- ----- -----
+        // Target Orientation Handle
+        if (phIKEEBehaviour.showTargetOrientationHandle) {
+            Tools.current = Tool.None;
+            if (phIKEEBehaviour.iktarget == null) {
+                if (phIKEEBehaviour.phIKEndEffector != null) {
+                    Vector3 currTargetPos = phIKEEBehaviour.phIKEndEffector.GetTargetPosition().ToVector3();
+                    Quaternion currTargetOri = phIKEEBehaviour.phIKEndEffector.GetTargetOrientation().ToQuaternion();
+                    Quaternion handleOri = Handles.RotationHandle(currTargetOri, currTargetPos);
+                    phIKEEBehaviour.desc.targetOrientation = handleOri.ToQuaterniond();
+                    phIKEEBehaviour.phIKEndEffector.SetTargetOrientation(handleOri.ToQuaterniond());
+
+                } else if (phIKEEBehaviour.desc != null) {
+                    Vector3 currTargetPos = ((Vec3d)(phIKEEBehaviour.desc.targetPosition)).ToVector3();
+                    Quaternion currTargetOri = ((Quaterniond)(phIKEEBehaviour.desc.targetOrientation)).ToQuaternion();
+                    Quaternion handleOri = Handles.RotationHandle(currTargetOri, currTargetPos);
+                    phIKEEBehaviour.desc.targetOrientation = handleOri.ToQuaterniond();
+                }
+            }
+        }
     }
 }
 

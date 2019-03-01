@@ -237,6 +237,14 @@ public class PHSceneBehaviour : SprBehaviour {
             phScene.GetIKEngine().Enable(enableIK);
         }
 
+        ApplyCollisionList();
+    }
+
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // その他のメソッド
+
+    public void ApplyCollisionList() {
         // <!!> PHJointBehaviourのdisableCollisionと衝突するので要検討
         if (sprObject != null) {
             for (int i = 0; i < collisionList.Count; i++) {
@@ -254,7 +262,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 }
 
                 if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.One) {
-                    solid1s.Add(c.solid2);
+                    solid2s.Add(c.solid2);
                 } else if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
                     // -- TBD
                 }
@@ -289,24 +297,9 @@ public class PHSceneBehaviour : SprBehaviour {
                     }
 
                 }
-
-                /*
-                if (c.solid1 == null && c.solid2 == null) {
-                    phScene.SetContactMode(c.mode);
-                } else if (c.solid1 == null) {
-                    if (c.solid2.sprObject != null) phScene.SetContactMode(c.solid2.phSolid, c.mode);
-                } else if (c.solid2 == null) {
-                    if (c.solid1.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.mode);
-                } else {
-                    if (c.solid1.sprObject != null && c.solid2.sprObject != null) phScene.SetContactMode(c.solid1.phSolid, c.solid2.phSolid, c.mode);
-                }
-                */
             }
         }
     }
-
-    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-    // その他のメソッド
 
     public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
