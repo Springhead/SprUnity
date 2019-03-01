@@ -11,6 +11,7 @@ namespace SprUnity {
 
     // Bodyの骨組みを生成するクラス
     // -- 基本的にはBodyはprefab化されたものを使うが、そのprefab自体を作成する時に用いる補助クラス
+    // -- あまり一般ユーザが使うことを想定はしていないので普通はprefabの方を使うこと
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(BodyGenerator))]
@@ -23,6 +24,10 @@ namespace SprUnity {
 
             if (GUILayout.Button("Generate")) {
                 bodyGen.Generate();
+            }
+
+            if (GUILayout.Button("Add Collision")) {
+                bodyGen.GenerateCollision();
             }
         }
     }
@@ -40,7 +45,7 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
-        private Body body;
+        public Body body;
 
         // ----- ----- ----- ----- -----
 
@@ -317,6 +322,52 @@ namespace SprUnity {
             body.bones.Add(bone);
 
             return bone;
+        }
+
+        public void GenerateCollision() {
+            foreach (var bone in body.bones) {
+                PHBallJointBehaviour phBallJointBehaviour = bone.joint as PHBallJointBehaviour;
+                if (phBallJointBehaviour != null) {
+                    phBallJointBehaviour.disableCollision = true;
+                }
+                PHHingeJointBehaviour phHingeJointBehaviour = bone.joint as PHHingeJointBehaviour;
+                if (phHingeJointBehaviour != null) {
+                    phHingeJointBehaviour.disableCollision = true;
+                }
+                var cdRoundConeBehaviour = bone.gameObject.GetComponent<CDRoundConeBehavior>();
+                if (cdRoundConeBehaviour != null) {
+                    bone.shape = cdRoundConeBehaviour;
+                }
+
+                /*
+                var cdRoundConeBehaviour = bone.gameObject.GetComponent<CDRoundConeBehavior>();
+                if (cdRoundConeBehaviour != null) {
+                    cdRoundConeBehaviour.lateAwakeStart = true;
+                }
+                */
+
+                /*
+                var collisionObj = new GameObject(bone.name + "Collision");
+                collisionObj.transform.parent = bone.transform;
+
+                var meshRoundCone = collisionObj.gameObject.AddComponent<MeshRoundCone>();
+
+                var cdRoundConeBehaviour = bone.gameObject.AddComponent<CDRoundConeBehavior>();
+                cdRoundConeBehaviour.shapeObject = meshRoundCone.gameObject;
+
+                meshRoundCone.pivot = MeshRoundCone.Pivot.R1;
+                meshRoundCone.positionR1 = bone.transform.position;
+                if (bone.children.Count > 0) {
+                    meshRoundCone.positionR2 = bone.children[0].transform.position;
+                } else {
+                    meshRoundCone.positionR2 = bone.transform.position;
+                }
+                meshRoundCone.r1 = 0.02f;
+                meshRoundCone.r2 = 0.02f;
+                meshRoundCone.Reposition();
+                meshRoundCone.Reshape();
+                */
+            }
         }
 
     }

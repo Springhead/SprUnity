@@ -165,7 +165,7 @@ public class LookController : MonoBehaviour {
         Pose headTargetPose = new Pose(initialHeadPose.position, Quaternion.LookRotation(targHeadDir, Vector3.up));
 
         // 頭部運動の速度を移動量とspeedの設定値に応じて決定
-        float minDurationHead = 0.1f; //  0.5f + (1 - speed) * 0.5f;
+        float minDurationHead = 0.2f; //  0.5f + (1 - speed) * 0.5f;
         float durationHead = Mathf.Max((1 / (40.0f + 60.0f * speed)) * diffAngleHead, minDurationHead);
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----

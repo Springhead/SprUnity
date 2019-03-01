@@ -62,8 +62,9 @@ public class CDRoundConeBehavior : CDShapeBehaviour {
         MeshRoundCone mrc = shapeObject.GetComponent<MeshRoundCone>();
         if (mrc == null) { throw new ObjectNotFoundException("CDRoundConeBehaviour requires MeshRoundCone", shapeObject); }
 
-        desc.radius = new Vec2f(mrc.r1, mrc.r2);
-        desc.length = mrc.length;
+        Vector3 scale = shapeObject.transform.lossyScale;
+        desc.radius = new Vec2f(mrc.r1, mrc.r2) * (Mathf.Max(scale.x, scale.z));
+        desc.length = mrc.length * scale.y;
 
         return phSdk.CreateShape(CDRoundConeIf.GetIfInfoStatic(), (CDRoundConeDesc)desc);
     }
