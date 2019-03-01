@@ -56,6 +56,13 @@ public class SubMovement {
         float r = (30 * Mathf.Pow(s, 2) - 60 * Mathf.Pow(s, 3) + 30 * Mathf.Pow(s, 4)) / 1.875f;
         return r;
     }
+
+    public void GetCurrentVelocity(float t, out Vector3 v) {
+        Vector3 deltaP = p1 - p0;
+        float s = (t - t0) / (t1 - t0);
+        float r = 30 * Mathf.Pow(s, 2) - 60 * Mathf.Pow(s, 3) + 30 * Mathf.Pow(s, 4);
+        v = deltaP * r;
+    }
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----

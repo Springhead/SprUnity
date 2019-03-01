@@ -107,6 +107,10 @@ namespace SprUnity {
         public BodyBalancer bodyBalancer = null;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Body Parameter for KeyPoses
+        public float height = 1.6f;
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Functions
 
         void Start() {
@@ -138,6 +142,12 @@ namespace SprUnity {
             // Find Animator if it is not set
             if (animator == null) {
                 animator = GameObject.FindObjectOfType<Animator>();
+            }
+            if(animator == null) {
+                Debug.LogWarning("No Animator Component was found");
+                // Initialize Body Parameter for KeyPoses
+                height = this[HumanBodyBones.Head].transform.position.y - this[HumanBodyBones.LeftFoot].transform.position.y;
+                return;
             }
 
             // Make Table to convert Label String To HumanBodyBones
@@ -325,6 +335,9 @@ namespace SprUnity {
 
             // Re-initialize Each Bone
             RecordRelativeRotSolidAvatar();
+
+            // Initialize Body Parameter for KeyPoses
+            height = this[HumanBodyBones.Head].transform.position.y - this[HumanBodyBones.LeftFoot].transform.position.y;
         }
 
         public void Initialize() {
