@@ -99,7 +99,7 @@ public class BodyParameterWindow : EditorWindow {
         if (body == null) {
             return;
         }
-        windowWidth = windowWidth - 10; // 右に少しスペースを開けるため
+        windowWidth = windowWidth - 30; // 右に少しスペースを開けるため
         int nGroups = displayBodyGroup.Length;
         int num = dispParam.Length + 1; // 表示するパラメータと名前
         Rect dispParamRect = new Rect(windowWidth / num, 30, windowWidth / num, 25);
@@ -117,10 +117,10 @@ public class BodyParameterWindow : EditorWindow {
                 int nBones = boneGroup[i].Length;
                 groupRect.y = paramRect.y + 20;
                 style.fontSize = 20;
+                style.alignment = TextAnchor.UpperRight;
                 GUI.Label(groupRect, new GUIContent(displayBodyGroup[i].groupName));
                 paramRect.y += 30;
                 style.fontSize = 10;
-                style.alignment = TextAnchor.UpperRight;
                 for (int j = 0; j < nBones; j++) {
                     paramRect.x = 0;
                     EditorGUILayout.BeginHorizontal();
@@ -136,12 +136,12 @@ public class BodyParameterWindow : EditorWindow {
                         balljoint.desc.spring = EditorGUI.DoubleField(paramRect, balljoint.desc.spring);
                         paramRect.x = 2 * windowWidth / num;
                         balljoint.desc.damper = EditorGUI.DoubleField(paramRect, balljoint.desc.damper);
+                        balljoint.OnValidate();
                     }
                     if (phsolid != null) {
                         paramRect.x = 3 * windowWidth / num;
                         phsolid.desc.mass = EditorGUI.DoubleField(paramRect, phsolid.desc.mass);
-                    } else {
-                        Debug.Log("あああ");
+                        phsolid.OnValidate();
                     }
                     EditorGUILayout.EndHorizontal();
                 }
