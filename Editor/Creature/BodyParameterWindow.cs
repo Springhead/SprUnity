@@ -8,7 +8,7 @@ public class BodyParameterWindow : EditorWindow {
     // インスタンス
     static BodyParameterWindow window;
 
-    private Vector2 scrollPos;
+    private Vector2 scrollPos = new Vector2(0,0);
 
     public class BoneGroupBoolPair {
         public string groupName;
@@ -21,16 +21,16 @@ public class BodyParameterWindow : EditorWindow {
     public static BoneGroupBoolPair[] displayBodyGroup;
     public static HumanBodyBones[][] boneGroup;
 
-    [MenuItem("Window/Body Parameter Window")]
+    [MenuItem("Window/Body Parameter Window #p")]
     static void Open() {
         window = GetWindow<BodyParameterWindow>();
         ActionEditorWindowManager.instance.bodyParameterWindow = window;
         displayBodyGroup = new BoneGroupBoolPair[] {
-            new BoneGroupBoolPair("Trunk", false),  // Trunk
-            new BoneGroupBoolPair("LeftArm", false),  // LeftArm
-            new BoneGroupBoolPair("RightArm", false),  // RightArm
-            new BoneGroupBoolPair("LeftLeg", false),  // LeftLeg
-            new BoneGroupBoolPair("RightLeg", false),  // RightLeg
+            new BoneGroupBoolPair("Trunk", true),  // Trunk
+            new BoneGroupBoolPair("LeftArm", true),  // LeftArm
+            new BoneGroupBoolPair("RightArm", true),  // RightArm
+            new BoneGroupBoolPair("LeftLeg", true),  // LeftLeg
+            new BoneGroupBoolPair("RightLeg", true),  // RightLeg
         };
         boneGroup = new HumanBodyBones[][] {
         new HumanBodyBones[]{
@@ -65,6 +65,11 @@ public class BodyParameterWindow : EditorWindow {
         };
     }
 
+    private string[] dispParam = new string[]{
+        "spring",
+        "damper",
+        "mass",
+    };
     public void OnEnable() {
         Open();
         // <!!> これ、ここか？
@@ -74,7 +79,7 @@ public class BodyParameterWindow : EditorWindow {
     }
 
     public void OnDisable() {
-        for (int i = 0; i <  displayBodyGroup.Length; i++) {
+        for (int i = 0; i < displayBodyGroup.Length; i++) {
             SessionState.SetBool("BodyParamGroup" + displayBodyGroup[i].groupName, displayBodyGroup[i].disp);
         }
         window = null;
@@ -82,23 +87,67 @@ public class BodyParameterWindow : EditorWindow {
     }
 
     public void OnGUI() {
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
         float windowWidth = position.width;
         float groupButtonWidth = windowWidth / 5;
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             Rect groupButtonRect = new Rect(groupButtonWidth * i, 0, groupButtonWidth, 20);
             GUIContent buttonContent = new GUIContent(displayBodyGroup[i].groupName);
             displayBodyGroup[i].disp = GUI.Toggle(groupButtonRect, displayBodyGroup[i].disp, displayBodyGroup[i].groupName, EditorStyles.miniButtonMid);
         }
         var body = ActionEditorWindowManager.instance.body;
-        if (body == null) return;
+        if (body == null) {
+            return;
+        }
+        windowWidth = windowWidth - 30; // 右に少しスペースを開けるため
         int nGroups = displayBodyGroup.Length;
-        for(int i = 0; i < nGroups; i++) {
+        int num = dispParam.Length + 1; // 表示するパラメータと名前
+        Rect dispParamRect = new Rect(windowWidth / num, 30, windowWidth / num, 25);
+        Rect paramRect = new Rect(0, 20, windowWidth / num, 20);
+        Rect groupRect = new Rect(0, 20, windowWidth / num, 40);
+        GUIStyle style = GUI.skin.GetStyle("label");
+        style.fontSize = 15;
+        style.alignment = TextAnchor.UpperCenter;
+        for (int i = 0; i < dispParam.Length; i++) {
+            GUI.Label(dispParamRect, new GUIContent(dispParam[i]));
+            dispParamRect.x += windowWidth / num;
+        }
+        for (int i = 0; i < nGroups; i++) {
             if (displayBodyGroup[i].disp) {
                 int nBones = boneGroup[i].Length;
-                for(int j = 0; j < nBones; j++) {
-                    //body[boneGroup[i][j]].
+                groupRect.y = paramRect.y + 20;
+                style.fontSize = 20;
+                style.alignment = TextAnchor.UpperRight;
+                GUI.Label(groupRect, new GUIContent(displayBodyGroup[i].groupName));
+                paramRect.y += 30;
+                style.fontSize = 10;
+                for (int j = 0; j < nBones; j++) {
+                    paramRect.x = 0;
+                    EditorGUILayout.BeginHorizontal();
+                    paramRect.y += 20;
+                    GUI.Label(paramRect, new GUIContent(boneGroup[i][j].ToString()));
+
+                    var balljoint = body[boneGroup[i][j].ToString()].joint as PHBallJointBehaviour;
+                    var phsolid = body[boneGroup[i][j].ToString()].solid;
+                    if (balljoint == null) {
+                        Debug.Log(boneGroup[i][j].ToString() + " error");
+                    } else {
+                        paramRect.x = windowWidth / num;
+                        balljoint.desc.spring = EditorGUI.DoubleField(paramRect, balljoint.desc.spring);
+                        paramRect.x = 2 * windowWidth / num;
+                        balljoint.desc.damper = EditorGUI.DoubleField(paramRect, balljoint.desc.damper);
+                        balljoint.OnValidate();
+                    }
+                    if (phsolid != null) {
+                        paramRect.x = 3 * windowWidth / num;
+                        phsolid.desc.mass = EditorGUI.DoubleField(paramRect, phsolid.desc.mass);
+                        phsolid.OnValidate();
+                    }
+                    EditorGUILayout.EndHorizontal();
                 }
             }
         }
+        GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(10), GUILayout.Height(paramRect.y + 30));
+        EditorGUILayout.EndScrollView();
     }
 }

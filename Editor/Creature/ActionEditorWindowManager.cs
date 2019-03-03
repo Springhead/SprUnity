@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using SprUnity;
 
-public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowManager>{
+public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowManager> {
 
     // マネージャーのインスタンス
     // シングルトン化のため
@@ -71,6 +71,7 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
     public string KeyPoseSaveFolder;
 
     //
+    public GameObject targetObject;
     //public GameObject targetObject;
 
     ActionEditorWindowManager() {
@@ -79,10 +80,17 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
         actions = new List<ActionStateMachineStatus>();
         EditorApplication.hierarchyChanged += Reload;
         EditorApplication.projectChanged += Reload;
+        // nullになってしまうためやめとく
+        // body = GameObject.FindObjectOfType<Body>();
     }
 
     void OnEnable() {
-        if (instance != null) return;
+        if (body == null) {
+            body = GameObject.FindObjectOfType<Body>();
+        }
+        if (instance != null) {
+            return;
+        }
         /*
         singleKeyPoses = new List<KeyPoseStatus>();
         pluralKeyPoses = new List<KeyPoseStatus>();
@@ -92,7 +100,6 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
         ActionSelectWindow.GetActions();
         actionSaveFolder = Application.dataPath + "/Actions/Actions";
         KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
-        body = GameObject.FindObjectOfType<Body>();
     }
 
     void OnDisable() {
