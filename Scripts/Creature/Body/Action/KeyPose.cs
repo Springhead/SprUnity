@@ -145,9 +145,12 @@ public class BoneKeyPose {
             localRotation = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * rotation;
         }
     }
-    public void ConvertLocalToLocal(Body body = null) {
+    public void ConvertLocalToLocal(Body body, HumanBodyBones from, HumanBodyBones to) {
         if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
         if (body != null) {
+            ConvertLocalToWorld();
+            coordinateParent = to;
+            ConvertWorldToLocal();
         }
     }
 }

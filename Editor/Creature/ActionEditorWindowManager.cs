@@ -71,7 +71,7 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
     public string KeyPoseSaveFolder;
 
     //
-    public GameObject targetObject;
+    //public GameObject targetObject;
 
     ActionEditorWindowManager() {
         singleKeyPoses = new List<KeyPoseStatus>();
@@ -79,7 +79,6 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
         actions = new List<ActionStateMachineStatus>();
         EditorApplication.hierarchyChanged += Reload;
         EditorApplication.projectChanged += Reload;
-        body = GameObject.FindObjectOfType<Body>();
     }
 
     void OnEnable() {
