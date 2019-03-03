@@ -21,7 +21,7 @@ public class BodyParameterWindow : EditorWindow {
     public static BoneGroupBoolPair[] displayBodyGroup;
     public static HumanBodyBones[][] boneGroup;
 
-    [MenuItem("Window/Body Parameter Window #p")]
+    [MenuItem("Window/Body Parameter Window")]
     static void Open() {
         window = GetWindow<BodyParameterWindow>();
         ActionEditorWindowManager.instance.bodyParameterWindow = window;
@@ -87,6 +87,10 @@ public class BodyParameterWindow : EditorWindow {
     }
 
     public void OnGUI() {
+        GUIStyle style = GUI.skin.GetStyle("label");
+        int backFontSize = style.fontSize; // 他のウィンドウに影響しないように
+        TextAnchor backAlignment = style.alignment;
+
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
         float windowWidth = position.width;
         float groupButtonWidth = windowWidth / 5;
@@ -105,7 +109,7 @@ public class BodyParameterWindow : EditorWindow {
         Rect dispParamRect = new Rect(windowWidth / num, 30, windowWidth / num, 25);
         Rect paramRect = new Rect(0, 20, windowWidth / num, 20);
         Rect groupRect = new Rect(0, 20, windowWidth / num, 40);
-        GUIStyle style = GUI.skin.GetStyle("label");
+
         style.fontSize = 15;
         style.alignment = TextAnchor.UpperCenter;
         for (int i = 0; i < dispParam.Length; i++) {
@@ -149,5 +153,8 @@ public class BodyParameterWindow : EditorWindow {
         }
         GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(10), GUILayout.Height(paramRect.y + 30));
         EditorGUILayout.EndScrollView();
+
+        style.fontSize = backFontSize;
+        style.alignment = backAlignment;
     }
 }
