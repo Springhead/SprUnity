@@ -409,12 +409,14 @@ public class ActionTimelineWindow : EditorWindow {
                 var transition = currentAction.templeteTransition[i];
                 if (transition.toState == null) break;
                 if (transitionTimeHandle[i][0].ProcessEvents()) {
+                    Undo.RecordObject(currentAction.templeteTransition[i], "Undo " + currentAction.templeteTransition[i].name + " time change");
                     float time = (transitionTimeHandle[i][0].box.x - graphLeft) * (totalTime / graphWidth);
                     if(i != 0) {
                         currentAction.templeteTransition[i].time = time - startSubmovementTime[i - 1];
                     }
                 }
-                if (transitionTimeHandle[i][1].ProcessEvents() && transition.toState.keyframe != null) {
+                if (transitionTimeHandle[i][1].ProcessEvents()/* && transition.toState.keyframe != null*/) {
+                    Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + "duration change");
                     float time = (transitionTimeHandle[i][1].box.x - graphLeft) * (totalTime / graphWidth);
                     currentAction.templeteTransition[i].toState.duration = time - startSubmovementTime[i];
                 }

@@ -39,12 +39,16 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
     static Texture2D editableButtonTexture;
 
     private Vector2 scrollPos;
+    private Vector2 scrollPosParameterWindow;
+
+    static private float parameterWindowHeight = 160;
 
     [MenuItem("Window/KeyPose Window")]
     static void Open() {
         window = GetWindow<KeyPoseWindow>();
         ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
         GetKeyPoses();
+        window.minSize = new Vector2(200, 300);
     }
 
     public void AddItemsToMenu(GenericMenu menu) {
@@ -68,10 +72,12 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
     }
 
     void OnGUI() {
+        GUILayout.BeginArea(new Rect(0, 0, position.width, position.height - parameterWindowHeight));
         scrollPos = GUILayout.BeginScrollView(scrollPos);
         GUILayout.Label("KeyPoses");
         if (window == null) GUILayout.Label("window null");
         if (ActionEditorWindowManager.instance.keyPoseWindow == null) GUILayout.Label("Manager.keyPoseWindow null");
+        var body = ActionEditorWindowManager.instance.body;
         float windowWidth = this.position.width;
         Color defaultColor = GUI.backgroundColor;
         int nSingle = ActionEditorWindowManager.instance.singleKeyPoses.Count;
@@ -93,6 +99,11 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
             GUI.backgroundColor = defaultColor;
             GUILayout.Label(singleKeyPose.keyPose.name);
             singleKeyPose.keyPose.hotKey = (KeyCode)EditorGUILayout.EnumPopup(singleKeyPose.keyPose.hotKey, GUILayout.Width(60));
+            if (GUILayout.Button("Play", GUILayout.Width(60))) {
+                if (EditorApplication.isPlaying) {
+                    singleKeyPose.keyPose.Action(body);
+                }
+            }
             //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
             GUILayout.EndHorizontal();
             //GUILayout.EndArea();
@@ -100,6 +111,7 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                 if(Event.current.type == EventType.MouseDown) {
                     if(Event.current.button == 0) {
                         singleKeyPose.isSelected = !singleKeyPose.isSelected;
+                        Repaint();
                     }
                 }
             }
@@ -148,12 +160,17 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
             SeparateKeyPose();
         }
         GUILayout.EndScrollView();
+        GUILayout.EndArea();
+
+        //Rect parameterWindow = GUILayoutUtility.GetRect(position.width, 120);
+        Rect parameterWindow = new Rect(0, position.height - parameterWindowHeight, position.width, parameterWindowHeight);
+        DrawParameters(parameterWindow, body);
     }
 
     public static void OnSceneGUI(SceneView sceneView) {
         var body = ActionEditorWindowManager.instance.body;
         if(body == null) { body = GameObject.FindObjectOfType<Body>(); }
-        var target = ActionEditorWindowManager.instance.targetObject;
+        //var target = ActionEditorWindowManager.instance.targetObject;
         foreach (var keyPoseGroup in ActionEditorWindowManager.instance.singleKeyPoses) {
             if (keyPoseGroup.status == KeyPoseStatus.Status.Editable) {
                 KeyPose keyPose = keyPoseGroup.keyPose.keyposes[0];
@@ -166,14 +183,14 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                         Vector3 position = Handles.PositionHandle(boneKeyPose.position, Quaternion.identity);
                         if (EditorGUI.EndChangeCheck()) {
                             Undo.RecordObject(keyPose, "Change KeyPose Target Position");
-                            if (target) {
-                                // target存在する場合はBoneLocal->World(or BodyLocal)
-                                boneKeyPose.localPosition = Quaternion.Inverse(baseTransform.rotation) * (position - baseTransform.position);
-                                boneKeyPose.position = baseTransform.position + body.transform.rotation * boneKeyPose.localPosition;
-                            } else {
-                                // target存在しないならWorld(or BoneLocal)->Local
+                            if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+                                // worldはBoneLocal->World(or BodyLocal)
                                 boneKeyPose.position = position;
-                                boneKeyPose.localPosition = Quaternion.Inverse(baseTransform.rotation) * (position - baseTransform.position);
+                                boneKeyPose.ConvertWorldToLocal();
+                            } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+                                // localならWorld(or BoneLocal)->Local
+                                boneKeyPose.position = position;
+                                boneKeyPose.ConvertWorldToLocal();
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -184,14 +201,14 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                         Quaternion rotation = Handles.RotationHandle(boneKeyPose.rotation, boneKeyPose.position);
                         if (EditorGUI.EndChangeCheck()) {
                             Undo.RecordObject(keyPose, "Change KeyPose Target Rotation");
-                            if (target) {
+                            if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
                                 // target存在する場合はBoneLocal->World(or BodyLocal)
-                                boneKeyPose.localRotation = Quaternion.Inverse(baseTransform.rotation) * rotation;
-                                boneKeyPose.rotation = boneKeyPose.localRotation * baseTransform.rotation;
-                            } else {
+                                boneKeyPose.rotation = rotation;
+                                boneKeyPose.ConvertWorldToLocal();
+                            } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                                 // target存在しないならWorld(or BoneLocal)->Local
                                 boneKeyPose.rotation = rotation;
-                                boneKeyPose.localRotation = Quaternion.Inverse(baseTransform.rotation) * rotation;
+                                boneKeyPose.ConvertWorldToLocal();
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -199,6 +216,34 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                 }
             }
         }
+    }
+
+    public void DrawParameters(Rect displayRect, Body body) {
+        // どう考えてもselectedは保存しとくべきか？
+        KeyPose keyPose = null;
+        foreach(var singleKeyPose in ActionEditorWindowManager.instance.singleKeyPoses) {
+            if (singleKeyPose.isSelected) keyPose = singleKeyPose.keyPose.keyposes[0];
+        }
+
+        GUILayout.BeginArea(displayRect);
+        scrollPosParameterWindow = GUILayout.BeginScrollView(scrollPosParameterWindow);
+        if (keyPose != null) {
+            GUILayout.Label(keyPose.name + " Parameters");
+            for (int i = 0; i < keyPose.boneKeyPoses.Count; i++) {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(keyPose.boneKeyPoses[i].boneId.ToString(), GUILayout.Width(0.33f * displayRect.width));
+                keyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(keyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(15));
+                keyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(keyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(15));
+                keyPose.boneKeyPoses[i].coordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.33f * displayRect.width));
+                var tempParentBone = (HumanBodyBones)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.33f * displayRect.width));
+                if(tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
+                    keyPose.boneKeyPoses[i].ConvertLocalToLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+        GUILayout.EndScrollView();
+        GUILayout.EndArea();
     }
 
     public static void GetKeyPoses() {

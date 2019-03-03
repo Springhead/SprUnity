@@ -51,6 +51,7 @@ public class ActionState : ScriptableObject {
     public Rect stateNodeRect = new Rect(0, 0, 200, 50);
     public bool isDragged;
     public bool isSelected;
+    public int serialCount;
 
     public GUIStyle currentStyle = new GUIStyle();
     public GUIStyle defaultStyle = new GUIStyle();

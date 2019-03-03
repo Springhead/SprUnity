@@ -72,6 +72,7 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
 
     //
     public GameObject targetObject;
+    //public GameObject targetObject;
 
     ActionEditorWindowManager() {
         singleKeyPoses = new List<KeyPoseStatus>();

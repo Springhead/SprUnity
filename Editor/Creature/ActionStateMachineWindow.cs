@@ -32,7 +32,7 @@ public class ActionStateMachineWindow : EditorWindow {
     private ActionStateMachine lastEditedStateMachine;
     private int[][] graphConnectionMatrix;
     // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
-    private List<ActionTransition> sortedTransitions;
+    private List<List<ActionTransition>> transitionGraph;
 
 	[MenuItem("Window/Action State Machine Window")]
     static void Open() {
@@ -106,6 +106,7 @@ public class ActionStateMachineWindow : EditorWindow {
                     ActionTransition transition = item.Value as ActionTransition;
                     if (transition != null) {
                         transition.Draw();
+                        bool changed = transition.ProcessEvents();
                         continue;
                     }
                 }
@@ -120,8 +121,15 @@ public class ActionStateMachineWindow : EditorWindow {
         var action = ActionEditorWindowManager.instance.selectedAction[0].action;
         int nStates = action.nStates;
         //graphConnectionMatrix = new int[nStates][nStates] { };
-        foreach(var transition in action.transitions) {
+        for(int i = 0; i < nStates; i++) {
+            action.states[i].serialCount = i;
+        }
+        transitionGraph = new List<List<ActionTransition>>();
+        for(int i = 0; i < nStates; i++) {
+            List<ActionTransition> list = new List<ActionTransition>();
+            for(int j = 0; j < (i + 2); j++) {
 
+            }
         }
     }
 
