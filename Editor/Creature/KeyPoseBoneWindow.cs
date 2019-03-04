@@ -107,6 +107,11 @@ public class KeyPoseBoneWindow : EditorWindow {
     }
 
     void OnGUI() {
+        GUIStyle style = GUI.skin.GetStyle("Box");
+        int backFontSize = style.fontSize; // 他のウィンドウに影響しないように
+        TextAnchor backAlignment = style.alignment;
+        Color backbackColor = GUI.backgroundColor;
+
         HumanBodyBones[] bones = {
             HumanBodyBones.Head,
             HumanBodyBones.Neck,
@@ -151,7 +156,6 @@ public class KeyPoseBoneWindow : EditorWindow {
         if (texture != null) {
             EditorGUI.DrawPreviewTexture(new Rect(0, 0, width, height), texture);
         }
-        GUIStyle style = GUI.skin.GetStyle("Box");
         style.fontSize = (int)(width + height) / 100;
         style.alignment = TextAnchor.MiddleCenter;
         KeyPoseBone.radius = (width + height) / 80;
@@ -159,5 +163,9 @@ public class KeyPoseBoneWindow : EditorWindow {
             GUI.backgroundColor = new Color(0, 1, 0.7f, 0);
             KeyPoseBone.Draw(bone.boneId, new Vector2(width * bone.position.x, height * bone.position.y));
         }
+
+        style.fontSize = backFontSize;
+        style.alignment = backAlignment;
+        GUI.backgroundColor = backbackColor;
     }
 }
