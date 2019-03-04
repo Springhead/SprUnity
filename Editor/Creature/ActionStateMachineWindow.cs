@@ -30,7 +30,7 @@ public class ActionStateMachineWindow : EditorWindow {
 
     private bool initialized = false;
     private ActionStateMachine lastEditedStateMachine;
-    private int[][] graphConnectionMatrix;
+    private List<List<int>> graphConnectionMatrix;
     // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
     private List<List<ActionTransition>> transitionGraph;
 
@@ -43,6 +43,7 @@ public class ActionStateMachineWindow : EditorWindow {
     }
 
     void OnEnable() {
+        //Open();
         if (graphBackground) {
             if (actionGraph == null) {
                 actionGraph = ScriptableObject.CreateInstance<Graph>();
@@ -52,6 +53,20 @@ public class ActionStateMachineWindow : EditorWindow {
                 actionGraphGUI = (GetEditor(actionGraph));
             }
         }
+        ActionState.defaultStyle = new GUIStyle();
+        ActionState.defaultStyle.normal.background = EditorGUIUtility.Load("flow node 0") as Texture2D;
+        ActionState.defaultStyle.alignment = TextAnchor.MiddleCenter;
+        //ActionState.defaultStyle.border = new RectOffset(12, 12, 12, 12);
+
+        ActionState.selectedStyle = new GUIStyle();
+        ActionState.selectedStyle.normal.background = EditorGUIUtility.Load("floaw node 2 on") as Texture2D;
+        ActionState.selectedStyle.alignment = TextAnchor.MiddleCenter;
+        //ActionState.selectedStyle.border = new RectOffset(12, 12, 12, 12);
+
+        ActionState.currentStateStyle = new GUIStyle();
+        ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("floaw node 5") as Texture2D;
+        ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
+        //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
     }
 
     void OnDisable() {
@@ -96,10 +111,9 @@ public class ActionStateMachineWindow : EditorWindow {
                     // ステートの表示
                     ActionState state = item.Value as ActionState;
                     if (state != null) {
-                        //state.Draw(item.Index);
                         state.Draw(item.Index);
                         bool changed = state.ProcessEvents();
-                        if (changed) GUI.changed = true;
+                        if (changed) { GUI.changed = true; initialized = false; }
                         continue;
                     }
                     // 遷移の表示
@@ -107,6 +121,7 @@ public class ActionStateMachineWindow : EditorWindow {
                     if (transition != null) {
                         transition.Draw();
                         bool changed = transition.ProcessEvents();
+                        if (changed) { GUI.changed = true; initialized = false; }
                         continue;
                     }
                 }
@@ -117,13 +132,42 @@ public class ActionStateMachineWindow : EditorWindow {
         
     }
 
-    void InitializeGraphMatrix() {
+    public void InitializeGraphMatrix() {
         var action = ActionEditorWindowManager.instance.selectedAction[0].action;
         int nStates = action.nStates;
-        //graphConnectionMatrix = new int[nStates][nStates] { };
+        graphConnectionMatrix = new List<List<int>>();
         for(int i = 0; i < nStates; i++) {
             action.states[i].serialCount = i;
         }
+        for (int i = 0; i < nStates; i++) {
+            List<int> list = new List<int>();
+            for (int j = 0; j < (i + 3); j++) {
+                list.Add(0);
+            }
+            graphConnectionMatrix.Add(list);
+        }
+        var transitions = action.transitions;
+        for (int i = 0; i < transitions.Count; i++) {
+            int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
+            int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
+            if(from < to) {
+                transitions[i].transitionNumber = graphConnectionMatrix[from][to];
+                graphConnectionMatrix[from][to]++;
+            } else {
+                transitions[i].transitionNumber = graphConnectionMatrix[to][from];
+                graphConnectionMatrix[to][from]++;
+            }
+        }
+        for (int i = 0; i < transitions.Count; i++) {
+            int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
+            int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
+            if (from < to) {
+                transitions[i].transitionCountSamePairs = graphConnectionMatrix[from][to];
+            } else {
+                transitions[i].transitionCountSamePairs = graphConnectionMatrix[to][from];
+            }
+        }
+        /*
         transitionGraph = new List<List<ActionTransition>>();
         for(int i = 0; i < nStates; i++) {
             List<ActionTransition> list = new List<ActionTransition>();
@@ -131,6 +175,7 @@ public class ActionStateMachineWindow : EditorWindow {
 
             }
         }
+        */
     }
 
     // ----- ----- ----- ----- ----- -----

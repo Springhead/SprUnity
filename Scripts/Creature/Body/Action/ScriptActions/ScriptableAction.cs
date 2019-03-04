@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using SprUnity;
 
@@ -20,6 +22,11 @@ public class WaitTimeBlock {
 
 public class ScriptableAction : MonoBehaviour {
 
+    protected CancellationTokenSource tokenSource;
+    protected CancellationToken cancelToken;
+
+    protected Body body;
+
     // 編集に関してはLogをとってそれを編集することで
     // submovement(class?)の一覧
     // waitTime(class?)の一覧
@@ -33,6 +40,10 @@ public class ScriptableAction : MonoBehaviour {
 	void FixedUpdate () {
 		
 	}
+
+    void OnDisable() {
+        EndAction();
+    }
 
     public void BeginAction(Body body) {
 

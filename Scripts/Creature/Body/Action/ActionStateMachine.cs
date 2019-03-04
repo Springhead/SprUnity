@@ -246,6 +246,7 @@ public class ActionStateMachine : ScriptableObject {
 
     // Update StateMachine if it's enabled
     public void UpdateStateMachine() {
+        if (!enabled) return;
         // Update timer
         currentState.timeFromEnter += Time.fixedDeltaTime;
 
@@ -277,7 +278,9 @@ public class ActionStateMachine : ScriptableObject {
     }
 
     void ResetStateMachine() {
-
+        for(int i = 0; i < flags.flags.Count; i++) {
+            flags.flags[i].enabled = false;
+        }
     }
 
     // ----- ----- ----- ----- -----

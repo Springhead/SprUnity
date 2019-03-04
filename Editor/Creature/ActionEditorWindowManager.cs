@@ -110,6 +110,7 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
         KeyPoseWindow.GetKeyPoses();
         ActionSelectWindow.GetActions();
         body = GameObject.FindObjectOfType<Body>();
+        if(stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
     }
 
     public void SearchBody() {

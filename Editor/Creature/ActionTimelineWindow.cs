@@ -187,6 +187,7 @@ public class ActionTimelineWindow : EditorWindow {
     }
 
     public void OnEnable() {
+        //Open();
         style = new GUIStyle();
         style.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/node1.png") as Texture2D;
         style.alignment = TextAnchor.MiddleCenter;

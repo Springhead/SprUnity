@@ -41,6 +41,11 @@ public class ActionTransition : ScriptableObject {
     public float time = 1.0f;
     public List<string> flags = new List<string>();
     //
+    [HideInInspector]
+    public int transitionNumber = 0;
+    [HideInInspector]
+    public int transitionCountSamePairs = 1;
+    //
     bool isSelected = false;
     Vector2 centerForMouseDetection;
     static Color defaultColor = Color.white;
@@ -120,11 +125,17 @@ public class ActionTransition : ScriptableObject {
                 Handles.DrawSolidArc(center + new Vector3(-30, -10, 0), new Vector3(0, 0, 1), new Vector3(Mathf.Cos((Mathf.PI / 2) - 0.3f), Mathf.Sin((Mathf.PI / 2) - 0.3f), 0), 0.6f * Mathf.Rad2Deg, 15);
                 centerForMouseDetection = new Vector2(center.x - 30, center.y);
             } else {
+                //float width = Mathf.Min(50, (transitionCountSamePairs - 1) * 10);
+                float width = (transitionCountSamePairs - 1) * 10;
+                float diff = 10 * transitionNumber - width / 2;
                 Vector3 startPos = new Vector3(fromState.stateNodeRect.center.x, fromState.stateNodeRect.center.y, 0);
                 Vector3 endPos = new Vector3(toState.stateNodeRect.center.x, toState.stateNodeRect.center.y, 0);
-                Handles.DrawLine(startPos, endPos);
                 float angle = Mathf.Acos(Vector3.Dot((startPos - endPos).normalized, new Vector3(1, 0, 0)));
+                Vector3 diffVec = new Vector3(-Mathf.Sin(angle), Mathf.Cos(angle), 0) * diff;
+                startPos += diffVec;
+                endPos += diffVec;
                 if ((startPos - endPos).y < 0) angle *= -1;
+                Handles.DrawLine(startPos, endPos);
                 Handles.DrawSolidArc((startPos + endPos) / 2, new Vector3(0, 0, 1), new Vector3(Mathf.Cos(angle - 0.2f), Mathf.Sin(angle - 0.2f), 0), 0.4f * Mathf.Rad2Deg, 20);
                 centerForMouseDetection = new Vector2(((startPos + endPos) / 2).x, ((startPos + endPos) / 2).y);
             }

@@ -53,9 +53,10 @@ public class ActionState : ScriptableObject {
     public bool isSelected;
     public int serialCount;
 
-    public GUIStyle currentStyle = new GUIStyle();
-    public GUIStyle defaultStyle = new GUIStyle();
-    public GUIStyle selectedStyle = new GUIStyle();
+    static public GUIStyle appliedStyle = new GUIStyle();
+    static public GUIStyle defaultStyle = new GUIStyle();
+    static public GUIStyle selectedStyle = new GUIStyle();
+    static public GUIStyle currentStateStyle = new GUIStyle();
 
     // ----- ----- ----- ----- ----- -----
     // Setter/Getter
@@ -105,7 +106,9 @@ public class ActionState : ScriptableObject {
 
     // Enter event of the state
     public void OnEnter() {
+        isSelected = true;
         timeFromEnter = 0.0f;
+        appliedStyle = currentStateStyle;
         //keyframe.Action(stateMachine.body);
         Body body = stateMachine.body;
         GameObject target = stateMachine.targetObject;
@@ -116,6 +119,7 @@ public class ActionState : ScriptableObject {
             float testDamper = 1.0f;
             // ターゲット位置による変換後のKeyPose
             List<BoneKeyPose> boneKeyPoses = keyframe.GetBaseKeyPose(body, target, out testDuration, out testSpring, out testDamper);
+            Debug.Log(Time.time + " " + boneKeyPoses.Count);
             // ターゲット位置とブレンドしたうえでSubMovement化
             foreach (var boneKeyPose in boneKeyPoses) {
                 if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
@@ -129,6 +133,7 @@ public class ActionState : ScriptableObject {
                     */
                     var springDamper = new Vector2(spring, damper);
                     bone.controller.AddSubMovement(pose, springDamper, duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
+                    Debug.Log(boneKeyPose.boneId.ToString() + " add submovement");
                 }
             }
         }
@@ -137,7 +142,8 @@ public class ActionState : ScriptableObject {
 
     // Exit event of the state
     public void OnExit() {
-
+        isSelected = false;
+        appliedStyle = defaultStyle;
     }
 
 
@@ -146,6 +152,7 @@ public class ActionState : ScriptableObject {
 
     public void DrawStateNode(int id) {
         //GUI.DragWindow();
+        /*
         int nTransitions = transitions.Count;
         for(int i = 0; i < nTransitions; i++) {
             Rect rect = new Rect(new Vector2(0, i * 20 + 15), new Vector2(stateNodeRect.width, 20));
@@ -153,6 +160,7 @@ public class ActionState : ScriptableObject {
             GUI.Box(rect, transitions[i].name);
         }
         stateNodeRect.height = Mathf.Max(20 + 20 * nTransitions, 50);
+        */
     }
 
     public void Drag(Vector2 delta) {
@@ -160,7 +168,7 @@ public class ActionState : ScriptableObject {
     }
 
     public void Draw(int id) {
-        //GUI.Box(stateNodeRect, name, currentStyle);
+        //GUI.Box(stateNodeRect, name, appliedStyle);
         GUI.Window(id, stateNodeRect, DrawStateNode, name);
     }
 
@@ -173,12 +181,12 @@ public class ActionState : ScriptableObject {
                         isDragged = true;
                         isSelected = true;
                         Selection.activeObject = this;
-                        currentStyle = selectedStyle;
+                        appliedStyle = selectedStyle;
                         GUI.changed = true;
                     } else {
                         GUI.changed = true;
                         isSelected = false;
-                        currentStyle = defaultStyle;
+                        appliedStyle = defaultStyle;
                     }
                 }
                 if(e.button == 1) {
@@ -229,7 +237,38 @@ public class ActionState : ScriptableObject {
 
     private void OnRemoveState() {
         // ステートマシンの関係する遷移を全部消す
-        // キーフレームは
+        List<ActionTransition> deleteList = new List<ActionTransition>();
+        List<ActionTransition> removeListEntry = new List<ActionTransition>();
+        var entryTransitions = stateMachine.entryTransitions;
+        for(int i = 0; i < entryTransitions.Count; i++) {
+            if(entryTransitions[i].toState == this) {
+                removeListEntry.Add(entryTransitions[i]);
+                deleteList.Add(entryTransitions[i]);
+            }
+        }
+        foreach (var transition in removeListEntry) {
+            entryTransitions.Remove(transition);
+        }
+        var states = stateMachine.states;
+        List<ActionTransition> removeList = new List<ActionTransition>();
+        for(int i = 0; i < states.Count; i++) {
+            removeList.Clear();
+            foreach(var transition in states[i].transitions) {
+                if(transition.fromState == this || transition.toState == this) {
+                    removeList.Add(transition);
+                    deleteList.Add(transition);
+                }
+            }
+            foreach(var transition in removeList) {
+                states[i].transitions.Remove(transition);
+            }
+        }
+        foreach(var deleteTransition in deleteList) {
+            Object.DestroyImmediate(deleteTransition, true);
+        }
+        var path = AssetDatabase.GetAssetPath(this.stateMachine);
+        Object.DestroyImmediate(this, true);
+        AssetDatabase.ImportAsset(path);
     }
 
     private void OnRemoveTransition(ActionTransition transition) {

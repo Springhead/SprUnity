@@ -42,7 +42,7 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
 
     public KeyCode hotKey;
 
-    public void Action(Body body, GameObject target = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1) {
+    public void Action(Body body, float duration = -1, float startTime = -1, float spring = -1, float damper = -1) {
         if (duration < 0) { duration = testDuration; }
         if (startTime < 0) { startTime = 0; }
         if (spring < 0) { spring = testSpring; }

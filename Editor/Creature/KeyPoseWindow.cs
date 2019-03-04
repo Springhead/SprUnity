@@ -186,11 +186,11 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                             if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
                                 // worldはBoneLocal->World(or BodyLocal)
                                 boneKeyPose.position = position;
-                                boneKeyPose.ConvertWorldToLocal();
+                                boneKeyPose.ConvertWorldToBoneLocal();
                             } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                                 // localならWorld(or BoneLocal)->Local
                                 boneKeyPose.position = position;
-                                boneKeyPose.ConvertWorldToLocal();
+                                boneKeyPose.ConvertWorldToBoneLocal();
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -204,11 +204,11 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                             if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
                                 // target存在する場合はBoneLocal->World(or BodyLocal)
                                 boneKeyPose.rotation = rotation;
-                                boneKeyPose.ConvertWorldToLocal();
+                                boneKeyPose.ConvertWorldToBoneLocal();
                             } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                                 // target存在しないならWorld(or BoneLocal)->Local
                                 boneKeyPose.rotation = rotation;
-                                boneKeyPose.ConvertWorldToLocal();
+                                boneKeyPose.ConvertWorldToBoneLocal();
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -219,6 +219,8 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
     }
 
     public void DrawParameters(Rect displayRect, Body body) {
+        // <!!> たぶん同じKeyPoseのHnadleが二つ表示される事態になっている？
+        //      片方はKeyPoseのデフォルトのもの、もう片方はこちらで表示したもの
         // どう考えてもselectedは保存しとくべきか？
         KeyPose keyPose = null;
         foreach(var singleKeyPose in ActionEditorWindowManager.instance.singleKeyPoses) {
@@ -237,7 +239,7 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                 keyPose.boneKeyPoses[i].coordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.33f * displayRect.width));
                 var tempParentBone = (HumanBodyBones)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.33f * displayRect.width));
                 if(tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
-                    keyPose.boneKeyPoses[i].ConvertLocalToLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
+                    keyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
                 }
                 GUILayout.EndHorizontal();
             }
