@@ -48,7 +48,7 @@ public class ScriptableAction : MonoBehaviour {
         EndAction();
     }
 
-    public void BeginAction(Body body) {
+    public virtual void BeginAction(Body body) {
 
     }
     public void UpdateAction() {
