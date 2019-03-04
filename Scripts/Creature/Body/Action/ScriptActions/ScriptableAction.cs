@@ -22,6 +22,9 @@ public class WaitTimeBlock {
 
 public class ScriptableAction : MonoBehaviour {
 
+    public bool isEditing;
+    public bool actionEnabled;
+
     protected CancellationTokenSource tokenSource;
     protected CancellationToken cancelToken;
 
