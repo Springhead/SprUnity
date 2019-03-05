@@ -8,6 +8,13 @@ using SprUnity;
 using UnityEditor;
 using System.Reflection;
 
+[CustomEditor(typeof(ActionStateMachine))]
+public class ActionStateMachineEditor : Editor {
+    public override void OnInspectorGUI() {
+        base.OnInspectorGUI();
+    }
+}
+
 [System.Serializable]
 public class TransitionFlag {
     public string label;
@@ -64,6 +71,8 @@ public class RenameWindow : EditorWindow {
     }
 }
 
+#endif
+
 public struct BoneTargetPair {
     public string boneLabel;
     public GameObject target;
@@ -80,6 +89,35 @@ public class ActionStateMachine : ScriptableObject {
 
     // Bool型のフラグリスト
     public TransitionFlagList flags;
+
+    [System.Serializable]
+    public class StateMachineParameter {
+        public string label;
+        public float param;
+    }
+    [System.Serializable]
+    public class StateMachineParameters {
+        public List<StateMachineParameter> parameters = new List<StateMachineParameter>();
+        public float this[string key] {
+            set {
+                int l = parameters.Count;
+                foreach (var p in parameters) {
+                    if (p.label == key) {
+                        p.param = value;
+                    }
+                }
+            }
+            get {
+                foreach (var p in parameters) {
+                    if (p.label == key) {
+                        return p.param;
+                    }
+                }
+                return 0.0f;
+            }
+        }
+    }
+    public StateMachineParameters parameters;
 
     public bool enabled = false;
 
@@ -300,5 +338,3 @@ public class ActionStateMachine : ScriptableObject {
         return AssetDatabase.LoadAllAssetsAtPath(path);
     }
 }
-
-#endif

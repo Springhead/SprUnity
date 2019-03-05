@@ -13,6 +13,25 @@ public class KeyPoseInterpolationGroupEditor : Editor {
     void OnDisable() {
         SceneView.onSceneGUIDelegate -= OnSceneGUI;
     }
+    public override void OnInspectorGUI() {
+        bool textChangeComp = false;
+        EditorGUI.BeginChangeCheck();
+        Event e = Event.current;
+        if (e.keyCode == KeyCode.Return && Input.eatKeyPressOnTextFieldFocus) {
+            textChangeComp = true;
+            Event.current.Use();
+        }
+        target.name = EditorGUILayout.TextField("Name", target.name);
+        base.OnInspectorGUI();
+        if (EditorGUI.EndChangeCheck()) {
+            EditorUtility.SetDirty(target);
+        }
+        if (textChangeComp) {
+            string mainPath = AssetDatabase.GetAssetPath(this);
+            //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPoseInterpolationGroup)target));
+        }
+    }
     public void OnSceneGUI(SceneView sceneView) {
         KeyPoseInterpolationGroup keyPoseGroup = (KeyPoseInterpolationGroup)target;
         if(keyPoseGroup.keyposes.Count == 1) {
@@ -42,7 +61,7 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
 
     public KeyCode hotKey;
 
-    public void Action(Body body, float duration = -1, float startTime = -1, float spring = -1, float damper = -1) {
+    public void Action(Body body, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, List<float> givenParam = null) {
         if (duration < 0) { duration = testDuration; }
         if (startTime < 0) { startTime = 0; }
         if (spring < 0) { spring = testSpring; }
@@ -55,7 +74,33 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
             foreach (var boneKeyPose in keyposes) {
                 // 未実装
             }
-            keyposes[0].Action(body, duration, startTime, spring, damper);
+            if (keyposes.Count == 1 || givenParam.Count == 0) {
+                keyposes[0].Action(body, duration, startTime, spring, damper);
+            }
+            else if(keyposes.Count == 2 && givenParam.Count >= 1) {
+                List<BoneKeyPose> keyposes0 = keyposes[0].GetBoneKeyPoses(body);
+                List<BoneKeyPose> keyposes1 = keyposes[1].GetBoneKeyPoses(body);
+                List<BoneKeyPose> appliedKeypose = new List<BoneKeyPose>();
+                foreach(var keypose0 in keyposes0) {
+                    foreach(var keypose1 in keyposes1) {
+                        if(keypose0.boneId == keypose1.boneId) {
+                            Pose pose = new Pose();
+                            bool onSubmovement = false;
+                            if (keypose0.usePosition && keypose1.usePosition) {
+                                pose.position = (1 - givenParam[0]) * keypose0.position + givenParam[0] * keypose1.position;
+                                onSubmovement = true;
+                            }
+                            if (keypose0.useRotation && keypose1.useRotation) {
+                                pose.rotation = Quaternion.Lerp(keypose0.rotation, keypose1.rotation, givenParam[0]);
+                                onSubmovement = true;
+                            }
+                            if (onSubmovement) {
+                                body[keypose0.boneId].controller.AddSubMovement(pose, new Vector2(spring, damper), duration, duration);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

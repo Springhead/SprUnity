@@ -34,6 +34,9 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
     //
     public BodyParameterWindow bodyParameterWindow;
 
+    //
+    public KeyPoseNodeGraphEditorWindow keyPoseNodeGraphWindow;
+
 
     // ActionStateMachineWindow関係
     // KeyPoseWindow関係

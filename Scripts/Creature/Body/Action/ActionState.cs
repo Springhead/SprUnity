@@ -35,6 +35,7 @@ public class ActionState : ScriptableObject {
     public ActionStateMachine stateMachine;
     public KeyPoseInterpolationGroup keyframe;
     public List<ActionTransition> transitions = new List<ActionTransition>();
+    public List<string> useParams;
 
     public float duration = 0.5f;
     public float spring = 1.0f;
@@ -117,7 +118,13 @@ public class ActionState : ScriptableObject {
             float testDuration = 1.0f;
             float testSpring = 1.0f;
             float testDamper = 1.0f;
+            List<float> parameters = new List<float>();
+            foreach(var l in useParams) {
+                parameters.Add(stateMachine.parameters[l]);
+            }
             // ターゲット位置による変換後のKeyPose
+            keyframe.Action(body, duration, 0, spring, damper, parameters);
+            /*
             List<BoneKeyPose> boneKeyPoses = keyframe.GetBaseKeyPose(body, target, out testDuration, out testSpring, out testDamper);
             Debug.Log(Time.time + " " + boneKeyPoses.Count);
             // ターゲット位置とブレンドしたうえでSubMovement化
@@ -125,17 +132,12 @@ public class ActionState : ScriptableObject {
                 if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
                     Bone bone = body[boneKeyPose.boneId];
                     var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
-                    /*
-                    if (target) {
-                        pose.position = (1 - internalRatio) * boneKeyPose.position + internalRatio * target.transform.position;
-                        pose.rotation = Quaternion.Lerp(boneKeyPose.rotation, target.transform.rotation, internalRatio);
-                    }
-                    */
                     var springDamper = new Vector2(spring, damper);
                     bone.controller.AddSubMovement(pose, springDamper, duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
                     Debug.Log(boneKeyPose.boneId.ToString() + " add submovement");
                 }
             }
+            */
         }
         Debug.Log("Enter state:" + name + " at time:" + Time.time);
     }
