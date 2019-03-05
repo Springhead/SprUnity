@@ -286,7 +286,7 @@ public class ActionStateMachine : ScriptableObject {
     public void UpdateStateMachine() {
         if (!enabled) return;
         // Update timer
-        currentState.timeFromEnter += Time.fixedDeltaTime;
+        currentState.OnUpdate();
 
         int nTransition = currentState.transitions.Count;
         // 遷移の処理優先度が問題

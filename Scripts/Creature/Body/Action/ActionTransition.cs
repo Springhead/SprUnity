@@ -80,7 +80,7 @@ public class ActionTransition : ScriptableObject {
     }
 
     public bool IsTransitable() {
-        if (stateMachine.currentState.timeFromEnter < time) return false;
+        if (stateMachine.currentState.TimeFromEnter < time) return false;
         foreach(var flag in flags) {
             if (!stateMachine.flags[flag]) return false;
         }

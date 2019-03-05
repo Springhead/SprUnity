@@ -42,7 +42,12 @@ public class ActionState : ScriptableObject {
     public float damper = 1.0f;
 
     [HideInInspector]
-    public float timeFromEnter;
+    private float timeFromEnter;
+    public float TimeFromEnter {
+        get {
+            return timeFromEnter;
+        }
+    }
 
     // ベースキーポーズと対称依存軌道上成分の内分比
     // baseKeyPose 0.0 <--> 1.0 referencePointOnTrajectory
@@ -140,6 +145,10 @@ public class ActionState : ScriptableObject {
             */
         }
         Debug.Log("Enter state:" + name + " at time:" + Time.time);
+    }
+
+    public void OnUpdate() {
+        timeFromEnter += Time.fixedDeltaTime;
     }
 
     // Exit event of the state
