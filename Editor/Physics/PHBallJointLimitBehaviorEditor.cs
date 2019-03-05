@@ -43,7 +43,7 @@ public class PHBallJointLimitBehaviorEditor : Editor {
 
             Color baseColor;
 
-            if (limit.desc.bEnabled && limit.enabled) {
+            if (limit.desc.bEnabled && limit.enabled && twist[0] < twist[1]) {
                 if (limit.phJointLimit == null) {
                     baseColor = Color.green;
                 } else {
