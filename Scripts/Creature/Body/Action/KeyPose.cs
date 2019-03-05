@@ -67,6 +67,7 @@ public class KeyPoseEditor : Editor {
 [Serializable]
 public class BoneKeyPose {
     public HumanBodyBones boneId = HumanBodyBones.Hips;
+    public string boneIdString = "";
     public Vector3 position = new Vector3();
     public Quaternion rotation = new Quaternion();
     public bool usePosition = true;
@@ -157,7 +158,7 @@ public class KeyPose : ScriptableObject {
         if (body != null) {
             foreach (var boneKeyPose in boneKeyPoses) {
                 if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
-                    Bone bone = body[boneKeyPose.boneId];
+                    Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
                     Quaternion ratioRotate = Quaternion.Slerp(Quaternion.identity, (Quaternion)rotate, boneKeyPose.lookAtRatio);
                     var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
                     var springDamper = new Vector2(spring, damper);

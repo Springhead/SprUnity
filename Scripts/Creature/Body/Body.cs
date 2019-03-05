@@ -35,13 +35,25 @@ namespace SprUnity {
 
                 EditorGUILayout.Space();
 
-                foreach (var bone in body.bones) {
+                int removeNumber = -1;
+                for (int i=0; i< body.bones.Count; i++) {
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel(bone.label);
-                    EditorGUILayout.ObjectField(bone, typeof(Bone), true);
-                    bone.avatarBone = EditorGUILayout.ObjectField(bone.avatarBone, typeof(GameObject), true) as GameObject;
+                    EditorGUILayout.PrefixLabel((body.bones[i] == null) ? "(null)" : body.bones[i].label);
+                    body.bones[i] = EditorGUILayout.ObjectField(body.bones[i], typeof(Bone), true) as Bone;
+                    if (body.bones[i] != null) {
+                        body.bones[i].avatarBone = EditorGUILayout.ObjectField(body.bones[i].avatarBone, typeof(GameObject), true) as GameObject;
+                    }
+                    if (GUILayout.Button("x")) { removeNumber = i; }
                     EditorGUILayout.EndHorizontal();
                 }
+
+                if (removeNumber >= 0) {
+                    if (EditorUtility.DisplayDialog("Remove Bone From Body", "Remove Bone From Body ? ", "Ok", "No")) {
+                        body.bones.RemoveAt(removeNumber);
+                    }
+                }
+
+                if (GUILayout.Button("Add Bone")) { body.bones.Add(new Bone()); }
             }
 
             EditorGUILayout.Space();

@@ -58,7 +58,7 @@ public class LookController : MonoBehaviour {
 
     public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
-    private bool initialized = false;
+    protected bool initialized = false;
 
     void Start() {
     }

@@ -302,7 +302,11 @@ public class BoneController : MonoBehaviour {
             if (controlPosition) {
                 var targPos = pose.position + subPose.position;
                 if (ikEndEffector == null) {
-                    gameObject.transform.position = targPos;
+                    if (!local) {
+                        gameObject.transform.position = targPos;
+                    } else {
+                        gameObject.transform.localPosition = targPos;
+                    }
                 } else if (ikEndEffector.phIKEndEffector.IsPositionControlEnabled()) {
                     ikEndEffector.phIKEndEffector.SetTargetPosition(targPos.ToVec3d());
                     ikEndEffector.desc.targetPosition = targPos.ToVec3d();
@@ -314,7 +318,11 @@ public class BoneController : MonoBehaviour {
         if (controlRotation) {
             var targOri = subPose.rotation * pose.rotation;
             if (ikEndEffector == null) {
-                gameObject.transform.rotation = targOri;
+                if (!local) {
+                    gameObject.transform.rotation = targOri;
+                } else {
+                    gameObject.transform.localRotation = targOri;
+                }
             } else if (ikEndEffector.phIKEndEffector.IsOrientationControlEnabled()) {
                 ikEndEffector.phIKEndEffector.SetTargetOrientation(targOri.ToQuaterniond());
                 ikEndEffector.desc.targetOrientation = targOri.ToQuaterniond();

@@ -96,7 +96,7 @@ public class Attention : MonoBehaviour {
                 // 距離による注意
                 var pos = person.transform.position; pos.y = 0;
                 float distance = pos.magnitude;
-                float min = 1.5f, max = 4.0f; // [m]
+                float min = 2.0f, max = 4.0f; // [m]
                 float baseAttention = 0;
                 if (distance < 3.0f) {
                     attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
@@ -120,7 +120,7 @@ public class Attention : MonoBehaviour {
 
             if (!person.human) {
                 // 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
-                attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.2f, 1.0f);
+                attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.0f, 1.0f);
             }
         }
     }
