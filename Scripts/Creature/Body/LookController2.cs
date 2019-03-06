@@ -45,9 +45,6 @@ public class LookController2 : LookController {
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
-    // 待機時間（サッケード中は次の運動を抑制する）
-    private float waitTimer = 0.0f;
-
     // 頭の基準姿勢（サッケードのたびに変化する）
     private Quaternion baseHeadRotation;
 

@@ -28,8 +28,11 @@ public class ActionStateEditor : Editor {
         }
     }
 }
+#endif
 
+#if UNITY_EDITOR
 [CreateAssetMenu(menuName = "Action/Create ActionState Instance")]
+#endif
 public class ActionState : ScriptableObject {
     // member values
     public ActionStateMachine stateMachine;
@@ -70,6 +73,7 @@ public class ActionState : ScriptableObject {
     // ----- ----- ----- ----- ----- -----
     // Creator
 
+#if UNITY_EDITOR
     [MenuItem("CONTEXT/ActionState/New Transition")]
     static void CreateTransition() {
         var fromState = Selection.activeObject as ActionState;
@@ -80,8 +84,10 @@ public class ActionState : ScriptableObject {
 
         CreateTransition(fromState, null);
     }
+#endif
 
     static ActionTransition CreateTransition(ActionState from, ActionState to) {
+#if UNITY_EDITOR
         var transition = ScriptableObject.CreateInstance<ActionTransition>();
         transition.name = "transition";
         transition.fromState = from;
@@ -103,6 +109,9 @@ public class ActionState : ScriptableObject {
         }
 
         return transition;
+#else
+        return null;
+#endif
     }
 
     // ----- ----- ----- ----- ----- -----
@@ -184,6 +193,7 @@ public class ActionState : ScriptableObject {
     }
 
     public bool ProcessEvents() {
+#if UNITY_EDITOR
         Event e = Event.current;
         switch (e.type) {
             case EventType.MouseDown:
@@ -219,11 +229,12 @@ public class ActionState : ScriptableObject {
                 }
                 break;
         }
-
+#endif
         return false;
     }
 
     private void OnContextMenu(Vector2 mousePosition) {
+#if UNITY_EDITOR
         GenericMenu genericMenu = new GenericMenu();
         List<ActionState> states = stateMachine.states;
         int nStates = states.Count;
@@ -240,6 +251,7 @@ public class ActionState : ScriptableObject {
         }
         genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
         genericMenu.ShowAsContext();
+#endif
     }
 
     private void OnClickAddTransition(ActionState from, ActionState to) {
@@ -277,15 +289,19 @@ public class ActionState : ScriptableObject {
         foreach(var deleteTransition in deleteList) {
             Object.DestroyImmediate(deleteTransition, true);
         }
+#if UNITY_EDITOR
         var path = AssetDatabase.GetAssetPath(this.stateMachine);
         Object.DestroyImmediate(this, true);
         AssetDatabase.ImportAsset(path);
+#endif
     }
 
     private void OnRemoveTransition(ActionTransition transition) {
+#if UNITY_EDITOR
         transitions.Remove(transition);
         Object.DestroyImmediate(transition, true);
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this.stateMachine));
+#endif
     }
 
     public void SetDefaultNodeStyle(GUIStyle style) {
@@ -295,5 +311,3 @@ public class ActionState : ScriptableObject {
         selectedStyle = style;
     }
 }
-
-#endif
