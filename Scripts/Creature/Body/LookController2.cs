@@ -88,7 +88,7 @@ public class LookController2 : LookController {
 
         // --
 
-        float moveAngle = 5.0f;
+        float moveAngle = Time.deltaTime * 90.0f;
 
         if (Input.GetKey(KeyCode.LeftArrow)) {
             if (manualControlTarget == ManualControlTarget.Eye) {
@@ -180,6 +180,7 @@ public class LookController2 : LookController {
                 Quaternion eyeTargetRotation = Quaternion.LookRotation(targEyeDir);
 
                 // 動作指示
+                if (manualEye) { durationEye = 0.05f; }
                 body["LeftEye"].controller.AddSubMovement(new Pose(new Vector3(), eyeTargetRotation), new Vector2(1, 1), durationEye, durationEye);
                 body["RightEye"].controller.AddSubMovement(new Pose(new Vector3(), eyeTargetRotation), new Vector2(1, 1), durationEye, durationEye);
 
@@ -212,6 +213,7 @@ public class LookController2 : LookController {
                 float durationHead = Mathf.Max((1 / (60.0f * speed)) * diffAngleHead, minDurationHead);
 
                 // 動作指示
+                if (manualHead) { durationHead = 0.1f; }
                 body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation), new Vector2(1, 1), durationHead + 0.1f, durationHead, usePos: false);
 
                 // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -224,7 +226,10 @@ public class LookController2 : LookController {
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         float alpha = 0.01f;
-        nextBaseHeadRotation = Quaternion.Slerp(nextBaseHeadRotation, targetHeadRotation, alpha);
+        Quaternion rot = Quaternion.Slerp(nextBaseHeadRotation, targetHeadRotation, alpha);
+        if (Vector3.Angle(rot * Vector3.forward, Vector3.forward) < 20.0f) {
+            nextBaseHeadRotation = rot;
+        }
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
