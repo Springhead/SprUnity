@@ -19,8 +19,11 @@ public class ActionTransitionEditor : Editor {
         }
     }
 }
+#endif
 
+#if UNITY_EDITOR
 [CreateAssetMenu(menuName = "Action/ Create ActionTransition Instance")]
+#endif
 public class ActionTransition : ScriptableObject {
 
     public ActionStateMachine stateMachine;
@@ -56,6 +59,7 @@ public class ActionTransition : ScriptableObject {
     // 
 
     static void CreateTransition(ActionState from, ActionState to) {
+#if UNITY_EDITOR
         var transition = ScriptableObject.CreateInstance<ActionTransition>();
         transition.name = "transition";
         transition.fromState = from;
@@ -70,6 +74,7 @@ public class ActionTransition : ScriptableObject {
             to.stateMachine.entryTransitions.Add(transition);
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(to.stateMachine));
         }
+#endif
     }
 
     // ----- ----- ----- ----- ----- -----
@@ -95,6 +100,7 @@ public class ActionTransition : ScriptableObject {
 
     //
     public void Draw() {
+#if UNITY_EDITOR
         /*
         if (toState != null && fromState != null) {
             Vector3 startPos = new Vector3(fromState.stateNodeRect.xMax, fromState.stateNodeRect.yMin + 25 + priority * 20, 0);
@@ -156,9 +162,11 @@ public class ActionTransition : ScriptableObject {
             Handles.DrawSolidArc((startPos + endPos) / 2, new Vector3(0, 0, 1), new Vector3(Mathf.Cos(angle - 0.2f), Mathf.Sin(angle - 0.2f), 0), 0.4f * Mathf.Rad2Deg, 20);
             centerForMouseDetection = new Vector2(((startPos + endPos) / 2).x, ((startPos + endPos) / 2).y);
         }
+#endif
     }
 
     public bool ProcessEvents() {
+#if UNITY_EDITOR
         Event e = Event.current;
         switch (e.type) {
             case EventType.MouseDown:
@@ -182,6 +190,7 @@ public class ActionTransition : ScriptableObject {
             case EventType.MouseUp:
                 break;
         }
+#endif
         return false;
     }
 
@@ -190,4 +199,3 @@ public class ActionTransition : ScriptableObject {
     }
 }
 
-#endif

@@ -46,7 +46,7 @@ public class LookController : MonoBehaviour {
     // public BlinkController blinkController = null;
 
     // 待機時間（サッケード中は次の運動を抑制する）
-    private float waitTimer = 0.0f;
+    protected float waitTimer = 0.0f;
     public bool inAction { get { return waitTimer > 0; } }
 
     private Quaternion initialLocalRot = Quaternion.identity;
@@ -58,7 +58,7 @@ public class LookController : MonoBehaviour {
 
     public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
-    private bool initialized = false;
+    protected bool initialized = false;
 
     void Start() {
     }

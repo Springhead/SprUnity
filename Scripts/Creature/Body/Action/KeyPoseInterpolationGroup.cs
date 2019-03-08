@@ -163,6 +163,7 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
     }
 
     void AbsorbKeyPoseGroup(KeyPoseInterpolationGroup keyPoseGroup) {
+#if UNITY_EDITOR
         // 他のKeyPoseGroupを吸収する
         var assets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(keyPoseGroup));
         foreach(var asset in assets) {
@@ -174,9 +175,11 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
             }
         }
         AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(keyPoseGroup));
+#endif
     }
 
     public static KeyPoseInterpolationGroup IntegrateKeyPoseGroup(List<KeyPoseInterpolationGroup> keyPoseGroups) {
+#if UNITY_EDITOR
         // 複数のGroupをひとつにまとめる
         // まとめた後はパラメータによって中身が変化するGroupになる
         if (keyPoseGroups.Count < 2) return null;
@@ -200,9 +203,13 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
         AssetDatabase.CreateAsset(newKeyPoseGroup, folderPath + "/" + newKeyPoseGroup.name + ".asset");
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(newKeyPoseGroup));
         return newKeyPoseGroup;
+#else
+        return null;
+#endif
     }
 
     public List<KeyPoseInterpolationGroup> SeparateKeyPoseGroup() {
+#if UNITY_EDITOR
         // 複数の要素からなるGroupを単一KeyPoseのみをもつGroupに分割
         if (keyposes.Count < 2) return null;
         var filePath = AssetDatabase.GetAssetPath(this);
@@ -226,6 +233,9 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
         //Object.DestroyImmediate(this);
         AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(this));
         return newKeyPoses;
+#else
+        return null;
+#endif
     }
 
     // KeyPose AssetをDrag&DropしたらそれをSubAssetに設定する機能ほしい

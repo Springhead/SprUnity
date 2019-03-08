@@ -14,6 +14,7 @@ public class ActionStateMachineEditor : Editor {
         base.OnInspectorGUI();
     }
 }
+#endif
 
 [System.Serializable]
 public class TransitionFlag {
@@ -51,6 +52,7 @@ public class TransitionFlagList {
     }
 }
 
+#if UNITY_EDITOR
 // 参照：uGUIではじめるUnity UIデザインの教科書p244
 public class RenameWindow : EditorWindow {
     public string captionText { get; set; }
@@ -70,7 +72,6 @@ public class RenameWindow : EditorWindow {
         }
     }
 }
-
 #endif
 
 public struct BoneTargetPair {
@@ -192,6 +193,7 @@ public class ActionStateMachine : ScriptableObject {
     // ----- ----- ----- ----- ----- -----
     // Create ActionStateMachine
 
+#if UNITY_EDITOR
     [MenuItem("Action/Create ActionStateMachine")]
     static void CreateStateMachine() {
         var action = CreateInstance<ActionStateMachine>();
@@ -200,11 +202,12 @@ public class ActionStateMachine : ScriptableObject {
         AssetDatabase.CreateAsset(action, currrentDirectory + "/ActionStateMachine.asset");
         AssetDatabase.Refresh();
     }
-
+#endif
 
     // ----- ----- ----- ----- ----- -----
     // Create/Delete ActionState
 
+#if UNITY_EDITOR
     [MenuItem("CONTEXT/ActionStateMachine/New State")]
     static void CreateState() {
         var parentStateMachine = Selection.activeObject as ActionStateMachine;
@@ -222,8 +225,10 @@ public class ActionStateMachine : ScriptableObject {
 
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(parentStateMachine));
     }
+#endif
 
     public void CreateState(Vector2 pos = default(Vector2)) {
+#if UNITY_EDITOR
         var state = ScriptableObject.CreateInstance<ActionState>();
         state.name = "new state";
         state.stateMachine = this;
@@ -232,6 +237,7 @@ public class ActionStateMachine : ScriptableObject {
         AssetDatabase.AddObjectToAsset(state, this);
 
         AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this));
+#endif
     }
 
     static void DeleteState(ActionState state) {
@@ -325,16 +331,24 @@ public class ActionStateMachine : ScriptableObject {
     // その他
     
     static string GetCurrentDirectory() {
+#if UNITY_EDITOR
         // source : https://qiita.com/r-ngtm/items/13d609cbd6a30e39f83a
         var flag = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
         var asm = Assembly.Load("UnityEditor.dll");
         var typeProjectBrowser = asm.GetType("UnityEditor.ProjectBrowser");
         var projectBrowserWindow = EditorWindow.GetWindow(typeProjectBrowser);
         return (string)typeProjectBrowser.GetMethod("GetActiveFolderPath", flag).Invoke(projectBrowserWindow, null);
+#else
+        return ""; // <!!> Need Future Implementation
+#endif
     }
 
     public Object[] GetSubAssets() {
+#if UNITY_EDITOR
         string path = AssetDatabase.GetAssetPath(this);
         return AssetDatabase.LoadAllAssetsAtPath(path);
+#else
+        return null;
+#endif
     }
 }
