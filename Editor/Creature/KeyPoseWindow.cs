@@ -190,7 +190,10 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                             } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                                 // localならWorld(or BoneLocal)->Local
                                 boneKeyPose.position = position;
-                                boneKeyPose.ConvertWorldToBoneLocal();
+                                boneKeyPose.ConvertWorldToBoneLocal(body);
+                            } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                                boneKeyPose.position = position;
+                                boneKeyPose.ConvertWorldToBodyLocal(body);
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -209,6 +212,10 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
                                 // target存在しないならWorld(or BoneLocal)->Local
                                 boneKeyPose.rotation = rotation;
                                 boneKeyPose.ConvertWorldToBoneLocal();
+                            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                                // target存在しないならWorld(or BoneLocal)->Local
+                                boneKeyPose.rotation = rotation;
+                                boneKeyPose.ConvertWorldToBodyLocal(body);
                             }
                             EditorUtility.SetDirty(keyPose);
                         }
@@ -222,26 +229,39 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
         // <!!> たぶん同じKeyPoseのHnadleが二つ表示される事態になっている？
         //      片方はKeyPoseのデフォルトのもの、もう片方はこちらで表示したもの
         // どう考えてもselectedは保存しとくべきか？
-        KeyPose keyPose = null;
+        List<KeyPose> keyPoses = new List<KeyPose>();
         foreach(var singleKeyPose in ActionEditorWindowManager.instance.singleKeyPoses) {
-            if (singleKeyPose.isSelected) keyPose = singleKeyPose.keyPose.keyposes[0];
+            if (singleKeyPose.isSelected) keyPoses.Add(singleKeyPose.keyPose.keyposes[0]);
+        }
+        foreach (var pluralKeyPose in ActionEditorWindowManager.instance.pluralKeyPoses) {
+            if (pluralKeyPose.isSelected) {
+                for (int i = 0; i < pluralKeyPose.keyPose.keyposes.Count; i++) {
+                    keyPoses.Add(pluralKeyPose.keyPose.keyposes[i]);
+                }
+            }
         }
 
         GUILayout.BeginArea(displayRect);
         scrollPosParameterWindow = GUILayout.BeginScrollView(scrollPosParameterWindow);
-        if (keyPose != null) {
-            GUILayout.Label(keyPose.name + " Parameters");
-            for (int i = 0; i < keyPose.boneKeyPoses.Count; i++) {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(keyPose.boneKeyPoses[i].boneId.ToString(), GUILayout.Width(0.33f * displayRect.width));
-                keyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(keyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(15));
-                keyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(keyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(15));
-                keyPose.boneKeyPoses[i].coordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.33f * displayRect.width));
-                var tempParentBone = (HumanBodyBones)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.33f * displayRect.width));
-                if(tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
-                    keyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
+        if (keyPoses.Count != 0) {
+            for (int j = 0; j < keyPoses.Count; j++) {
+                KeyPose keyPose = keyPoses[j];
+                GUILayout.Label(keyPose.name + " Parameters");
+                EditorGUI.BeginChangeCheck();
+                for (int i = 0; i < keyPose.boneKeyPoses.Count; i++) {
+                    GUI.changed = false;
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(keyPose.boneKeyPoses[i].boneId.ToString(), GUILayout.Width(0.33f * displayRect.width));
+                    keyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(keyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(15));
+                    keyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(keyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(15));
+                    keyPose.boneKeyPoses[i].coordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.33f * displayRect.width));
+                    var tempParentBone = (HumanBodyBones)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.33f * displayRect.width));
+                    if (tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
+                        keyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
+                    }
+                    if (GUI.changed) EditorUtility.SetDirty(keyPose);
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
             }
         }
         GUILayout.EndScrollView();
