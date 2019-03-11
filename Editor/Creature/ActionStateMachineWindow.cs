@@ -12,10 +12,6 @@ public class ActionStateMachineWindow : EditorWindow {
 
     //
     public static ActionStateMachineWindow window;
-
-    // 編集時に使うBody(これを使わないとBoneを座標の基準として編集できない)
-    // Play時にリンクが切れるという問題
-    public Body body;
     
     // Graph backgroundの設定
     const bool graphBackground = false;
