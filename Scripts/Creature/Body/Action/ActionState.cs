@@ -30,9 +30,6 @@ public class ActionStateEditor : Editor {
 }
 #endif
 
-#if UNITY_EDITOR
-[CreateAssetMenu(menuName = "Action/Create ActionState Instance")]
-#endif
 public class ActionState : ScriptableObject {
     // member values
     public ActionStateMachine stateMachine;
@@ -73,19 +70,6 @@ public class ActionState : ScriptableObject {
     // ----- ----- ----- ----- ----- -----
     // Creator
 
-#if UNITY_EDITOR
-    [MenuItem("CONTEXT/ActionState/New Transition")]
-    static void CreateTransition() {
-        var fromState = Selection.activeObject as ActionState;
-
-        if (fromState == null) {
-            Debug.LogWarning("No ActionState object selected");
-        }
-
-        CreateTransition(fromState, null);
-    }
-#endif
-
     static ActionTransition CreateTransition(ActionState from, ActionState to) {
 #if UNITY_EDITOR
         var transition = ScriptableObject.CreateInstance<ActionTransition>();
@@ -116,8 +100,6 @@ public class ActionState : ScriptableObject {
 
     // ----- ----- ----- ----- ----- -----
     // State Machine Events
-    // Enter
-    // Exit
 
     // Enter event of the state
     public void OnEnter() {
@@ -129,29 +111,12 @@ public class ActionState : ScriptableObject {
         GameObject target = stateMachine.targetObject;
         if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
         if (body != null) {
-            float testDuration = 1.0f;
-            float testSpring = 1.0f;
-            float testDamper = 1.0f;
             List<float> parameters = new List<float>();
             foreach(var l in useParams) {
                 parameters.Add(stateMachine.parameters[l]);
             }
             // ターゲット位置による変換後のKeyPose
             keyframe.Action(body, duration, 0, spring, damper, parameters);
-            /*
-            List<BoneKeyPose> boneKeyPoses = keyframe.GetBaseKeyPose(body, target, out testDuration, out testSpring, out testDamper);
-            Debug.Log(Time.time + " " + boneKeyPoses.Count);
-            // ターゲット位置とブレンドしたうえでSubMovement化
-            foreach (var boneKeyPose in boneKeyPoses) {
-                if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
-                    Bone bone = body[boneKeyPose.boneId];
-                    var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
-                    var springDamper = new Vector2(spring, damper);
-                    bone.controller.AddSubMovement(pose, springDamper, duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
-                    Debug.Log(boneKeyPose.boneId.ToString() + " add submovement");
-                }
-            }
-            */
         }
         Debug.Log("Enter state:" + name + " at time:" + Time.time);
     }

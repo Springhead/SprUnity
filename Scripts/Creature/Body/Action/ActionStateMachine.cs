@@ -7,13 +7,6 @@ using SprUnity;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
-
-[CustomEditor(typeof(ActionStateMachine))]
-public class ActionStateMachineEditor : Editor {
-    public override void OnInspectorGUI() {
-        base.OnInspectorGUI();
-    }
-}
 #endif
 
 [System.Serializable]
@@ -52,28 +45,6 @@ public class TransitionFlagList {
     }
 }
 
-#if UNITY_EDITOR
-// 参照：uGUIではじめるUnity UIデザインの教科書p244
-public class RenameWindow : EditorWindow {
-    public string captionText { get; set; }
-    public string buttonText { get; set; }
-    public string newName { get; set; }
-    public System.Action<string> onClickButtonDelegate { get; set; }
-
-    void OnGUI() {
-        newName = EditorGUILayout.TextField(captionText, newName);
-        if (GUILayout.Button(buttonText)) {
-            if(onClickButtonDelegate != null) {
-                onClickButtonDelegate.Invoke(newName.Trim());
-            }
-
-            Close();
-            GUIUtility.ExitGUI();
-        }
-    }
-}
-#endif
-
 public struct BoneTargetPair {
     public string boneLabel;
     public GameObject target;
@@ -85,8 +56,8 @@ public class ActionStateMachine : ScriptableObject {
     [SerializeField]
     //public List<ActionState> states;
 
-    [HideInInspector]
-    public ActionState currentState;
+    private ActionState currentState;
+    public ActionState CurrentState { get { return currentState; } }
 
     // Bool型のフラグリスト
     public TransitionFlagList flags;
@@ -127,16 +98,6 @@ public class ActionStateMachine : ScriptableObject {
     [HideInInspector]
     public Body body;
 
-    // キャラクタ身体データ
-    // 現在適用キャラクタ
-    Vector3 headPositionHipBase;
-    Vector3 footCenterPositionHipBase;
-    Vector3 HandPositionHipBase;
-    // 最終編集時に使用したキャラクタ
-    Vector3 headPositionHipBaseInLastEdit;
-    Vector3 footCenterPositionHipBaseInLastEdit;
-    Vector3 HandPositionHipBaseInLastEdit;
-
     // アクションのターゲット
     //public List<BoneTargetPair> targetObjects = new List<BoneTargetPair>();
     public GameObject targetObject;
@@ -173,22 +134,6 @@ public class ActionStateMachine : ScriptableObject {
             return this.GetSubAssets().OfType<ActionTransition>().ToList();
         }
     }
-
-    // ----- ----- ----- ----- -----
-    /*
-    public bool this[string key] {
-        set {
-            bool found = false;
-            foreach(var flag in flags) {
-                if(flag.label == key) {
-                    flag.isEnabled = value;
-                    found = true;
-                }
-            }
-            if (!found) flags.Add(new TransitionFlag(key, value));
-        }
-    }
-    */
 
     // ----- ----- ----- ----- ----- -----
     // Create ActionStateMachine
@@ -284,6 +229,7 @@ public class ActionStateMachine : ScriptableObject {
         */
 
         if (entryTransitions.Count == 0) return;
+        // <!!> 遷移が1パターン!!
         currentState = entryTransitions[0].toState;
         currentState.OnEnter();
     }

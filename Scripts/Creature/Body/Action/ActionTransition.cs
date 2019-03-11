@@ -21,15 +21,13 @@ public class ActionTransitionEditor : Editor {
 }
 #endif
 
-#if UNITY_EDITOR
-[CreateAssetMenu(menuName = "Action/ Create ActionTransition Instance")]
-#endif
 public class ActionTransition : ScriptableObject {
 
     public ActionStateMachine stateMachine;
 
     [SerializeField]
     public ActionState toState;
+    [SerializeField]
     public ActionState fromState;
 
     [HideInInspector]
@@ -85,7 +83,7 @@ public class ActionTransition : ScriptableObject {
     }
 
     public bool IsTransitable() {
-        if (stateMachine.currentState.TimeFromEnter < time) return false;
+        if (stateMachine.CurrentState.TimeFromEnter < time) return false;
         foreach(var flag in flags) {
             if (!stateMachine.flags[flag]) return false;
         }
@@ -138,6 +136,7 @@ public class ActionTransition : ScriptableObject {
                 Vector3 endPos = new Vector3(toState.stateNodeRect.center.x, toState.stateNodeRect.center.y, 0);
                 float angle = Mathf.Acos(Vector3.Dot((startPos - endPos).normalized, new Vector3(1, 0, 0)));
                 Vector3 diffVec = new Vector3(-Mathf.Sin(angle), Mathf.Cos(angle), 0) * diff;
+                //Vector3 diffVec = new Vector3(Mathf.Cos(angle - Mathf.PI / 2), Mathf.Sin(angle - Mathf.PI / 2), 0) * diff;
                 startPos += diffVec;
                 endPos += diffVec;
                 if ((startPos - endPos).y < 0) angle *= -1;

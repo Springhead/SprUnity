@@ -16,9 +16,7 @@ public class ActionSelectWindow : EditorWindow, IHasCustomMenu {
     // インスタンス
     static ActionSelectWindow window;
 
-    //
-    //public List<ActionStateMachineStatus> actions = new List<ActionStateMachineStatus>();
-
+    // GUI
     private Vector2 scrollPos;
 
     [MenuItem("Window/Action Select Window")]
@@ -37,8 +35,10 @@ public class ActionSelectWindow : EditorWindow, IHasCustomMenu {
     public void OnEnable() {
         Open();
         // <!!> これ、ここか？
-        foreach(var action in ActionEditorWindowManager.instance.actions) {
+        for(int i = 0; i < ActionEditorWindowManager.instance.actions.Count; i++) {
+            var action = ActionEditorWindowManager.instance.actions[i];
             action.isSelected = SessionState.GetBool(action.action.name, false);
+            Debug.Log(action.action.name + " " + action.isSelected + " " + SessionState.GetBool(action.action.name, false));
         }
     }
 	
@@ -76,6 +76,9 @@ public class ActionSelectWindow : EditorWindow, IHasCustomMenu {
             }*/
             GUILayout.EndHorizontal();
         }
+        foreach (var action in ActionEditorWindowManager.instance.actions) {
+            Debug.Log(action.action.name + " " + action.isSelected);
+        }
         GUILayout.EndScrollView();
     }
 
@@ -98,11 +101,11 @@ public class ActionSelectWindow : EditorWindow, IHasCustomMenu {
         }
     }
 
-    void AddAction() {
+    void CreateAction() {
 
     }
 
-    void RemoveAction() {
+    void DeleteAction() {
 
     }
 }

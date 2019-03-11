@@ -75,16 +75,16 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
 
     //
     public GameObject targetObject;
-    //public GameObject targetObject;
 
     ActionEditorWindowManager() {
         singleKeyPoses = new List<KeyPoseStatus>();
         pluralKeyPoses = new List<KeyPoseStatus>();
         actions = new List<ActionStateMachineStatus>();
+
+        EditorApplication.hierarchyChanged -= Reload;
         EditorApplication.hierarchyChanged += Reload;
+        EditorApplication.projectChanged -= Reload;
         EditorApplication.projectChanged += Reload;
-        // nullになってしまうためやめとく
-        // body = GameObject.FindObjectOfType<Body>();
     }
 
     void OnEnable() {
@@ -99,8 +99,8 @@ public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowM
         pluralKeyPoses = new List<KeyPoseStatus>();
         actions = new List<ActionStateMachineStatus>();
         */
-        KeyPoseWindow.GetKeyPoses();
-        ActionSelectWindow.GetActions();
+        //KeyPoseWindow.GetKeyPoses();
+        //ActionSelectWindow.GetActions();
         actionSaveFolder = Application.dataPath + "/Actions/Actions";
         KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
     }

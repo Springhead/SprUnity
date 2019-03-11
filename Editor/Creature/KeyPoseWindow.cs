@@ -30,10 +30,7 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
     //
     static KeyPoseWindow window;
 
-    // 表示用のリスト
-    //List<KeyPoseStatus> singleKeyPoses = new List<KeyPoseStatus>();
-    //List<KeyPoseStatus> pluralKeyPoses = new List<KeyPoseStatus>();
-
+    // GUI
     static Texture2D noneButtonTexture;
     static Texture2D visibleButtonTexture;
     static Texture2D editableButtonTexture;
@@ -62,6 +59,7 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
         visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
         //visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit") as Texture2D;
         editableButtonTexture = EditorGUIUtility.Load("ViewToolMove") as Texture2D;
+        SceneView.onSceneGUIDelegate -= OnSceneGUI;
         SceneView.onSceneGUIDelegate += OnSceneGUI;
     }
 
@@ -170,6 +168,7 @@ public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
     public static void OnSceneGUI(SceneView sceneView) {
         var body = ActionEditorWindowManager.instance.body;
         if(body == null) { body = GameObject.FindObjectOfType<Body>(); }
+        if (body == null) return;
         //var target = ActionEditorWindowManager.instance.targetObject;
         foreach (var keyPoseGroup in ActionEditorWindowManager.instance.singleKeyPoses) {
             if (keyPoseGroup.status == KeyPoseStatus.Status.Editable) {
