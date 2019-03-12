@@ -178,7 +178,7 @@ public class ActionTimelineWindow : EditorWindow {
 
     // グラフ描画に使うセグメント分割数
     // 値が大きいと重いので、だれかいい方法教えてください
-    int segments = 2;
+    int segments = 10;
 
     [MenuItem("Window/Action Timeline Window")]
     static void Open() {
@@ -299,7 +299,7 @@ public class ActionTimelineWindow : EditorWindow {
         DrawVelocityGraph();
         DrawTransitionGraph();
         GUILayout.EndVertical();
-        DrawBone();
+        DrawBoneTable();
     }
 
     public void OnSceneGUI(SceneView sceneView) {
@@ -309,8 +309,8 @@ public class ActionTimelineWindow : EditorWindow {
     void DrawSpringDamperGraph(Rect area = new Rect()) {
         GUILayout.BeginArea(new Rect(0, 0, this.position.width, this.position.height / 3));
         GUILayout.Label("Spring & Damper");
-        showSpring = GUILayout.Toggle(showSpring, "Spring");
-        showDamper = GUILayout.Toggle(showDamper, "Damper");
+        showSpring = GUILayout.Toggle(showSpring, "Spring", GUILayout.Width(position.width * 0.1f));
+        showDamper = GUILayout.Toggle(showDamper, "Damper", GUILayout.Width(position.width * 0.1f));
         // Draw Graph Base
         int graphBottom = (int)(position.height * 0.27);
         int graphTop = (int)(position.height * 0.01);
@@ -330,8 +330,12 @@ public class ActionTimelineWindow : EditorWindow {
                 if (transition.toState == null) break;
                 float spring = transition.toState ? transition.toState.spring : 0;
                 float damper = transition.toState ? transition.toState.damper : 0;
-                GUI.Box(new Rect(graphLeft + 0.8f * position.width * (endSubmovementTime[i] / totalTime) - 5, graphBottom - (spring / springDamperMax) * graphHeight - 5, 10, 10),
-                    "S");
+                springDamperHandle[i][0].box.x = graphLeft + graphWidth * (endSubmovementTime[i] / totalTime);
+                springDamperHandle[i][0].box.y = graphBottom - (spring / springDamperMax) * graphHeight;
+                springDamperHandle[i][0].Draw();
+                springDamperHandle[i][1].box.x = graphLeft + graphWidth * (endSubmovementTime[i] / totalTime);
+                springDamperHandle[i][1].box.y = graphBottom - (damper / springDamperMax) * graphHeight;
+                springDamperHandle[i][1].Draw();
                 for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                     if (submovements[j][i].t0 != submovements[j][i].t1 && boneStatusForTimelines[j].solo) {
                         Vector2 lastPos = new Vector2(graphLeft + graphWidth * (startSubmovementTime[i] / totalTime), graphBottom - (submovements[j][i].s0[0] / springDamperMax) * graphHeight);
@@ -350,7 +354,24 @@ public class ActionTimelineWindow : EditorWindow {
                     }
                 }
             }
-        // Draw Integrated
+            for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
+                var transition = currentAction.templeteTransition[i];
+                if (transition.toState == null) break;
+                if (springDamperHandle[i][0].ProcessEvents()) {
+                    Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + " spring change");
+                    float spring = (graphBottom - springDamperHandle[i][0].box.y) * (springDamperMax / graphHeight);
+                    currentAction.templeteTransition[i].toState.spring = spring;
+                }
+                if (springDamperHandle[i][1].ProcessEvents()) {
+                    Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + "damper change");
+                    float damper = (graphBottom - springDamperHandle[i][1].box.y) * (springDamperMax / graphHeight);
+                    currentAction.templeteTransition[i].toState.damper = damper;
+                }
+                //GUI.Box(new Rect(graphLeft + graphWidth * (startSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
+                //GUI.Box(new Rect(graphLeft + graphWidth * (endSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
+                //GUI.Box(new Rect(graphLeft + graphWidth * ((startSubmovementTime[i] + endSubmovementTime[i]) / (2 * totalTime)), graphBottom, 10, 10), "");
+            }
+            // Draw Integrated
         }
         GUILayout.EndArea();
     }
@@ -518,7 +539,7 @@ public class ActionTimelineWindow : EditorWindow {
         GUILayout.EndArea();
     }
 
-    void DrawBone(Rect area = new Rect()) {
+    void DrawBoneTable(Rect area = new Rect()) {
         GUILayout.BeginArea(new Rect(this.position.width * 0.9f, 0, this.position.width * 0.1f, this.position.height));
         GUILayout.BeginVertical();
         Color defaultColor = GUI.backgroundColor;
@@ -601,8 +622,8 @@ public class ActionTimelineWindow : EditorWindow {
             });
             transitionTimeHandle.Add(new HorizontalDraggableBox[3] {
                 new HorizontalDraggableBox(new Rect(handlePos, handleSize), "S" + i),
-                new HorizontalDraggableBox(new Rect(handlePos, handleSize), "M" + i),
-                new HorizontalDraggableBox(new Rect(handlePos, handleSize), "F" + i)
+                new HorizontalDraggableBox(new Rect(handlePos, handleSize), "F" + i),
+                new HorizontalDraggableBox(new Rect(handlePos, handleSize), "M" + i)
             });
         }
     }

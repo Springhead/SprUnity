@@ -78,6 +78,8 @@ public class KeyPoseInterpolationGroup : ScriptableObject {
                 keyposes[0].Action(body, duration, startTime, spring, damper);
             }
             else if(keyposes.Count == 2 && givenParam.Count >= 1) {
+                // <!!> パラメータ1個のときだけ急ぎ必要だったので実装済み
+                // あまりいい補間方法思い浮かばないのでノードエディタとか使うべきか？
                 List<BoneKeyPose> keyposes0 = keyposes[0].GetBoneKeyPoses(body);
                 List<BoneKeyPose> keyposes1 = keyposes[1].GetBoneKeyPoses(body);
                 List<BoneKeyPose> appliedKeypose = new List<BoneKeyPose>();

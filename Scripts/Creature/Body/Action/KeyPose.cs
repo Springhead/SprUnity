@@ -134,7 +134,7 @@ public class BoneKeyPose {
         if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
         if (body != null) {
             Bone coordinateBaseBone = body[coordinateParent];
-            position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * localPosition;
+            position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * (normalizedLocalPosition * body.height);
             rotation = coordinateBaseBone.transform.rotation * localRotation;
         }
     }
@@ -156,20 +156,37 @@ public class BoneKeyPose {
         }
     }
 
-    public void ConvertBodyLocalToWorld() {
-
+    public void ConvertBodyLocalToWorld(Body body) {
+        if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+        if (body != null) {
+            position = body.transform.position + body.transform.rotation * (normalizedLocalPosition * body.height);
+            rotation = body.transform.rotation * localRotation;
+        }
     }
 
-    public void ConvertWorldToBodyLocal() {
-
+    public void ConvertWorldToBodyLocal(Body body) {
+        if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+        if (body != null) {
+            localPosition = Quaternion.Inverse(body.transform.rotation) * (position - body.transform.position);
+            normalizedLocalPosition = localPosition / body.height;
+            localRotation = Quaternion.Inverse(body.transform.rotation) * rotation;
+        }
     }
 
-    public void ConvertBodyLocalToBoneLocal() {
-
+    public void ConvertBodyLocalToBoneLocal(Body body) {
+        if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+        if (body != null) {
+            ConvertBodyLocalToWorld(body);
+            ConvertWorldToBoneLocal(body);
+        }
     }
 
-    public void ConvertBoneLocalToBodyLocal() {
-
+    public void ConvertBoneLocalToBodyLocal(Body body) {
+        if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+        if (body != null) {
+            ConvertBoneLocalToWorld(body);
+            ConvertWorldToBodyLocal(body);
+        }
     }
 }
 
@@ -262,8 +279,12 @@ public class KeyPose : ScriptableObject {
                     var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
                     if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                         Bone baseBone = body[boneKeyPose.coordinateParent];
-                        pose.position = baseBone.transform.position + baseBone.transform.rotation * boneKeyPose.localPosition;
+                        pose.position = baseBone.transform.position + baseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
                         pose.rotation = boneKeyPose.localRotation * baseBone.transform.rotation;
+                    }
+                    if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                        pose.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
+                        pose.rotation = boneKeyPose.localRotation * body.transform.rotation;
                     }
                     var springDamper = new Vector2(spring, damper);
                     bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
@@ -286,13 +307,18 @@ public class KeyPose : ScriptableObject {
             if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                 // 位置の補正
                 //Vector3 pos = coordinateBaseBone.transform.position + Quaternion.LookRotation(targetDir, coordinateBaseBone.transform.rotation * Vector3.up) * boneKeyPose.localPosition;
-                keyPoseApplied.position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * boneKeyPose.localPosition;
+                keyPoseApplied.position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
                 // 姿勢の補正
                 //Quaternion rot = boneKeyPose.localRotation * Quaternion.LookRotation(targetDir, coordinateBaseBone.transform.rotation * Vector3.up);
                 keyPoseApplied.rotation = boneKeyPose.localRotation * coordinateBaseBone.transform.rotation;
-            }else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+            } else if(boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
                 keyPoseApplied.position = boneKeyPose.position;
                 keyPoseApplied.rotation = boneKeyPose.rotation;
+            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                // 位置の補正
+                keyPoseApplied.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
+                // 姿勢の補正
+                keyPoseApplied.rotation = boneKeyPose.localRotation * body.transform.rotation;
             }
             keyPoseApplied.usePosition = boneKeyPose.usePosition;
             keyPoseApplied.useRotation = boneKeyPose.useRotation;
