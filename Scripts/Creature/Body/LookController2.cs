@@ -40,6 +40,9 @@ public class LookController2 : LookController {
     public bool manualEye = false;
     public bool manualHead = false;
 
+    public TextMesh debugText = null;
+    public bool showDebugText = false;
+
     enum ManualControlTarget { Eye, Head };
     private ManualControlTarget manualControlTarget = ManualControlTarget.Eye;
 
@@ -67,7 +70,8 @@ public class LookController2 : LookController {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     void Start () {
-	}
+        debugText.gameObject.SetActive(false);
+    }
 
     void Update() {
         if (Input.GetKeyDown(KeyCode.Z)) {
@@ -118,6 +122,21 @@ public class LookController2 : LookController {
                 manualHeadAngle.x += moveAngle;
             }
         }
+
+        // --
+
+        if (Input.GetKey(KeyCode.C)) {
+            showDebugText = true;
+            if (Input.GetKey(KeyCode.LeftShift)) {
+                debugText.gameObject.SetActive(true);
+            }
+        }
+        if (Input.GetKey(KeyCode.V)) {
+            showDebugText = false;
+            if (Input.GetKey(KeyCode.LeftShift)) {
+                debugText.gameObject.SetActive(false);
+            }
+        }
     }
 
     void FixedUpdate () {
@@ -146,29 +165,39 @@ public class LookController2 : LookController {
 
                 // 視線移動量を算出
                 Vector3 targEyeDir = (target.transform.position - body["Head"].transform.position).normalized;
+                if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
+
+                Vector3 targEyeDirVert = targEyeDir; targEyeDirVert.x = 0;
+                Vector3 targEyeDirHoriz = targEyeDir; targEyeDirHoriz.y = 0;
+                float targAngleVert = Vector3.SignedAngle(Vector3.forward, targEyeDirVert, Vector3.right);
+                float targAngleHoriz = Vector3.SignedAngle(Vector3.forward, targEyeDirHoriz, Vector3.up);
+                debugText.text = targAngleHoriz + ", " + targAngleVert + "\r\n";
+
+                // キャリブレーション変換
+                float targAngleVertCalib = 1.0f * targAngleVert;
+                float targAngleHorizCalib = 2.1f * targAngleHoriz;
+                targEyeDir = Quaternion.Euler(targAngleVertCalib, targAngleHorizCalib, 0) * Vector3.forward;
 
                 // -- 手動オーバーライド
                 if (manualEye) {
                     targEyeDir = Quaternion.Euler(manualEyeAngle.x, manualEyeAngle.y, 0) * Vector3.forward;
+                    debugText.text += manualEyeAngle.y + ", " + manualEyeAngle.x + "\r\n";
                 } else {
-                    Vector3 targEyeDirVert = targEyeDir; targEyeDirVert.x = 0;
-                    Vector3 targEyeDirHoriz = targEyeDir; targEyeDirHoriz.y = 0;
-                    manualEyeAngle.x = Vector3.SignedAngle(Vector3.forward, targEyeDirVert, Vector3.right);
-                    manualEyeAngle.y = Vector3.SignedAngle(Vector3.forward, targEyeDirHoriz, Vector3.up);
+                    manualEyeAngle.x = targAngleVert;
+                    manualEyeAngle.y = targAngleHoriz;
                 }
                 // --
 
-                if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
-
+                // 視線移動速度等の計算
                 Vector3 currLEyeDir = body["LeftEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);
                 Vector3 currREyeDir = body["RightEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);
                 Vector3 currEyeDir = (currLEyeDir + currREyeDir) * 0.5f;
                 float diffAngleEye = Vector3.Angle(targEyeDir, currEyeDir);
 
-                // Smooth Persuitの最大追随速度は普通は30[deg/sec]らしいので、これを超えたらSaccade
+                // -- Smooth Persuitの最大追随速度は普通は30[deg/sec]らしいので、これを超えたらSaccade
                 bool saccade = (diffAngleEye / Time.fixedDeltaTime > 30.0f);
 
-                // 視線移動速度の決定
+                // -- 視線移動速度の決定
                 float durationEye;
                 if (saccade) {
                     durationEye = diffAngleEye * (1 / 500.0f); //  1/500 [sec/deg]
@@ -191,7 +220,10 @@ public class LookController2 : LookController {
                     baseHeadRotation = nextBaseHeadRotation;
                 }
 
-                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.3f);
+                // <!!> 今回は頭基準姿勢は固定とする
+                baseHeadRotation = Quaternion.identity;
+
+                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.2f);
 
                 // -- 手動オーバーライド
                 if (manualHead) {
