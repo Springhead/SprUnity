@@ -4,57 +4,58 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using SprUnity;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
-// SubMovementの発行条件クラス
-[Serializable]
-public class SubmovementBlock {
-    public float duration;
-    public Vector2 springDamper;
+namespace SprUnity {
 
-}
+    public class ScriptableAction : MonoBehaviour {
 
-// SubMovement発行までのWaitTime管理保持クラス
-[Serializable]
-public class WaitTimeBlock {
-    public int waitTime;
-}
+        public bool isEditing;
+        public bool actionEnabled;
 
-public class ScriptableAction : MonoBehaviour {
+        protected CancellationTokenSource tokenSource;
+        protected CancellationToken cancelToken;
 
-    public bool isEditing;
-    public bool actionEnabled;
+        protected Body body;
 
-    protected CancellationTokenSource tokenSource;
-    protected CancellationToken cancelToken;
+        // 編集に関してはLogをとってそれを編集することで
+        // submovement(class?)の一覧
+        // waitTime(class?)の一覧
 
-    protected Body body;
+        // Use this for initialization
+        void Start() {
 
-    // 編集に関してはLogをとってそれを編集することで
-    // submovement(class?)の一覧
-    // waitTime(class?)の一覧
+        }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void FixedUpdate () {
-		
-	}
+        // Update is called once per frame
+        void FixedUpdate() {
 
-    void OnDisable() {
-        EndAction();
+        }
+
+        void OnDisable() {
+            EndAction();
+        }
+
+        public virtual void BeginAction(Body body) {
+
+        }
+        public void UpdateAction() {
+
+        }
+        public void EndAction() {
+
+        }
+
+        // Actionの目的
+        public virtual float Objective() {
+            return 0;
+        }
+
+        public void Action() {
+            // 
+        }
     }
 
-    public virtual void BeginAction(Body body) {
-
-    }
-    public void UpdateAction() {
-
-    }
-    public void EndAction() {
-
-    }
 }

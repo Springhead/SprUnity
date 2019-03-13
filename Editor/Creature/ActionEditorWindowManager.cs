@@ -2,125 +2,122 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using SprUnity;
 
-public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowManager> {
+namespace SprUnity {
 
-    // マネージャーのインスタンス
-    // シングルトン化のため
-    //ActionEditorWindowManager instance;
+    public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowManager> {
 
-    // 
-    public Body body;
+        // マネージャーのインスタンス
+        // シングルトン化のため
+        //ActionEditorWindowManager instance;
 
-    //
-    public SceneView scene;
+        // 
+        public Body body;
 
-    //
-    public ActionStateMachineWindow stateMachineWindow;
-    public KeyPoseWindow keyPoseWindow;
-    public KeyPoseInterpolationWindow interpolationWindow;
-    public ActionSelectWindow actionSelectWindow;
-    public ActionTimelineWindow timelineWindow;
+        //
+        public SceneView scene;
 
-    // 
-    public PullbackPoseWindow pullbackPoseWindow;
-    public PullbackPoseGroupWindow pullbackPoseGroupWindow;
+        //
+        public ActionStateMachineWindow stateMachineWindow;
+        public KeyPoseWindow keyPoseWindow;
+        public KeyPoseInterpolationWindow interpolationWindow;
+        public ActionSelectWindow actionSelectWindow;
+        public ActionTimelineWindow timelineWindow;
 
-    //
-    public KeyPoseBoneWindow keyPoseBoneWindow;
-    public PullbackPoseBoneWindow pullbackPoseBoneWindow;
+        // 
+        public PullbackPoseWindow pullbackPoseWindow;
+        public PullbackPoseGroupWindow pullbackPoseGroupWindow;
 
-    //
-    public BodyParameterWindow bodyParameterWindow;
+        //
+        public KeyPoseBoneWindow keyPoseBoneWindow;
+        public PullbackPoseBoneWindow pullbackPoseBoneWindow;
 
-    //
-    public KeyPoseNodeGraphEditorWindow keyPoseNodeGraphWindow;
+        //
+        public BodyParameterWindow bodyParameterWindow;
+
+        //
+        public KeyPoseNodeGraphEditorWindow keyPoseNodeGraphWindow;
 
 
-    // ActionStateMachineWindow関係
-    // KeyPoseWindow関係
-    public List<KeyPoseStatus> singleKeyPoses;
-    public List<KeyPoseStatus> pluralKeyPoses;
-    // KeyPoseInterpolationWindow関係
-    // public ActionSelectWindow関係
-    public List<ActionStateMachineStatus> actions;
-    public List<ActionStateMachineStatus> selectedAction {
-        get {
-            var selected = new List<ActionStateMachineStatus>();
-            foreach (var action in actions) {
-                if (action.isSelected) {
-                    selected.Add(action);
+        // ActionStateMachineWindow関係
+        // KeyPoseWindow関係
+        public List<KeyPoseStatus> singleKeyPoses;
+        public List<KeyPoseStatus> pluralKeyPoses;
+        // KeyPoseInterpolationWindow関係
+        // public ActionSelectWindow関係
+        public List<ActionStateMachineStatus> actions;
+        public List<ActionStateMachineStatus> selectedAction {
+            get {
+                var selected = new List<ActionStateMachineStatus>();
+                foreach (var action in actions) {
+                    if (action.isSelected) {
+                        selected.Add(action);
+                    }
                 }
+                return selected;
             }
-            return selected;
         }
-    }
-    // public ActionTimelineWindow関係
-    public bool showSpring;
-    public bool showDamper;
+        // public ActionTimelineWindow関係
+        public bool showSpring;
+        public bool showDamper;
 
-    // PullbackPoseWindow関係
-    // public PullbackPoseGroupWindow関係
+        // PullbackPoseWindow関係
+        // public PullbackPoseGroupWindow関係
 
-    // KeyPoseBoneWindow関係
-    public bool showKeyPoseBoneWindow;
-    // PullbackPoseBoneWindow関係
-    public bool showPullbackPoseBoneWindow;
+        // KeyPoseBoneWindow関係
+        public bool showKeyPoseBoneWindow;
+        // PullbackPoseBoneWindow関係
+        public bool showPullbackPoseBoneWindow;
 
 
-    //
-    public string actionSaveFolder;
-    public string KeyPoseSaveFolder;
+        //
+        public string actionSaveFolder;
+        public string KeyPoseSaveFolder;
 
-    //
-    public GameObject targetObject;
-    //public GameObject targetObject;
+        //
+        public GameObject targetObject;
 
-    ActionEditorWindowManager() {
-        singleKeyPoses = new List<KeyPoseStatus>();
-        pluralKeyPoses = new List<KeyPoseStatus>();
-        actions = new List<ActionStateMachineStatus>();
+        ActionEditorWindowManager() {
+            singleKeyPoses = new List<KeyPoseStatus>();
+            pluralKeyPoses = new List<KeyPoseStatus>();
+            actions = new List<ActionStateMachineStatus>();
 
-        EditorApplication.hierarchyChanged -= Reload;
-        EditorApplication.hierarchyChanged += Reload;
-        EditorApplication.projectChanged -= Reload;
-        EditorApplication.projectChanged += Reload;
-        Debug.Log("Manager constructed");
-    }
+            EditorApplication.hierarchyChanged -= Reload;
+            EditorApplication.hierarchyChanged += Reload;
+            EditorApplication.projectChanged -= Reload;
+            EditorApplication.projectChanged += Reload;
+            Debug.Log("Manager constructed");
+        }
 
-    ~ActionEditorWindowManager() {
-        Debug.Log("Manager destructed");
-    }
+        ~ActionEditorWindowManager() {
+            Debug.Log("Manager destructed");
+        }
 
-    void OnEnable() {
-        if (body == null) {
+        void OnEnable() {
+            if (body == null) {
+                body = GameObject.FindObjectOfType<Body>();
+            }
+            //KeyPoseWindow.GetKeyPoses();
+            //ActionSelectWindow.GetActions();
+            actionSaveFolder = Application.dataPath + "/Actions/Actions";
+            KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
+            Debug.Log("Manager OnEnable");
+        }
+
+        void OnDisable() {
+            Debug.Log("Manager OnDisable");
+        }
+
+        void Reload() {
+            KeyPoseWindow.GetKeyPoses();
+            ActionSelectWindow.GetActions();
+            body = GameObject.FindObjectOfType<Body>();
+            if (stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
+        }
+
+        public void SearchBody() {
             body = GameObject.FindObjectOfType<Body>();
         }
-        /*
-        singleKeyPoses = new List<KeyPoseStatus>();
-        pluralKeyPoses = new List<KeyPoseStatus>();
-        actions = new List<ActionStateMachineStatus>();
-        */
-        //KeyPoseWindow.GetKeyPoses();
-        //ActionSelectWindow.GetActions();
-        actionSaveFolder = Application.dataPath + "/Actions/Actions";
-        KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
-        Debug.Log("Manager OnEnable");
     }
 
-    void OnDisable() {
-        Debug.Log("Manager OnDisable");
-    }
-
-    void Reload() {
-        KeyPoseWindow.GetKeyPoses();
-        ActionSelectWindow.GetActions();
-        body = GameObject.FindObjectOfType<Body>();
-        if(stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
-    }
-
-    public void SearchBody() {
-        body = GameObject.FindObjectOfType<Body>();
-    }
 }
