@@ -6,25 +6,47 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace SprUnity
-{
+namespace SprUnity {
+
 #if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
-#endif
-    public class KeyPoseGroup : ScriptableObject
-    {
+    [CustomEditor(typeof(KeyPoseGroup))]
+    public class KeyPoseGroupEditor : Editor {
+
+    }
+#endif 
+    public class KeyPoseGroup : ScriptableObject {
+
+#if UNITY_EDITOR
         [MenuItem("Assets/Create/Action/Add New KeyPose")]
-        public static void AddKeyPose() {
-            KeyPoseGroup selectedAsset = Selection.activeObject as KeyPoseGroup;
-            if (selectedAsset == null) {
-                Debug.LogWarning("Null KeyPoseGroup Asset");
+        static void CreateKeyPose() {
+            var selected = Selection.activeObject as KeyPoseGroup;
+
+            if (selected == null) {
+                Debug.LogWarning("Null KeyPoseGroup");
                 return;
             }
 
-            var keyPose = ScriptableObject.CreateInstance<KeyPose>();
-            keyPose.name = "New Key Pose";
-            AssetDatabase.AddObjectToAsset(keyPose, selectedAsset);
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(selectedAsset));
+            var keypose = ScriptableObject.CreateInstance<KeyPose>();
+            keypose.name = "keypose";
+            keypose.InitializeByCurrentPose();
+            AssetDatabase.AddObjectToAsset(keypose, selected);
+
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
+        }
+#endif
+        void CreateKeyPose(string name) {
+
+            if (this == null) {
+                Debug.LogWarning("Null KeyPoseGroup");
+                return;
+            }
+
+            var keypose = ScriptableObject.CreateInstance<KeyPose>();
+            keypose.name = name;
+            keypose.InitializeByCurrentPose();
+            AssetDatabase.AddObjectToAsset(keypose, this);
+
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
         }
         public List<KeyPose> keyposes = new List<KeyPose>();
     }

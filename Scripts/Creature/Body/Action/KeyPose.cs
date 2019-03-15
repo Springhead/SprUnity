@@ -39,10 +39,8 @@ namespace SprUnity {
             }
             if (textChangeComp) {
                 string mainPath = AssetDatabase.GetAssetPath(this);
-                //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
                 AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPose)target));
             }
-
             DrawDefaultInspector();
             KeyPose keyPose = (KeyPose)target;
 
@@ -115,13 +113,20 @@ namespace SprUnity {
             }
         }
     }
-
+    /*
     [CustomPropertyDrawer(typeof(BoneKeyPose))]
     public class BoneKeyPosePropertyDrawer : PropertyDrawer {
+        bool showBoneKeyPose;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            
+            EditorGUI.BeginProperty(position, label, property);
+            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, property.FindPropertyRelative("boneId"));
+            if (showBoneKeyPose) {
+
+            }
+            EditorGUI.EndProperty();
         }
     }
+    */
 #endif
 
     [Serializable]
@@ -231,8 +236,8 @@ namespace SprUnity {
 
         public BoneKeyPose this[string key] {
             get {
-                foreach(var boneKeyPose in boneKeyPoses) {
-                    if(boneKeyPose.boneId.ToString() == key) {
+                foreach (var boneKeyPose in boneKeyPoses) {
+                    if (boneKeyPose.boneId.ToString() == key) {
                         return boneKeyPose;
                     }
                 }
@@ -262,7 +267,6 @@ namespace SprUnity {
                         }
 
                         if (bone.ikEndEffector.phIKEndEffector != null) {
-
                             if (bone.ikEndEffector.phIKEndEffector.IsPositionControlEnabled()) {
                                 boneKeyPose.position = bone.ikEndEffector.phIKEndEffector.GetTargetPosition().ToVector3();
                                 boneKeyPose.usePosition = true;
@@ -278,16 +282,19 @@ namespace SprUnity {
                             }
 
                         } else {
-
                             if (bone.ikEndEffector.desc.bPosition) {
-                                boneKeyPose.position = ((Vec3d)(bone.ikEndEffector.desc.targetPosition)).ToVector3();
+                                if (EditorApplication.isPlaying) {
+                                    boneKeyPose.position = ((Vec3d)(bone.ikEndEffector.desc.targetPosition)).ToVector3();
+                                }
                                 boneKeyPose.usePosition = true;
                             } else {
                                 boneKeyPose.usePosition = false;
                             }
 
                             if (bone.ikEndEffector.desc.bOrientation) {
-                                boneKeyPose.rotation = ((Quaterniond)(bone.ikEndEffector.desc.targetOrientation)).ToQuaternion();
+                                if (EditorApplication.isPlaying) {
+                                    boneKeyPose.rotation = ((Quaterniond)(bone.ikEndEffector.desc.targetOrientation)).ToQuaternion();
+                                }
                                 boneKeyPose.useRotation = true;
                             } else {
                                 boneKeyPose.useRotation = false;
