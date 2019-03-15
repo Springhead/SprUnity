@@ -26,6 +26,23 @@ namespace SprUnity {
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         public override void OnInspectorGUI() {
+            bool textChangeComp = false;
+            EditorGUI.BeginChangeCheck();
+            Event e = Event.current;
+            if (e.keyCode == KeyCode.Return && Input.eatKeyPressOnTextFieldFocus) {
+                textChangeComp = true;
+                Event.current.Use();
+            }
+            target.name = EditorGUILayout.TextField("Name", target.name);
+            if (EditorGUI.EndChangeCheck()) {
+                EditorUtility.SetDirty(target);
+            }
+            if (textChangeComp) {
+                string mainPath = AssetDatabase.GetAssetPath(this);
+                //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPose)target));
+            }
+
             DrawDefaultInspector();
             KeyPose keyPose = (KeyPose)target;
 
