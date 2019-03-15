@@ -98,3 +98,57 @@ public class Matrix3dDrawer : PropertyDrawer {
 		return base.GetPropertyHeight (property, label) * 3 + 8;
 	}
 }
+
+
+// Source : https://gist.github.com/ProGM/226204b2a7f99998d84d755ffa1fb39a
+public class Vector3WithPositionHandle : PropertyAttribute { }
+public class QuaternionWithRotationHandle : PropertyAttribute {
+    public Vector3 handlePos = new Vector3();
+    public QuaternionWithRotationHandle(Vector3 pos = default(Vector3)) {
+        this.handlePos = pos;
+    }
+}
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(MonoBehaviour), true)]
+public class MemberHandleDrawer : Editor {
+
+    readonly GUIStyle style = new GUIStyle();
+
+    void OnEnable() {
+        style.fontStyle = FontStyle.Bold;
+        style.normal.textColor = Color.black;
+    }
+
+    public void OnSceneGUI() {
+        var property = serializedObject.GetIterator();
+        while (property.Next(true)) {
+            if (property.propertyType == SerializedPropertyType.Vector3) {
+                var field = serializedObject.targetObject.GetType().GetField(property.name);
+                if (field == null) {
+                    continue;
+                }
+                var vector3WithHandle = field.GetCustomAttributes(typeof(Vector3WithPositionHandle), false);
+                if (vector3WithHandle.Length > 0) {
+                    Handles.Label(property.vector3Value, property.name);
+                    property.vector3Value = Handles.PositionHandle(property.vector3Value, Quaternion.identity);
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+            if (property.propertyType == SerializedPropertyType.Quaternion) {
+                var field = serializedObject.targetObject.GetType().GetField(property.name);
+                if (field == null) {
+                    continue;
+                }
+                var quaternionWithHandle = field.GetCustomAttributes(typeof(QuaternionWithRotationHandle), false);
+                if (quaternionWithHandle.Length > 0) {
+                    var handlePos = field.GetCustomAttribute<QuaternionWithRotationHandle>().handlePos;
+                    Handles.Label(handlePos, property.name);
+                    property.quaternionValue = Handles.RotationHandle(property.quaternionValue, handlePos);
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+        }
+    }
+}
+#endif

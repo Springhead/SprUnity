@@ -98,41 +98,49 @@ namespace SprUnity {
             }
         }
     }
-    /*
+
     [CustomPropertyDrawer(typeof(BoneKeyPose))]
-    public class BoneKeyPoseDrawer : PropertyDrawer {
+    public class BoneKeyPosePropertyDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            base.OnGUI(position, property, label);
+            
         }
     }
-    */
 #endif
 
     [Serializable]
     public class BoneKeyPose {
-        public string label {
-            get {
-                return boneId.ToString();
-            }
-        }
         public HumanBodyBones boneId = HumanBodyBones.Hips;
         public string boneIdString = "";
-        public Vector3 position = new Vector3();
-        public Quaternion rotation = new Quaternion();
-        // 以下はローカル座標とするためのものだが、ここに保存するには長いか？
         public enum CoordinateMode {
             World, // World
-            BoneBaseLocal, // あるBoneを親とするローカル
-            BodyLocal, // Body GameObjectのローカル
+            BoneBaseLocal, // Local coordinate (Bone GameObject)
+            BodyLocal, // Local coordinate (Body GameObject)
         };
         public CoordinateMode coordinateMode;
+        // World Info
+        public Vector3 position = new Vector3();
+        public Quaternion rotation = new Quaternion();
+        // Local Info
         public HumanBodyBones coordinateParent;
         public Vector3 localPosition = new Vector3();
         public Vector3 normalizedLocalPosition = new Vector3();
         public Quaternion localRotation = Quaternion.identity;
+        // Control Flags
         public bool usePosition = true;
         public bool useRotation = true;
+        // 
         public float lookAtRatio = 0;
+        // 
+        public Vector2 boneKeyPoseTiming = new Vector2(0.0f, 1.0f);
+        public float startTime {
+            get { return boneKeyPoseTiming.x; }
+            set { boneKeyPoseTiming.x = value; }
+        }
+        public float endTime {
+            get { return boneKeyPoseTiming.y; }
+            set { boneKeyPoseTiming.y = value; }
+        }
+
 
         public void ConvertBoneLocalToWorld(Body body = null) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
@@ -203,6 +211,22 @@ namespace SprUnity {
         public float testDuration = 1.0f;
         public float testSpring = 1.0f;
         public float testDamper = 1.0f;
+
+        public BoneKeyPose this[string key] {
+            get {
+                foreach(var boneKeyPose in boneKeyPoses) {
+                    if(boneKeyPose.boneId.ToString() == key) {
+                        return boneKeyPose;
+                    }
+                }
+                Debug.LogWarning("KeyPose " + this.name + " does not contain BoneKeyPose of " + key);
+                return null;
+            }
+        }
+        // <!!> Is it better ?
+        public BoneKeyPose this[HumanBodyBones key] {
+            get { return this[key.ToString()]; }
+        }
 
         public void InitializeByCurrentPose(Body body = null) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }

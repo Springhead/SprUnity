@@ -41,7 +41,7 @@ namespace SprUnity {
                         time = 0.0f;
                         index = 0;
                         inAction = actions[i];
-                        inAction.BeginAction(body);
+                        //inAction.BeginAction(body);
                     }
                 }
             }
@@ -51,7 +51,7 @@ namespace SprUnity {
             if (body == null || body.initialized) {
                 if (inAction != null && inAction.enabled) {
                     //inAction.UpdateStateMachine();
-                    inAction.UpdateAction();
+                    //inAction.UpdateAction();
 
                     time += Time.fixedDeltaTime;
 
@@ -74,9 +74,9 @@ namespace SprUnity {
                     time = 0.0f;
                     index = 0;
                     if (target.Length < 1) {
-                        inAction.BeginAction(body);
+                        //inAction.BeginAction(body);
                     } else {
-                        inAction.BeginAction(body);
+                        //inAction.BeginAction(body);
                     }
                 }
             }
