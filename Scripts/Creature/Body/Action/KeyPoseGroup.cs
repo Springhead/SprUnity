@@ -48,6 +48,14 @@ namespace SprUnity {
 
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
         }
-        public List<KeyPose> keyposes = new List<KeyPose>();
+
+        public Object[] GetSubAssets() {
+#if UNITY_EDITOR
+            string path = AssetDatabase.GetAssetPath(this);
+            return AssetDatabase.LoadAllAssetsAtPath(path);
+#else
+        return null;
+#endif
+        }
     }
 }

@@ -41,8 +41,7 @@ namespace SprUnity {
 
         // ActionStateMachineWindow関係
         // KeyPoseWindow関係
-        public List<KeyPoseStatus> singleKeyPoses;
-        public List<KeyPoseStatus> pluralKeyPoses;
+        public List<List<KeyPoseStatus>> keyPoses;
         // KeyPoseInterpolationWindow関係
         // public ActionSelectWindow関係
         public List<ActionStateMachineStatus> actions;
@@ -78,8 +77,7 @@ namespace SprUnity {
         public GameObject targetObject;
 
         ActionEditorWindowManager() {
-            singleKeyPoses = new List<KeyPoseStatus>();
-            pluralKeyPoses = new List<KeyPoseStatus>();
+            keyPoses = new List<List<KeyPoseStatus>>();
             actions = new List<ActionStateMachineStatus>();
 
             EditorApplication.hierarchyChanged -= Reload;
