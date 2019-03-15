@@ -98,13 +98,20 @@ namespace SprUnity {
             }
         }
     }
-
+    /*
     [CustomPropertyDrawer(typeof(BoneKeyPose))]
     public class BoneKeyPosePropertyDrawer : PropertyDrawer {
+        bool showBoneKeyPose;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            
+            EditorGUI.BeginProperty(position, label, property);
+            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, property.FindPropertyRelative("boneId"));
+            if (showBoneKeyPose) {
+
+            }
+            EditorGUI.EndProperty();
         }
     }
+    */
 #endif
 
     [Serializable]
