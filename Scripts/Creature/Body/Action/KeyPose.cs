@@ -101,10 +101,11 @@ namespace SprUnity {
     /*
     [CustomPropertyDrawer(typeof(BoneKeyPose))]
     public class BoneKeyPosePropertyDrawer : PropertyDrawer {
-        bool showBoneKeyPose;
+        public bool showBoneKeyPose;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+            base.OnGUI(position, property, label);
             EditorGUI.BeginProperty(position, label, property);
-            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, property.FindPropertyRelative("boneId"));
+            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, ((HumanBodyBones)property.FindPropertyRelative("boneId").enumValueIndex).ToString());
             if (showBoneKeyPose) {
 
             }
