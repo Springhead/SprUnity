@@ -23,6 +23,7 @@ namespace SprUnity {
             Body body = (Body)target;
 
             body.initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
+            body.changeRoundConeOnStart = EditorGUILayout.Toggle("Change RoundCone On Start", body.changeRoundConeOnStart);
 
             // ----- ----- ----- ----- -----
             // Bone List
@@ -119,6 +120,7 @@ namespace SprUnity {
         public float momentToSqrtBiasCoeff = 100.0f;
 
         public bool initializeOnStart = false;
+        public bool changeRoundConeOnStart = true;
 
         // Flag
         public bool initialized = false;
@@ -283,30 +285,32 @@ namespace SprUnity {
             }
 
             // -- Fit Collision Shape Length
-            foreach (var bone in bones) {
-                if (bone.shape != null) {
-                    var shapeObj = bone.shape.shapeObject;
-                    if (shapeObj == null) { shapeObj = bone.shape.gameObject; }
+            if (changeRoundConeOnStart) {
+                foreach (var bone in bones) {
+                    if (bone.shape != null) {
+                        var shapeObj = bone.shape.shapeObject;
+                        if (shapeObj == null) { shapeObj = bone.shape.gameObject; }
 
-                    var meshRoundCone = shapeObj.GetComponent<MeshRoundCone>();
-                    if (meshRoundCone != null) {
-                        meshRoundCone.pivot = MeshRoundCone.Pivot.R1;
-                        meshRoundCone.positionR1 = bone.transform.position;
+                        var meshRoundCone = shapeObj.GetComponent<MeshRoundCone>();
+                        if (meshRoundCone != null) {
+                            meshRoundCone.pivot = MeshRoundCone.Pivot.R1;
+                            meshRoundCone.positionR1 = bone.transform.position;
 
-                        if (bone.children.Count > 0) {
-                            Vector3 averagePos = new Vector3();
-                            foreach (var child in bone.children) {
-                                averagePos += child.transform.position;
+                            if (bone.children.Count > 0) {
+                                Vector3 averagePos = new Vector3();
+                                foreach (var child in bone.children) {
+                                    averagePos += child.transform.position;
+                                }
+                                averagePos /= bone.children.Count;
+                                meshRoundCone.positionR2 = averagePos;
+
+                            } else {
+                                meshRoundCone.positionR2 = bone.transform.position;
                             }
-                            averagePos /= bone.children.Count;
-                            meshRoundCone.positionR2 = averagePos;
 
-                        } else {
-                            meshRoundCone.positionR2 = bone.transform.position;
+                            meshRoundCone.Reposition();
+                            meshRoundCone.Reshape();
                         }
-
-                        meshRoundCone.Reposition();
-                        meshRoundCone.Reshape();
                     }
                 }
             }
