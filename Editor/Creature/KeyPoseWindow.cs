@@ -58,6 +58,8 @@ namespace SprUnity {
         private GUISkin myskin;
         private string path = "GUISkins/SprGUISkin.guiskin";
 
+        static KeyPose latestEditableKeyPose;
+
         [MenuItem("Window/KeyPose Window")]
         static void Open() {
             window = GetWindow<KeyPoseWindow>();
@@ -129,6 +131,7 @@ namespace SprUnity {
                         } else if (keyPoseStatus.status == KeyPoseStatus.Status.Visible) {
                             keyPoseStatus.status = KeyPoseStatus.Status.Editable;
                             Selection.activeObject = keyPoseStatus.keyPose; // なんか選択がおかしい
+                            latestEditableKeyPose = keyPoseStatus.keyPose;
                             //Selection.objects = new Object[] { keyPoseStatus.keyPose };
                         } else if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) {
                             keyPoseStatus.status = KeyPoseStatus.Status.None;
@@ -181,7 +184,7 @@ namespace SprUnity {
                 }
             }
 
-            EditorGUILayout.BeginVertical(GUI.skin.textArea);
+            EditorGUILayout.BeginVertical(GUI.skin.box);
             scrollPosParameterWindow = GUILayout.BeginScrollView(scrollPosParameterWindow);
             if (keyPoses.Count != 0) {
                 for (int j = 0; j < keyPoses.Count; j++) {
@@ -212,57 +215,53 @@ namespace SprUnity {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body == null) return;
             //var target = ActionEditorWindowManager.instance.targetObject;
-            foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
-                foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
-                    if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) {
-                        KeyPose keyPose = keyPoseStatus.keyPose;
-                        var boneKeyPoseFromLocal = keyPose.GetBoneKeyPoses(body);
-                        foreach (var boneKeyPose in boneKeyPoseFromLocal) {
-                            var parentTransform = body[boneKeyPose.coordinateParent].transform;
-                            Pose baseTransform = new Pose(parentTransform.position, parentTransform.rotation);
-                            if (boneKeyPose.usePosition) {
-                                EditorGUI.BeginChangeCheck();
-                                Vector3 position = Handles.PositionHandle(boneKeyPose.position, Quaternion.identity);
-                                if (EditorGUI.EndChangeCheck()) {
-                                    Undo.RecordObject(keyPose, "Change KeyPose Target Position");
-                                    if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
-                                        // worldはBoneLocal->World(or BodyLocal)
-                                        boneKeyPose.position = position;
-                                        boneKeyPose.ConvertWorldToBoneLocal();
-                                    } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
-                                        // localならWorld(or BoneLocal)->Local
-                                        boneKeyPose.position = position;
-                                        boneKeyPose.ConvertWorldToBoneLocal(body);
-                                    } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                                        boneKeyPose.position = position;
-                                        boneKeyPose.ConvertWorldToBodyLocal(body);
-                                    }
-                                    EditorUtility.SetDirty(keyPose);
-                                }
-                            }
-
-                            if (boneKeyPose.useRotation) {
-                                EditorGUI.BeginChangeCheck();
-                                Quaternion rotation = Handles.RotationHandle(boneKeyPose.rotation, boneKeyPose.position);
-                                if (EditorGUI.EndChangeCheck()) {
-                                    Undo.RecordObject(keyPose, "Change KeyPose Target Rotation");
-                                    if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
-                                        // target存在する場合はBoneLocal->World(or BodyLocal)
-                                        boneKeyPose.rotation = rotation;
-                                        boneKeyPose.ConvertWorldToBoneLocal();
-                                    } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
-                                        // target存在しないならWorld(or BoneLocal)->Local
-                                        boneKeyPose.rotation = rotation;
-                                        boneKeyPose.ConvertWorldToBoneLocal();
-                                    } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                                        // target存在しないならWorld(or BoneLocal)->Local
-                                        boneKeyPose.rotation = rotation;
-                                        boneKeyPose.ConvertWorldToBodyLocal(body);
-                                    }
-                                    EditorUtility.SetDirty(keyPose);
-                                }
-                            }
+            if (latestEditableKeyPose == null) {
+                return;
+            }
+            var boneKeyPoseFromLocal = latestEditableKeyPose.GetBoneKeyPoses(body);
+            foreach (var boneKeyPose in boneKeyPoseFromLocal) {
+                var parentTransform = body[boneKeyPose.coordinateParent].transform;
+                Pose baseTransform = new Pose(parentTransform.position, parentTransform.rotation);
+                if (boneKeyPose.usePosition) {
+                    EditorGUI.BeginChangeCheck();
+                    Vector3 position = Handles.PositionHandle(boneKeyPose.position, Quaternion.identity);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Position");
+                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+                            // worldはBoneLocal->World(or BodyLocal)
+                            boneKeyPose.position = position;
+                            boneKeyPose.ConvertWorldToBoneLocal();
+                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+                            // localならWorld(or BoneLocal)->Local
+                            boneKeyPose.position = position;
+                            boneKeyPose.ConvertWorldToBoneLocal(body);
+                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                            boneKeyPose.position = position;
+                            boneKeyPose.ConvertWorldToBodyLocal(body);
                         }
+                        EditorUtility.SetDirty(latestEditableKeyPose);
+                    }
+                }
+
+                if (boneKeyPose.useRotation) {
+                    EditorGUI.BeginChangeCheck();
+                    Quaternion rotation = Handles.RotationHandle(boneKeyPose.rotation, boneKeyPose.position);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Rotation");
+                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+                            // target存在する場合はBoneLocal->World(or BodyLocal)
+                            boneKeyPose.rotation = rotation;
+                            boneKeyPose.ConvertWorldToBoneLocal();
+                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+                            // target存在しないならWorld(or BoneLocal)->Local
+                            boneKeyPose.rotation = rotation;
+                            boneKeyPose.ConvertWorldToBoneLocal();
+                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                            // target存在しないならWorld(or BoneLocal)->Local
+                            boneKeyPose.rotation = rotation;
+                            boneKeyPose.ConvertWorldToBodyLocal(body);
+                        }
+                        EditorUtility.SetDirty(latestEditableKeyPose);
                     }
                 }
             }
