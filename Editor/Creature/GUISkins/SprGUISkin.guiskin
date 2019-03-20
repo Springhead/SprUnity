@@ -78,7 +78,7 @@ MonoBehaviour:
     m_FixedWidth: 0
     m_FixedHeight: 0
     m_StretchWidth: 1
-    m_StretchHeight: 0
+    m_StretchHeight: 1
   m_button:
     m_Name: button
     m_Normal:
@@ -188,7 +188,7 @@ MonoBehaviour:
     m_Margin:
       m_Left: 4
       m_Right: 4
-      m_Top: 4
+      m_Top: -1
       m_Bottom: 4
     m_Padding:
       m_Left: 15
@@ -255,7 +255,7 @@ MonoBehaviour:
     m_Margin:
       m_Left: 4
       m_Right: 4
-      m_Top: 4
+      m_Top: 0
       m_Bottom: 4
     m_Padding:
       m_Left: 0
@@ -1417,7 +1417,7 @@ MonoBehaviour:
     m_ContentOffset: {x: 0, y: 0}
     m_FixedWidth: 0
     m_FixedHeight: 0
-    m_StretchWidth: 1
+    m_StretchWidth: 0
     m_StretchHeight: 0
   m_Settings:
     m_DoubleClickSelectsWord: 1
