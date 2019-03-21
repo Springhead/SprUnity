@@ -22,9 +22,6 @@ namespace SprUnity {
         public override void OnInspectorGUI() {
             Body body = (Body)target;
 
-            body.initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
-            body.changeRoundConeOnStart = EditorGUILayout.Toggle("Change RoundCone On Start", body.changeRoundConeOnStart);
-
             // ----- ----- ----- ----- -----
             // Bone List
             showBoneList = EditorGUILayout.Foldout(showBoneList, "Bones");
@@ -81,6 +78,18 @@ namespace SprUnity {
                 if (GUILayout.Button("Fit To Avatar")) { body.FitToAvatar(); }
             }
 
+            EditorGUILayout.Space();
+
+            // ----- ----- ----- ----- -----
+
+            bool initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
+            if (body.initializeOnStart != initializeOnStart) {
+                // LateAwakeStartフラグも同時に切り替える
+                body.initializeOnStart = initializeOnStart;
+                body.SetLateAwakeStart(!initializeOnStart);
+            }
+            body.changeRoundConeOnStart = EditorGUILayout.Toggle("Change RoundCone On Start", body.changeRoundConeOnStart);
+
             /*
             // For BodyGenerator
             if (GUILayout.Button("Print Bone Positions")) {
@@ -119,7 +128,7 @@ namespace SprUnity {
         public bool fitIKBiasOnFitSpring = true;
         public float momentToSqrtBiasCoeff = 100.0f;
 
-        public bool initializeOnStart = false;
+        public bool initializeOnStart = true;
         public bool changeRoundConeOnStart = true;
 
         // Flag
@@ -163,6 +172,15 @@ namespace SprUnity {
 
         public Bone this[HumanBodyBones key] {
             get { return this[key.ToString()]; }
+        }
+
+        // Set LateAwakeStart Flag for Every Bone Springhead Object
+        public void SetLateAwakeStart(bool lateAwakeStart) {
+            foreach (var bone in bones) {
+                foreach (var spr in bone.gameObject.GetComponents<SprBehaviour>()) {
+                    spr.lateAwakeStart = lateAwakeStart;
+                }
+            }
         }
 
         // Fit each bone positions to given humanoid avatar

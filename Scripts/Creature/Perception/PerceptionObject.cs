@@ -1,47 +1,54 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
+#if UNITY_EDITOR
+using UnityEditor;
 
-public class PerceptionValue {
-    string name = "";
+[CustomEditor(typeof(PerceptionObject))]
+public class PerceptionObjectEditor : Editor {
+    public bool showAttributes = true;
 
-    public static Type Create<Type>() where Type : PerceptionValue {
-        if (typeof(Type) == typeof(PerceptionValueFloat)) {
-            return new PerceptionValueFloat() as Type;
+    public override void OnInspectorGUI() {
+        PerceptionObject perceptionObject = (PerceptionObject)target;
+
+        DrawDefaultInspector();
+
+        showAttributes = EditorGUILayout.Foldout(showAttributes, "Attributes");
+        if (showAttributes) {
+            foreach (var attribute in perceptionObject.attributes) {
+                EditorGUILayout.BeginHorizontal();
+
+                attribute.name = EditorGUILayout.TextField(attribute.name);
+                attribute.type = (PerceptionAttribute.Type)(EditorGUILayout.EnumPopup(attribute.type));
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            // ----- ----- ----- ----- -----
+
+            if (GUILayout.Button("Add Attribute")) {
+                perceptionObject.attributes.Add(new PerceptionAttribute());
+            }
         }
-        if (typeof(Type) == typeof(PerceptionValueBool)) {
-            return new PerceptionValueBool() as Type;
-        }
-        if (typeof(Type) == typeof(PerceptionValueVector3)) {
-            return new PerceptionValueVector3() as Type;
-        }
-        return null;
     }
 }
-
-public class PerceptionValueFloat : PerceptionValue {
-    float value = 0.0f;
-}
-
-public class PerceptionValueBool : PerceptionValue {
-    bool value = false;
-}
-
-public class PerceptionValueVector3 : PerceptionValue {
-    Vector3 value = new Vector3();
-}
-
-// ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+#endif
 
 public class PerceptionObject : MonoBehaviour {
 
-    public Dictionary<string, PerceptionValue> values = new Dictionary<string, PerceptionValue>();
+    public string name = "";
+
+    public List<PerceptionObject> children = new List<PerceptionObject>();
+
+    [HideInInspector]
+    public List<PerceptionAttribute> attributes = new List<PerceptionAttribute>();
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     private void Start() {
-        PerceptionScene.Add(this);
+        PerceptionScene.GetInstance().objects.Add(this);
     }
 
     private void FixedUpdate() {
@@ -50,23 +57,14 @@ public class PerceptionObject : MonoBehaviour {
     private void OnDrawGizmos() {
     }
 
-    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
-    // Get PerceptionValue by Name (CREATE NEW if not exists)
-    public Type Get<Type>(string valueName) where Type : PerceptionValue {
-        if (!values.ContainsKey(valueName)) {
-            values[valueName] = PerceptionValue.Create<Type>();
-        }
-        return values[valueName] as Type;
+    private void OnDestroy() {
+        PerceptionScene.GetInstance().objects.Remove(this);
     }
 
-    // Get PerceptionValue by Name (RETURN NULL if not exists)
-    public Type Check<Type>(string valueName) where Type : PerceptionValue {
-        if (values.ContainsKey(valueName)) {
-            return values[valueName] as Type;
-        } else {
-            return null;
-        }
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+    public PerceptionAttribute this[string attributeName] {
+        get { return attributes.Find(item => item.name == attributeName); }
     }
 
 }

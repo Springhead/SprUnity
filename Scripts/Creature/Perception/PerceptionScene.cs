@@ -6,21 +6,19 @@ public class PerceptionScene : MonoBehaviour {
 
     public List<PerceptionObject> objects = new List<PerceptionObject>();
 
+    public List<PerceptionProcessor> processors = new List<PerceptionProcessor>();
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     private static PerceptionScene instance = null;
     public static PerceptionScene GetInstance() {
         if (instance == null) {
             instance = FindObjectOfType<PerceptionScene>();
+            if (instance == null) {
+                Debug.LogError("PerceptionScene Not Found");
+            }
         }
         return instance;
-    }
-
-    public static void Add(PerceptionObject perceptionObject) {
-        var perceptionScene = PerceptionScene.GetInstance();
-        if (perceptionScene != null) {
-            perceptionScene.objects.Add(perceptionObject);
-        }
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
