@@ -160,7 +160,7 @@ namespace SprUnity {
                     if (GUILayout.Button("Play", GUILayout.Width(60))) {
                         if (EditorApplication.isPlaying) {
                             // @とりあえずコメントアウト
-                            //singleKeyPose.keyPoseGroup.Action(body);
+                            keyPoseStatus.keyPose.Action(body);
                         }
                     }
                     //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
@@ -176,12 +176,12 @@ namespace SprUnity {
                     }
                 }
                 if (GUILayout.Button("Add KeyPoseCurrent")) {
-                    AddKeyPose();
+                    AddKeyPose(keyPoseGroupStatus.keyPoseGroup);
                 }
                 EditorGUILayout.EndVertical();
             }
 
-            //GUILayout.Box("", GUILayout.Width(this.position.width - 10), GUILayout.Height(1));
+            GUILayout.Box("", GUILayout.Width(this.position.width - 10), GUILayout.Height(1));
             GUILayout.EndScrollView();
             
             Rect parameterWindow = new Rect(0, position.height / 2, 
@@ -315,12 +315,12 @@ namespace SprUnity {
             }
         }
 
-        void AddKeyPose() {
-            // @とりあえずコメントアウト
+        void AddKeyPose(KeyPoseGroup kpg) {
             //var keyPoseGroup = KeyPoseInterpolationGroup.CreateKeyPoseGroup();
             //keyPoseGroup.keyposes[0].InitializeByCurrentPose(ActionEditorWindowManager.instance.body);
             //ActionEditorWindowManager.instance.singleKeyPoses.Add(new KeyPoseStatus(keyPoseGroup));
             //Open();
+            kpg.CreateKeyPoseInWin();
         }
 
         void RemoveKeyPose() {
