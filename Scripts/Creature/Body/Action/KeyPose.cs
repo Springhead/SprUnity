@@ -283,18 +283,22 @@ namespace SprUnity {
 
                         } else {
                             if (bone.ikEndEffector.desc.bPosition) {
+#if UNITY_EDITOR
                                 if (EditorApplication.isPlaying) {
                                     boneKeyPose.position = ((Vec3d)(bone.ikEndEffector.desc.targetPosition)).ToVector3();
                                 }
+#endif
                                 boneKeyPose.usePosition = true;
                             } else {
                                 boneKeyPose.usePosition = false;
                             }
 
                             if (bone.ikEndEffector.desc.bOrientation) {
+#if UNITY_EDITOR
                                 if (EditorApplication.isPlaying) {
                                     boneKeyPose.rotation = ((Quaterniond)(bone.ikEndEffector.desc.targetOrientation)).ToQuaternion();
                                 }
+#endif
                                 boneKeyPose.useRotation = true;
                             } else {
                                 boneKeyPose.useRotation = false;

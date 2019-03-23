@@ -38,7 +38,7 @@ namespace SprUnity {
         }
 #endif
         public void CreateKeyPose(string name) {
-
+#if UNITY_EDITOR
             if (this == null) {
                 Debug.LogWarning("Null KeyPoseGroup");
                 return;
@@ -50,6 +50,7 @@ namespace SprUnity {
             AssetDatabase.AddObjectToAsset(keypose, this);
 
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
+#endif
         }
 
         // この関数ではSubAssetだけでなくKeyPoseGroupも含まれる
