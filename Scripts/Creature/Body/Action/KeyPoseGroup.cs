@@ -37,7 +37,10 @@ namespace SprUnity {
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
         }
 #endif
-        public void CreateKeyPose(string name) {
+        public void CreateKeyPoseInWin() {
+            CreateKeyPoseInWin("keypose");
+        }
+        public void CreateKeyPoseInWin(string name) {
 #if UNITY_EDITOR
             if (this == null) {
                 Debug.LogWarning("Null KeyPoseGroup");

@@ -70,12 +70,12 @@ namespace SprUnity {
 
         public void AddItemsToMenu(GenericMenu menu) {
             menu.AddItem(new GUIContent("Reload"), false, () => {
-                Open();
+                GetKeyPoses();
             });
         }
 
         public void OnEnable() {
-            Open();
+            GetKeyPoses();
             visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
             //visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit") as Texture2D;
             editableButtonTexture = EditorGUIUtility.Load("ViewToolMove") as Texture2D;
@@ -105,9 +105,14 @@ namespace SprUnity {
                 Debug.Log("GUISkin is null");
             }
 
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            scrollPos = GUILayout.BeginScrollView(scrollPos,GUILayout.Height(position.height - 150));
             GUILayout.Label("KeyPoses");
-            if (window == null) GUILayout.Label("window null");
+            if (window == null) {
+                Open(); // なぜかOnEnableに書くと新しくwindowが生成される
+                if (window == null) {
+                    GUILayout.Label("window null");
+                }
+            }
             if (ActionEditorWindowManager.instance.keyPoseWindow == null) {
                 GUILayout.Label("Manager.keyPoseWindow null");
             }
@@ -130,11 +135,24 @@ namespace SprUnity {
                             keyPoseStatus.status = KeyPoseStatus.Status.Visible;
                         } else if (keyPoseStatus.status == KeyPoseStatus.Status.Visible) {
                             keyPoseStatus.status = KeyPoseStatus.Status.Editable;
-                            Selection.activeObject = keyPoseStatus.keyPose; // なんか選択がおかしい
+                            // SceneView.onSceneGUIDelegateがエディタ上で選択中の項目が変更された時に呼び出されるため選択を変更する必要がある
+                            Selection.activeObject = keyPoseStatus.keyPose;
                             latestEditableKeyPose = keyPoseStatus.keyPose;
+                            // 他の編集モードのKeyPoseをVisibleにする
+                            foreach (var keyPoseGroupStatus2 in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
+                                foreach (var keyPoseStatus2 in keyPoseGroupStatus2.keyPoseStatuses) {
+                                    if (keyPoseStatus2.status == KeyPoseStatus.Status.Editable && keyPoseStatus2.keyPose != latestEditableKeyPose) {
+                                        keyPoseStatus2.status = KeyPoseStatus.Status.Visible;
+                                    }
+                                }
+                            }
                             //Selection.objects = new Object[] { keyPoseStatus.keyPose };
                         } else if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) {
                             keyPoseStatus.status = KeyPoseStatus.Status.None;
+                            if (Selection.activeObject == keyPoseStatus.keyPose) {
+                                Selection.activeObject = null;
+                                latestEditableKeyPose = null;
+                            }
                         }
                     }
                     GUI.backgroundColor = defaultColor;
@@ -142,7 +160,7 @@ namespace SprUnity {
                     if (GUILayout.Button("Play", GUILayout.Width(60))) {
                         if (EditorApplication.isPlaying) {
                             // @とりあえずコメントアウト
-                            //singleKeyPose.keyPoseGroup.Action(body);
+                            keyPoseStatus.keyPose.Action(body);
                         }
                     }
                     //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
@@ -158,17 +176,16 @@ namespace SprUnity {
                     }
                 }
                 if (GUILayout.Button("Add KeyPoseCurrent")) {
-                    AddKeyPose();
+                    AddKeyPose(keyPoseGroupStatus.keyPoseGroup);
                 }
                 EditorGUILayout.EndVertical();
             }
 
             GUILayout.Box("", GUILayout.Width(this.position.width - 10), GUILayout.Height(1));
             GUILayout.EndScrollView();
-
-            //Rect parameterWindow = GUILayoutUtility.GetRect(position.width, 120);
-            //Rect parameterWindow = new Rect(0, position.height - parameterWindowHeight, position.width, parameterWindowHeight);
-            Rect parameterWindow = new Rect(0, position.height / 2, position.width, position.height - parameterWindowHeight);
+            
+            Rect parameterWindow = new Rect(0, position.height / 2, 
+                position.width, position.height - parameterWindowHeight);
             DrawParameters(parameterWindow, body);
             GUI.skin = null; // 他のwindowに影響が出ないように元に戻す
         }
@@ -183,9 +200,8 @@ namespace SprUnity {
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) keyPoses.Add(keyPoseStatus.keyPose);
                 }
             }
-
-            EditorGUILayout.BeginVertical(GUI.skin.box);
-            scrollPosParameterWindow = GUILayout.BeginScrollView(scrollPosParameterWindow);
+            GUILayout.FlexibleSpace(); //これで一番下に表示できる
+            EditorGUILayout.BeginVertical(GUI.skin.customStyles[0]);
             if (keyPoses.Count != 0) {
                 for (int j = 0; j < keyPoses.Count; j++) {
                     KeyPose keyPose = keyPoses[j];
@@ -207,7 +223,6 @@ namespace SprUnity {
                     }
                 }
             }
-            GUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
         public static void OnSceneGUI(SceneView sceneView) {
@@ -300,12 +315,12 @@ namespace SprUnity {
             }
         }
 
-        void AddKeyPose() {
-            // @とりあえずコメントアウト
+        void AddKeyPose(KeyPoseGroup kpg) {
             //var keyPoseGroup = KeyPoseInterpolationGroup.CreateKeyPoseGroup();
             //keyPoseGroup.keyposes[0].InitializeByCurrentPose(ActionEditorWindowManager.instance.body);
             //ActionEditorWindowManager.instance.singleKeyPoses.Add(new KeyPoseStatus(keyPoseGroup));
             //Open();
+            kpg.CreateKeyPoseInWin();
         }
 
         void RemoveKeyPose() {
