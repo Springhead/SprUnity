@@ -3,91 +3,85 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
-using SprUnity;
 using SprCs;
 
-public class ActionManager : MonoBehaviour {
+namespace SprUnity {
 
-    public Body body = null;
-    public List<ScriptableAction> actions = new List<ScriptableAction>();
+    public class ActionManager : MonoBehaviour {
 
-    [HideInInspector]
-    public ScriptableAction inAction = null;
+        public Body body = null;
+        public List<ScriptableAction> actions = new List<ScriptableAction>();
 
-    // ----- ----- ----- ----- -----
+        [HideInInspector]
+        public ScriptableAction inAction = null;
 
-    private float time = 0.0f;
-    private int index = 0;
+        // ----- ----- ----- ----- -----
 
-    // ----- ----- ----- ----- -----
-    // <!!> 移動します
-    /*
-    public bool continueLeftForward = false;
-    public bool continueBothForward = false;
+        private float time = 0.0f;
+        private int index = 0;
 
-    public bool bothForwardLeftEnable = false;
-    public bool bothForwardRightEnable = false;
-    */
-    // ----- ----- ----- ----- -----
+        // ----- ----- ----- ----- -----
 
-    public ScriptableAction this[string key] {
-        get {
-            foreach(var action in actions) { if (action.name == key) return action; }
-            return null;
+        public ScriptableAction this[string key] {
+            get {
+                foreach (var action in actions) { if (action.name == key) return action; }
+                return null;
+            }
         }
-    }
 
-    void Start() {
-    }
+        void Start() {
+        }
 
-    void Update() {
-        KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y };
+        void Update() {
+            KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y };
 
-        for (int i = 0; i < hotKeys.Count(); i++) {
-            if (Input.GetKeyDown(hotKeys[i])) {
-                if (actions.Count > i) {
+            for (int i = 0; i < hotKeys.Count(); i++) {
+                if (Input.GetKeyDown(hotKeys[i])) {
+                    if (actions.Count > i) {
+                        time = 0.0f;
+                        index = 0;
+                        inAction = actions[i];
+                        //inAction.BeginAction(body);
+                    }
+                }
+            }
+        }
+
+        private void FixedUpdate() {
+            if (body == null || body.initialized) {
+                if (inAction != null && inAction.enabled) {
+                    //inAction.UpdateStateMachine();
+                    //inAction.UpdateAction();
+
+                    time += Time.fixedDeltaTime;
+
+                    if (!inAction.enabled) {
+                        time = 0.0f;
+                        index = 0;
+                        inAction = null;
+                    }
+                }
+            }
+        }
+
+        // ----- ----- ----- ----- -----
+
+        public void Action(string name, GameObject[] target = null) {
+            print("Action: " + name);
+            foreach (var action in actions) {
+                if (action.name == name) {
+                    inAction = action;
                     time = 0.0f;
                     index = 0;
-                    inAction = actions[i];
-                    inAction.BeginAction(body);
+                    if (target.Length < 1) {
+                        //inAction.BeginAction(body);
+                    } else {
+                        //inAction.BeginAction(body);
+                    }
                 }
             }
         }
-    }
 
-    private void FixedUpdate() {
-        if (body == null || body.initialized) {
-            if (inAction != null && inAction.enabled) {
-                //inAction.UpdateStateMachine();
-                inAction.UpdateAction();
-
-                time += Time.fixedDeltaTime;
-
-                if (!inAction.enabled) {
-                    time = 0.0f;
-                    index = 0;
-                    inAction = null;
-                }
-            }
-        }
-    }
-
-    // ----- ----- ----- ----- -----
-
-    public void Action(string name, GameObject[] target = null) {
-        print("Action: " + name);
-        foreach (var action in actions) {
-            if (action.name == name) {
-                inAction = action;
-                time = 0.0f;
-                index = 0;
-                if (target.Length < 1) {
-                    inAction.BeginAction(body);
-                } else {
-                    inAction.BeginAction(body);
-                }
-            }
-        }
     }
 
 }

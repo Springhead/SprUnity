@@ -85,6 +85,7 @@ public class Attention : MonoBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // Private Methods
 
+    public bool noHumanAttention = false; // <!!> sorry, for layeredgazer demo (mitake)
     void CompAttention() {
         float maxPersonAttention = 0.0f;
         foreach (var person in Person.persons) {
@@ -105,7 +106,11 @@ public class Attention : MonoBehaviour {
                 }
 
                 // 注意量
-                attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance);
+                if (!noHumanAttention) {
+                    attentionInfo.attention = Mathf.Max(attentionInfo.attentionByDistance);
+                } else {
+                    attentionInfo.attention = 0;
+                }
 
                 if (maxPersonAttention < attentionInfo.attention) {
                     maxPersonAttention = attentionInfo.attention;

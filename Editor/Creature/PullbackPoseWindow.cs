@@ -3,23 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class PullbackPoseWindow : EditorWindow {
+namespace SprUnity {
 
-    //
-    static PullbackPoseWindow window;
+    public class PullbackPoseWindow : EditorWindow {
 
-    [MenuItem("Window/Pullback Pose Window")]
-    static void Open() {
-        window = GetWindow<PullbackPoseWindow>();
-        ActionEditorWindowManager.instance.pullbackPoseWindow = window;
+        //
+        static PullbackPoseWindow window;
+
+        [MenuItem("Window/Pullback Pose Window")]
+        static void Open() {
+            window = GetWindow<PullbackPoseWindow>();
+            ActionEditorWindowManager.instance.pullbackPoseWindow = window;
+        }
+
+        public void OnEnable() {
+
+        }
+
+        public void OnDisable() {
+            window = null;
+            ActionEditorWindowManager.instance.pullbackPoseWindow = null;
+        }
     }
 
-    public void OnEnable() {
-
-    }
-
-    public void OnDisable() {
-        window = null;
-        ActionEditorWindowManager.instance.pullbackPoseWindow = null;
-    }
 }
