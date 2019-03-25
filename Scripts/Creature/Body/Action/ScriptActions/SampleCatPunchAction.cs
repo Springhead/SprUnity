@@ -27,8 +27,8 @@ public class SampleCatPunchActionEditor : Editor {
 
 public class SampleCatPunchAction : ScriptableAction {
 
-    public KeyPose catPunch;
-    public KeyPose catPunchBack;
+    public KeyPoseData catPunch;
+    public KeyPoseData catPunchBack;
     public KeyPoseTimePair go, punch, back;
 
     public GameObject target;
@@ -38,9 +38,9 @@ public class SampleCatPunchAction : ScriptableAction {
 
 	// Use this for initialization
 	void Start () {
-        go.keyPose = ScriptableObject.Instantiate<KeyPose>(catPunch);
-        punch.keyPose = ScriptableObject.Instantiate<KeyPose>(catPunch);
-        back.keyPose = ScriptableObject.Instantiate<KeyPose>(catPunch);
+        go.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
+        punch.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
+        back.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
         for (int i = 0; i < go.keyPose.boneKeyPoses.Count; i++) {
             go.keyPose.boneKeyPoses[i].usePosition = false;
             go.keyPose.boneKeyPoses[i].useRotation = false;

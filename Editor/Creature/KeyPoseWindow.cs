@@ -8,7 +8,7 @@ using SprCs;
 namespace SprUnity {
 
     public class KeyPoseStatus {
-        public KeyPose keyPose;
+        public KeyPoseData keyPose;
         public enum Status {
             None,
             Visible,
@@ -19,7 +19,7 @@ namespace SprUnity {
             this.keyPose = null;
             this.status = Status.None;
         }
-        public KeyPoseStatus(KeyPose keyPose) {
+        public KeyPoseStatus(KeyPoseData keyPose) {
             this.keyPose = keyPose;
             this.status = Status.None;
         }
@@ -28,13 +28,13 @@ namespace SprUnity {
     }
 
     public class KeyPoseGroupStatus {
-        public KeyPoseGroup keyPoseGroup;
+        public KeyPoseDataGroup keyPoseGroup;
         public List<KeyPoseStatus> keyPoseStatuses;
         public KeyPoseGroupStatus() {
             this.keyPoseGroup = null;
             this.keyPoseStatuses = new List<KeyPoseStatus>();
         }
-        public KeyPoseGroupStatus(KeyPoseGroup keyPoseGroup) {
+        public KeyPoseGroupStatus(KeyPoseDataGroup keyPoseGroup) {
             this.keyPoseGroup = keyPoseGroup;
             this.keyPoseStatuses = new List<KeyPoseStatus>();
         }
@@ -58,7 +58,7 @@ namespace SprUnity {
         private GUISkin myskin;
         private string path = "GUISkins/SprGUISkin.guiskin";
 
-        static KeyPose latestEditableKeyPose;
+        static KeyPoseData latestEditableKeyPose;
 
         [MenuItem("Window/KeyPose Window")]
         static void Open() {
@@ -194,7 +194,7 @@ namespace SprUnity {
             // <!!> たぶん同じKeyPoseのHnadleが二つ表示される事態になっている？
             //      片方はKeyPoseのデフォルトのもの、もう片方はこちらで表示したもの
             // どう考えてもselectedは保存しとくべきか？
-            List<KeyPose> keyPoses = new List<KeyPose>();
+            List<KeyPoseData> keyPoses = new List<KeyPoseData>();
             foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
                 foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) keyPoses.Add(keyPoseStatus.keyPose);
@@ -204,7 +204,7 @@ namespace SprUnity {
             EditorGUILayout.BeginVertical(GUI.skin.customStyles[0]);
             if (keyPoses.Count != 0) {
                 for (int j = 0; j < keyPoses.Count; j++) {
-                    KeyPose keyPose = keyPoses[j];
+                    KeyPoseData keyPose = keyPoses[j];
                     GUILayout.Label(keyPose.name + " Parameters");
                     EditorGUI.BeginChangeCheck();
                     for (int i = 0; i < keyPose.boneKeyPoses.Count; i++) {
@@ -295,17 +295,17 @@ namespace SprUnity {
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                var keyPoseGroup = obj as KeyPoseGroup;
+                var keyPoseGroup = obj as KeyPoseDataGroup;
                 if (keyPoseGroup != null) {
                     var keyPoseGroupStatus = new KeyPoseGroupStatus(keyPoseGroup);
                     if (keyPoseGroup.GetSubAssets() != null) {
                         foreach (var keyPose in keyPoseGroup.GetSubAssets()) {
                             // KeyPoseGroupも含まれるためnullチェック
-                            if (keyPose as KeyPose == null) {
+                            if (keyPose as KeyPoseData == null) {
                                 continue;
                             }
 
-                            var keyPoseStatus = new KeyPoseStatus(keyPose as KeyPose);
+                            var keyPoseStatus = new KeyPoseStatus(keyPose as KeyPoseData);
                             keyPoseGroupStatus.keyPoseStatuses.Add(keyPoseStatus);
 
                         }
@@ -315,7 +315,7 @@ namespace SprUnity {
             }
         }
 
-        void AddKeyPose(KeyPoseGroup kpg) {
+        void AddKeyPose(KeyPoseDataGroup kpg) {
             //var keyPoseGroup = KeyPoseInterpolationGroup.CreateKeyPoseGroup();
             //keyPoseGroup.keyposes[0].InitializeByCurrentPose(ActionEditorWindowManager.instance.body);
             //ActionEditorWindowManager.instance.singleKeyPoses.Add(new KeyPoseStatus(keyPoseGroup));

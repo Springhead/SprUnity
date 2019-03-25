@@ -24,7 +24,7 @@ namespace SprUnity {
     [Serializable]
     public class KeyPoseTimePair {
         public string label;
-        public KeyPose keyPose;
+        public KeyPoseData keyPose;
         public enum StartCondition {
             AbsoluteTime,
             AbsoluteTimeFromPreviousKeyPoseStart,
@@ -153,8 +153,8 @@ namespace SprUnity {
             for(int i = 0; i < fields.Length; i++) {
                 var field = fields[i];
                 Debug.Log(field.Name + " " + field.FieldType);
-                if (field.FieldType == typeof(KeyPose)) {
-                    field.SetValue(this, Instantiate<KeyPose>((KeyPose)field.GetValue(this)));
+                if (field.FieldType == typeof(KeyPoseData)) {
+                    field.SetValue(this, Instantiate<KeyPoseData>((KeyPoseData)field.GetValue(this)));
                 }
             }
         }
@@ -178,7 +178,7 @@ namespace SprUnity {
             foreach(var field in fields) {
                 var createorAttribute = field.GetCustomAttributes(typeof(AutoCreateInstanceAttribute), false);
                 if (createorAttribute.Length == 1) {
-                    if (field.FieldType == typeof(KeyPose)) {
+                    if (field.FieldType == typeof(KeyPoseData)) {
 
                     }
                 }

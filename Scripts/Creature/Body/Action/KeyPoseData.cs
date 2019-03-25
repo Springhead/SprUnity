@@ -12,8 +12,8 @@ using UnityEditor;
 namespace SprUnity {
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(KeyPose))]
-    public class KeyPoseEditor : Editor {
+    [CustomEditor(typeof(KeyPoseData))]
+    public class KeyPoseDataEditor : Editor {
 
         void OnEnable() {
             SceneView.onSceneGUIDelegate += OnSceneGUI;
@@ -39,10 +39,10 @@ namespace SprUnity {
             }
             if (textChangeComp) {
                 string mainPath = AssetDatabase.GetAssetPath(this);
-                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPose)target));
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPoseData)target));
             }
             DrawDefaultInspector();
-            KeyPose keyPose = (KeyPose)target;
+            KeyPoseData keyPose = (KeyPoseData)target;
 
             if (GUILayout.Button("Test")) {
                 keyPose.Action();
@@ -56,7 +56,7 @@ namespace SprUnity {
         }
 
         public void OnSceneGUI(SceneView sceneView) {
-            KeyPose keyPose = (KeyPose)target;
+            KeyPoseData keyPose = (KeyPoseData)target;
 
             var body = GameObject.FindObjectOfType<Body>();
 
@@ -228,10 +228,23 @@ namespace SprUnity {
         }
     }
 
+    // 実行時に使用されるKeyPose
+    public class KeyPose {
+        public List<BoneKeyPose> boneKeyPoses = new List<BoneKeyPose>();
+
+        public float testDuration = 1.0f;
+        public float testSpring = 1.0f;
+        public float testDamper = 1.0f;
+
+        public void Parser(KeyPoseData data) {
+
+        }
+    }
+
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPose")]
 #endif
-    public class KeyPose : ScriptableObject {
+    public class KeyPoseData : ScriptableObject {
         public List<BoneKeyPose> boneKeyPoses = new List<BoneKeyPose>();
 
         public float testDuration = 1.0f;

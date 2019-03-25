@@ -9,11 +9,11 @@ using UnityEditor;
 namespace SprUnity {
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(KeyPoseGroup))]
-    public class KeyPoseGroupEditor : Editor {
+    [CustomEditor(typeof(KeyPoseDataGroup))]
+    public class KeyPoseDataGroupEditor : Editor {
         public override void OnInspectorGUI() {
             base.OnInspectorGUI();
-            KeyPoseGroup keyPoseGroup = (KeyPoseGroup)target;
+            KeyPoseDataGroup keyPoseGroup = (KeyPoseDataGroup)target;
             Rect DDBox = EditorGUILayout.GetControlRect(GUILayout.Width(200), GUILayout.Height(50));
             List<Object> droppedObjects = CreateDragAndDropGUI(DDBox);
             if(droppedObjects.Count > 0) {
@@ -29,7 +29,7 @@ namespace SprUnity {
                         }
                         continue;
                     }
-                    KeyPose keypose = obj as KeyPose;
+                    KeyPoseData keypose = obj as KeyPoseData;
                     if(keypose != null) {
                         var clone = Instantiate(keypose);
                         clone.name = clone.name.Split('(')[0];
@@ -67,19 +67,19 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
-    public class KeyPoseGroup : ScriptableObject {
+    public class KeyPoseDataGroup : ScriptableObject {
 
 #if UNITY_EDITOR
         [MenuItem("Assets/Create/Action/Add New KeyPose")]
         static void CreateKeyPose() {
-            var selected = Selection.activeObject as KeyPoseGroup;
+            var selected = Selection.activeObject as KeyPoseDataGroup;
 
             if (selected == null) {
                 Debug.LogWarning("Null KeyPoseGroup");
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPose>();
+            var keypose = ScriptableObject.CreateInstance<KeyPoseData>();
             keypose.name = "keypose";
             keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, selected);
@@ -97,7 +97,7 @@ namespace SprUnity {
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPose>();
+            var keypose = ScriptableObject.CreateInstance<KeyPoseData>();
             keypose.name = name;
             keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, this);

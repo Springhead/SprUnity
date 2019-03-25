@@ -26,8 +26,8 @@ namespace SprUnity {
     public class SampleAction : ScriptableAction {
 
         // KeyPoses
-        public KeyPose sample1, sample2;
-        public KeyPose[] sample3;
+        public KeyPoseData sample1, sample2;
+        public KeyPoseData[] sample3;
 
         public KeyPoseTimePair _sample1, _sample2, _sample3;
 
@@ -35,9 +35,9 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- ----- -----
         public void Start() {
-            _sample1.keyPose = ScriptableObject.Instantiate<KeyPose>(sample1);
-            _sample2.keyPose = ScriptableObject.Instantiate<KeyPose>(sample1);
-            _sample3.keyPose = ScriptableObject.Instantiate<KeyPose>(sample1);
+            _sample1.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
+            _sample2.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
+            _sample3.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
             for(int i = 0; i < _sample1.keyPose.boneKeyPoses.Count; i++) {
                 _sample1.keyPose.boneKeyPoses[i].usePosition = false;
                 _sample1.keyPose.boneKeyPoses[i].useRotation = false;

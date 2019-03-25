@@ -56,7 +56,7 @@ namespace SprUnity {
         // keyposes.Count == 1 : ただのコンテナ
         // keyposes.Count > 1  : パラメータによる補間で姿勢が決まるKeyPose
 
-        public List<KeyPose> keyposes = new List<KeyPose>();
+        public List<KeyPoseData> keyposes = new List<KeyPoseData>();
 
         public List<float> parameters = new List<float>();
 
@@ -133,7 +133,7 @@ namespace SprUnity {
             // KeyPose一つをSubassetにもつInterpolationGroupを作成
             // KeyPoseとKeyPoseInterpolationGroupは同名なので片方残っていればある程度復元できるはず
             var keyPoseGroup = ScriptableObject.CreateInstance<KeyPoseInterpolationGroup>();
-            var keyPose = ScriptableObject.CreateInstance<KeyPose>();
+            var keyPose = ScriptableObject.CreateInstance<KeyPoseData>();
             if (name != null) {
                 keyPoseGroup.name = name;
                 keyPose.name = name;
@@ -176,7 +176,7 @@ namespace SprUnity {
                 if (AssetDatabase.IsSubAsset(asset)) {
                     var clone = Instantiate(asset);
                     clone.name = clone.name.Split('(')[0];
-                    keyposes.Add((KeyPose)clone);
+                    keyposes.Add((KeyPoseData)clone);
                     AssetDatabase.AddObjectToAsset(clone, this);
                 }
             }
