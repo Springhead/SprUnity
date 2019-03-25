@@ -13,10 +13,10 @@ public class BoneControllerState {
     Queue<SubMovement> posTrajectory = new Queue<SubMovement>();
     Queue<SubMovement> rotTrajectory = new Queue<SubMovement>();
     Queue<SubMovement> subTrajectory = new Queue<SubMovement>();
-    public void Save() {
+    public void Save(Body body) {
 
     }
-    public void Load() {
+    public void Load(Body body) {
 
     }
 }
