@@ -5,14 +5,14 @@ using SprUnity;
 
 public class SampleSequenceAction : ScriptableAction {
 
-    public KeyPose inLow, inHigh, outLow, outHigh;
+    public KeyPoseData inLow, inHigh, outLow, outHigh;
     KeyPoseTimePair raiseHand, waveIn, waveOut;
 
 	// Use this for initialization
 	void Start () {
-        raiseHand.keyPose = ScriptableAction.Instantiate<KeyPose>(inLow);
-        waveIn.keyPose = ScriptableAction.Instantiate<KeyPose>(inLow);
-        waveOut.keyPose = ScriptableAction.Instantiate<KeyPose>(outLow);
+        raiseHand.keyPose = ScriptableAction.Instantiate<KeyPoseData>(inLow);
+        waveIn.keyPose = ScriptableAction.Instantiate<KeyPoseData>(inLow);
+        waveOut.keyPose = ScriptableAction.Instantiate<KeyPoseData>(outLow);
         for (int i = 0; i < raiseHand.keyPose.boneKeyPoses.Count; i++) {
             raiseHand.keyPose.boneKeyPoses[i].Enable(false);
         }
