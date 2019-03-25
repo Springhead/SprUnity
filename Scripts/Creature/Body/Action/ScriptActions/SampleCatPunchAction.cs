@@ -30,6 +30,7 @@ public class SampleCatPunchAction : ScriptableAction {
     public KeyPose catPunch;
     public KeyPose catPunchBack;
     public KeyPoseTimePair go, punch, back;
+    public BoneKeyPose bone;
 
     public GameObject target;
 
