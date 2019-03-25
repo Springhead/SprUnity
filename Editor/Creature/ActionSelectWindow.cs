@@ -56,6 +56,7 @@ namespace SprUnity {
         }
 
         public void OnGUI() {
+            if (window == null) Open();
             bool textChangeComp = false;
             scrollPos = GUILayout.BeginScrollView(scrollPos);
             GUILayout.Label("Actions");
@@ -83,6 +84,12 @@ namespace SprUnity {
             }
             foreach (var action in ActionEditorWindowManager.instance.actions) {
                 Debug.Log(action.action.name + " " + action.isSelected);
+            }
+            foreach (var obj in Selection.gameObjects) {
+                var actions = obj.GetComponents<ScriptableAction>();
+                for (int i = 0; i < actions.Count(); i++) {
+                    actions[i].isEditing = GUILayout.Toggle(actions[i].isEditing, actions[i].name + "." + actions[i].GetType().ToString());
+                }
             }
             GUILayout.EndScrollView();
         }

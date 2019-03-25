@@ -181,6 +181,8 @@ namespace SprUnity {
         // 値が大きいと重いので、だれかいい方法教えてください
         int segments = 10;
 
+        private ScriptableAction action;
+
         [MenuItem("Window/Action Timeline Window")]
         static void Open() {
             window = GetWindow<ActionTimelineWindow>();
@@ -241,6 +243,8 @@ namespace SprUnity {
         }
 
         void OnGUI() {
+            if (window == null) Open();
+            /*
             var actions = ActionEditorWindowManager.instance.selectedAction;
             if (actions.Count == 1) {
                 currentAction = actions[0];
@@ -295,6 +299,14 @@ namespace SprUnity {
                 totalTime = 0;
             }
             totalTime = Mathf.Max(5.0f, totalTime * 1.2f);
+            */
+            foreach (var obj in Selection.gameObjects) {
+                var actions = obj.GetComponents<ScriptableAction>();
+                foreach(var a in actions) {
+                    if (a.isEditing) this.action = a;
+                }
+            }
+            totalTime = Mathf.Max(5.0f, action.generatedKeyPosesHistory.Count() > 0 ? action.generatedKeyPosesHistory.Last().endTime * 1.1f : 0.0f);
             GUILayout.BeginVertical();
             DrawSpringDamperGraph();
             DrawVelocityGraph();
@@ -392,6 +404,7 @@ namespace SprUnity {
             float[] xAxis = new float[2] { 0, totalTime };
             float[] yAxis = new float[2] { 0f, 1f };
             DrawGraphBase(new Rect(graphLeft, graphTop, graphWidth, graphHeight), xAxis, yAxis, 1.0f, 0.2f, "", "");
+            /*
             if (currentAction != null) {
                 // Draw Individual
                 for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
@@ -438,7 +451,7 @@ namespace SprUnity {
                             currentAction.templeteTransition[i].time = time - startSubmovementTime[i - 1];
                         }
                     }
-                    if (transitionTimeHandle[i][1].ProcessEvents()/* && transition.toState.keyframe != null*/) {
+                    if (transitionTimeHandle[i][1].ProcessEvents()) {
                         Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + "duration change");
                         float time = (transitionTimeHandle[i][1].box.x - graphLeft) * (totalTime / graphWidth);
                         currentAction.templeteTransition[i].toState.duration = time - startSubmovementTime[i];
@@ -448,6 +461,41 @@ namespace SprUnity {
                     //GUI.Box(new Rect(graphLeft + graphWidth * ((startSubmovementTime[i] + endSubmovementTime[i]) / (2 * totalTime)), graphBottom, 10, 10), "");
                 }
                 // Draw Integrated
+            }
+            */
+            if(action != null) {
+                for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                    List<SubMovementLog> logs = null;
+                    for(int i = 0; i < action.boneSubMovementsHistory.Count(); i++) {
+                        if(boneStatusForTimelines[j].bone.ToString() == action.boneSubMovementsHistory[i].bone.label) {
+                            logs = action.boneSubMovementsHistory[i].subMovements;
+                            break;
+                        }
+                    }
+                    if (logs != null) {
+                        Debug.Log("Start Draw");
+                        for (int i = 0; i < logs.Count(); i++) {
+                            if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
+                                Vector2 nextPos = new Vector2();
+                                Vector3 vel = new Vector3();
+                                Color color = boneStatusForTimelines[j].color;
+                                float currentSubmovementTime;
+                                for (int k = 0; k < segments; k++) {
+                                    currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
+                                    nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
+                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
+                                    nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
+                                    Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                    Drawing.DrawLine(lastPos, nextPos, color, 3, true);
+                                    lastPos = nextPos;
+                                }
+                            }
+                        }
+                    } else {
+                        Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                    }
+                }
             }
             GUILayout.EndArea();
         }
