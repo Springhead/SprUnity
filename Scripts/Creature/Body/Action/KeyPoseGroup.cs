@@ -67,6 +67,9 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
+#if UNITY_EDITOR
+    [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
+#endif
     public class KeyPoseGroup : ScriptableObject {
 
 #if UNITY_EDITOR
@@ -87,8 +90,11 @@ namespace SprUnity {
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
         }
 #endif
-        void CreateKeyPose(string name) {
-
+        public void CreateKeyPoseInWin() {
+            CreateKeyPoseInWin("keypose");
+        }
+        public void CreateKeyPoseInWin(string name) {
+#if UNITY_EDITOR
             if (this == null) {
                 Debug.LogWarning("Null KeyPoseGroup");
                 return;
@@ -100,9 +106,17 @@ namespace SprUnity {
             AssetDatabase.AddObjectToAsset(keypose, this);
 
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
-        }
-#if UNITY_EDITOR
-
 #endif
+        }
+
+        // この関数ではSubAssetだけでなくKeyPoseGroupも含まれる
+        public Object[] GetSubAssets() {
+#if UNITY_EDITOR
+            string path = AssetDatabase.GetAssetPath(this);
+            return AssetDatabase.LoadAllAssetsAtPath(path);
+#else
+        return null;
+#endif
+        }
     }
 }
