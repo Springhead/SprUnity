@@ -67,9 +67,6 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
-#if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
-#endif
     public class KeyPoseGroup : ScriptableObject {
 
 #if UNITY_EDITOR
