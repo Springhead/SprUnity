@@ -66,7 +66,6 @@ public class SubMovement {
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
 public class BoneController : MonoBehaviour {
     public bool suspend = false;
 
@@ -77,6 +76,10 @@ public class BoneController : MonoBehaviour {
 
     public bool controlPosition = true;
     public bool controlRotation = true;
+
+    public bool limitDirection = false;
+    public Vector2 limitDirectionHoriz = new Vector2(-180, 180);
+    public Vector2 limitDirectionVerti = new Vector2(-180, 180);
 
     public List<Bone> changeSpringDamperBones = new List<Bone>();
 
@@ -324,11 +327,38 @@ public class BoneController : MonoBehaviour {
 
         if (controlRotation) {
             var targOri = subPose.rotation * pose.rotation;
+
             if (ikEndEffector == null) {
-                if (!local) {
-                    gameObject.transform.rotation = targOri;
-                } else {
+                if (limitDirection) {
+                    // Directionにする
+                    var targDir = targOri * Vector3.forward;
+
+                    // Local系にする
+                    if (!local) {
+                        targDir = gameObject.transform.parent.InverseTransformDirection(targDir);
+                    }
+
+                    // Limitをかける
+                    Vector3 targDirHoriz = targDir; targDirHoriz.y = 0;
+                    float angleHoriz = Vector3.SignedAngle(Vector3.forward, targDirHoriz, Vector3.up);
+                    angleHoriz = Mathf.Clamp(angleHoriz, limitDirectionHoriz.x, limitDirectionHoriz.y);
+
+                    Vector3 targDirVerti = targDir; targDirVerti.x = 0;
+                    float angleVerti = Vector3.SignedAngle(Vector3.forward, targDirVerti, Vector3.right);
+                    angleVerti = Mathf.Clamp(angleVerti, limitDirectionVerti.x, limitDirectionVerti.y);
+
+                    // Orientationにする
+                    targOri = Quaternion.Euler(angleVerti, angleHoriz, 0);
+
+                    // GameObjectにセットする
                     gameObject.transform.localRotation = targOri;
+
+                } else {
+                    if (!local) {
+                        gameObject.transform.rotation = targOri;
+                    } else {
+                        gameObject.transform.localRotation = targOri;
+                    }
                 }
             } else if (ikEndEffector.phIKEndEffector.IsOrientationControlEnabled()) {
                 ikEndEffector.phIKEndEffector.SetTargetOrientation(targOri.ToQuaterniond());

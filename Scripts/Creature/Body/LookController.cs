@@ -45,6 +45,8 @@ public class LookController : MonoBehaviour {
     public Body body = null;
     // public BlinkController blinkController = null;
 
+    public Vector3 straightCorrect = new Vector3();
+
     // 待機時間（サッケード中は次の運動を抑制する）
     protected float waitTimer = 0.0f;
     public bool inAction { get { return waitTimer > 0; } }
@@ -55,8 +57,6 @@ public class LookController : MonoBehaviour {
 
     private Quaternion originRotation = Quaternion.identity;
     private GameObject lastTarget = null;
-
-    public Vector2 uvRatio = new Vector2(0.3f, 0.3f);
 
     protected bool initialized = false;
 
@@ -117,7 +117,7 @@ public class LookController : MonoBehaviour {
         if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
 
         // ストレートモード：モナリザ効果を利用するため、ターゲットがどこにいようと正面を見る
-        if (straight) { targEyeDir = Vector3.forward; }
+        if (straight) { targEyeDir = Quaternion.Euler(straightCorrect) * Vector3.forward; }
 
         Vector3 currLEyeDir = body["LeftEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);
         Vector3 currREyeDir = body["RightEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);
