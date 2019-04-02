@@ -116,10 +116,11 @@ namespace SprUnity {
     /*
     [CustomPropertyDrawer(typeof(BoneKeyPose))]
     public class BoneKeyPosePropertyDrawer : PropertyDrawer {
-        bool showBoneKeyPose;
+        public bool showBoneKeyPose;
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+            base.OnGUI(position, property, label);
             EditorGUI.BeginProperty(position, label, property);
-            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, property.FindPropertyRelative("boneId"));
+            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, ((HumanBodyBones)property.FindPropertyRelative("boneId").enumValueIndex).ToString());
             if (showBoneKeyPose) {
 
             }
@@ -163,6 +164,9 @@ namespace SprUnity {
             set { boneKeyPoseTiming.y = value; }
         }
 
+        public void Enable(bool e) {
+            usePosition = useRotation = e;
+        }
 
         public void ConvertBoneLocalToWorld(Body body = null) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
@@ -318,7 +322,7 @@ namespace SprUnity {
             }
         }
 
-        public void Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
+        public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
             if (!rotate.HasValue) { rotate = Quaternion.identity; }
 
             if (duration < 0) { duration = testDuration; }
@@ -326,6 +330,7 @@ namespace SprUnity {
             if (spring < 0) { spring = testSpring; }
             if (damper < 0) { damper = testDamper; }
 
+            List<BoneSubMovementPair> logs = new List<BoneSubMovementPair>();
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 foreach (var boneKeyPose in boneKeyPoses) {
@@ -343,10 +348,14 @@ namespace SprUnity {
                             pose.rotation = boneKeyPose.localRotation * body.transform.rotation;
                         }
                         var springDamper = new Vector2(spring, damper);
-                        bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
+                        var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
+                        BoneSubMovementPair log = new BoneSubMovementPair(bone, new SubMovement(sub));
+                        Debug.Log(sub.p0 + " " + sub.p1 + " " + sub.t0 + " " + sub.t1);
+                        logs.Add(log);
                     }
                 }
             }
+            return logs;
         }
 
         public List<BoneKeyPose> GetBoneKeyPoses(Body body) {
