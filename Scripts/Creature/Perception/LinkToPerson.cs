@@ -6,17 +6,13 @@ public class LinkToPerson : MonoBehaviour {
 
 	public Person person = null;
 
-    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
-    void Start () {
+	// Use this for initialization
+	void Start () {
+		
 	}
 	
+	// Update is called once per frame
 	void Update () {
+		
 	}
-
-    void OnDestroy() {
-        if (person != null) {
-            Destroy(person.gameObject);
-        }
-    }
 }
