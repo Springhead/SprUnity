@@ -78,7 +78,7 @@ namespace InteraWare {
             }
 
 			if (target == lastTarget) {
-				return;
+				// return;
 			}
 			lastTarget = target;
 
