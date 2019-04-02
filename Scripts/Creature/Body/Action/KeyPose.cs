@@ -350,7 +350,7 @@ namespace SprUnity {
                         var springDamper = new Vector2(spring, damper);
                         var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
                         BoneSubMovementPair log = new BoneSubMovementPair(bone, new SubMovement(sub));
-                        Debug.Log(sub.p0 + " " + sub.p1 + " " + sub.t0 + " " + sub.t1);
+                        // Debug.Log(sub.p0 + " " + sub.p1 + " " + sub.t0 + " " + sub.t1);
                         logs.Add(log);
                     }
                 }

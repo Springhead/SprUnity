@@ -389,8 +389,10 @@ public class BoneController : MonoBehaviour {
             }
         }
 
+        /*
         if(this.bone.label == "RightHand") {
             Debug.Log(currTime + " " + pose.position + " " + posTrajectory.First().GetCurrentActiveness(currTime) + " " + posTrajectory.First().t0 + " " + posTrajectory.First().t1);
         }
+        */
     }
 }
