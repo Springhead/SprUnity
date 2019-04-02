@@ -97,7 +97,7 @@ public class Attention : MonoBehaviour {
                 // 距離による注意
                 var pos = person.transform.position; pos.y = 0;
                 float distance = pos.magnitude;
-                float min = 2.0f, max = 4.0f; // [m]
+                float min = 1.0f, max = 4.0f; // [m]
                 float baseAttention = 0;
                 if (distance < 3.0f) {
                     attentionInfo.attentionByDistance = (1 - (Mathf.Clamp(distance, min, max) - min) / (max - min)) * (1.0f - baseAttention) + baseAttention;
