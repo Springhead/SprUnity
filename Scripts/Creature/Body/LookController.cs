@@ -117,6 +117,7 @@ public class LookController : MonoBehaviour {
         if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
 
         // ストレートモード：モナリザ効果を利用するため、ターゲットがどこにいようと正面を見る
+        straight = true;
         if (straight) { targEyeDir = Quaternion.Euler(straightCorrect) * Vector3.forward; }
 
         Vector3 currLEyeDir = body["LeftEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);

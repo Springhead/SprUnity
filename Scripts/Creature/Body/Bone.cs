@@ -41,6 +41,10 @@ namespace SprUnity {
         // Automatically remove this if corresponding avatar bone is missing (by Body)
         public bool removeIfNotInAvatar = false;
 
+        // <!!> Reduced Dir Angle Sync Mode
+        public bool reduceDirAngleSync = false;
+        public Vector2 reduceDirAngleRatio = new Vector2(1, 1); // Horiz, Vert
+
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         // Relative Rotation between PHSolid and Avatar Bone
@@ -179,7 +183,23 @@ namespace SprUnity {
                         avatarBone.transform.position = transform.position;
                     }
                     if (syncRotation) {
-                        avatarBone.transform.rotation = transform.rotation * relativeRotSolidAvatar;
+                        if (!reduceDirAngleSync) {
+                            avatarBone.transform.rotation = transform.rotation * relativeRotSolidAvatar;
+                        } else {
+                            // <!!> Reduce Angle Sync
+                            var relativeRotation = Quaternion.Inverse(transform.parent.rotation) * transform.rotation;
+
+                            var hDir = relativeRotation * Vector3.forward; hDir.y = 0;
+                            var hAngle = Vector3.SignedAngle(Vector3.forward, hDir, Vector3.up);
+                            hAngle *= reduceDirAngleRatio.y;
+
+                            var vDir = relativeRotation * Vector3.forward; vDir.x = 0;
+                            var vAngle = Vector3.SignedAngle(Vector3.forward, vDir, Vector3.right);
+                            vAngle *= reduceDirAngleRatio.x;
+
+                            relativeRotation = Quaternion.Euler(vAngle, hAngle, 0);
+                            avatarBone.transform.rotation = (transform.parent.rotation * relativeRotation) * relativeRotSolidAvatar;
+                        }
                     }
                 }
             }

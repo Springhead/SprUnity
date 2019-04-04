@@ -43,6 +43,8 @@ public class LookController2 : LookController {
     public TextMesh debugText = null;
     public bool showDebugText = false;
 
+    public float k = 1.0f;
+
     enum ManualControlTarget { Eye, Head };
     private ManualControlTarget manualControlTarget = ManualControlTarget.Eye;
 
@@ -70,7 +72,9 @@ public class LookController2 : LookController {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     void Start () {
-        debugText.gameObject.SetActive(false);
+        if (debugText != null) {
+            debugText.gameObject.SetActive(false);
+        }
     }
 
     void Update() {
@@ -128,13 +132,17 @@ public class LookController2 : LookController {
         if (Input.GetKey(KeyCode.C)) {
             showDebugText = true;
             if (Input.GetKey(KeyCode.LeftShift)) {
-                debugText.gameObject.SetActive(true);
+                if (debugText != null) {
+                    debugText.gameObject.SetActive(true);
+                }
             }
         }
         if (Input.GetKey(KeyCode.V)) {
             showDebugText = false;
             if (Input.GetKey(KeyCode.LeftShift)) {
-                debugText.gameObject.SetActive(false);
+                if (debugText != null) {
+                    debugText.gameObject.SetActive(false);
+                }
             }
         }
     }
@@ -171,17 +179,29 @@ public class LookController2 : LookController {
                 Vector3 targEyeDirHoriz = targEyeDir; targEyeDirHoriz.y = 0;
                 float targAngleVert = Vector3.SignedAngle(Vector3.forward, targEyeDirVert, Vector3.right);
                 float targAngleHoriz = Vector3.SignedAngle(Vector3.forward, targEyeDirHoriz, Vector3.up);
-                debugText.text = targAngleHoriz + ", " + targAngleVert + "\r\n";
+                if (debugText != null) {
+                    debugText.text = targAngleHoriz + ", " + targAngleVert + "\r\n";
+                }
 
                 // キャリブレーション変換
                 float targAngleVertCalib = 1.0f * targAngleVert;
-                float targAngleHorizCalib = 2.1f * targAngleHoriz;
+                float targAngleHorizCalib = 1.0f * targAngleHoriz;
+
+                // Straight
+                if (straight) {
+                    targAngleVertCalib = 0;
+                    targAngleHorizCalib = 0;
+                }
+
+                // Dirへ
                 targEyeDir = Quaternion.Euler(targAngleVertCalib, targAngleHorizCalib, 0) * Vector3.forward;
 
                 // -- 手動オーバーライド
                 if (manualEye) {
                     targEyeDir = Quaternion.Euler(manualEyeAngle.x, manualEyeAngle.y, 0) * Vector3.forward;
-                    debugText.text += manualEyeAngle.y + ", " + manualEyeAngle.x + "\r\n";
+                    if (debugText != null) {
+                        debugText.text += manualEyeAngle.y + ", " + manualEyeAngle.x + "\r\n";
+                    }
                 } else {
                     manualEyeAngle.x = targAngleVert;
                     manualEyeAngle.y = targAngleHoriz;
@@ -220,10 +240,15 @@ public class LookController2 : LookController {
                     baseHeadRotation = nextBaseHeadRotation;
                 }
 
+                // <!!> 本来の視線方向（キャリブレーション変換やstraightなどが入っていない）を計算し直す
+                targEyeDir = (target.transform.position - body["Head"].transform.position).normalized;
+                if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
+                eyeTargetRotation = Quaternion.LookRotation(targEyeDir);
+
                 // <!!> 今回は頭基準姿勢は固定とする
                 baseHeadRotation = Quaternion.identity;
 
-                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.2f);
+                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.3f);
 
                 // -- 手動オーバーライド
                 if (manualHead) {
