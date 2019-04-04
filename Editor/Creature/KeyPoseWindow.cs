@@ -56,9 +56,15 @@ namespace SprUnity {
         static private float parameterWindowHeight = 160;
 
         private GUISkin myskin;
-        private string path = "GUISkins/SprGUISkin.guiskin";
+        private string skinpath = "GUISkins/SprGUISkin.guiskin";
+        private string editableButtonpath = "pictures/te.png";
 
         static KeyPoseData latestEditableKeyPose;
+
+        static float scrollwidth = 20;
+        static float parameterheight = 150;
+        static float buttonheight = 25;
+
 
         [MenuItem("Window/KeyPose Window")]
         static void Open() {
@@ -76,9 +82,27 @@ namespace SprUnity {
 
         public void OnEnable() {
             GetKeyPoses();
-            visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
-            //visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit") as Texture2D;
-            editableButtonTexture = EditorGUIUtility.Load("ViewToolMove") as Texture2D;
+            //visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
+            visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
+            if (editableButtonTexture == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableButtonpath);
+                if (bytes != null) {
+                    editableButtonTexture = new Texture2D(1, 1);
+                    editableButtonTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableButtonpath));
+                    editableButtonTexture.filterMode = FilterMode.Bilinear;
+                } else {
+                    Debug.Log("picture null");
+                }
+            }
+            if (myskin == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
+            }
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
@@ -93,20 +117,17 @@ namespace SprUnity {
             //foreach (var sel in Selection.objects) {
             //    Debug.Log("name = " + sel.name);
             //}
-            if (myskin == null) {
-                var mono = MonoScript.FromScriptableObject(this);
-                var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
-                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + path);
-            }
             if (myskin != null) {
                 GUI.skin = myskin;
             } else {
                 Debug.Log("GUISkin is null");
             }
 
-            scrollPos = GUILayout.BeginScrollView(scrollPos,GUILayout.Height(position.height - 150));
-            GUILayout.Label("KeyPoses");
+            float windowWidth = this.position.width;
+            // 縦スクロールが出た場合に下に横スクロールが出るのを防ぐ
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
+
+            GUILayout.Label("KeyPoses", GUILayout.Width(windowWidth - scrollwidth));
             if (window == null) {
                 Open(); // なぜかOnEnableに書くと新しくwindowが生成される
                 if (window == null) {
@@ -117,10 +138,10 @@ namespace SprUnity {
                 GUILayout.Label("Manager.keyPoseWindow null");
             }
             var body = ActionEditorWindowManager.instance.body;
-            float windowWidth = this.position.width;
             Color defaultColor = GUI.backgroundColor;
             foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
-                EditorGUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.Label(keyPoseGroupStatus.keyPoseGroup.name, GUILayout.Width(windowWidth - scrollwidth));
+                EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(windowWidth - scrollwidth));
                 foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
                     //GUILayout.BeginArea(singleRect);
@@ -130,7 +151,7 @@ namespace SprUnity {
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Visible) currentTexture = visibleButtonTexture;
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) currentTexture = editableButtonTexture;
                     if (keyPoseStatus.isSelected) GUI.backgroundColor = Color.red;
-                    if (GUILayout.Button(currentTexture, GUILayout.Width(20), GUILayout.Height(20))) {
+                    if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
                         if (keyPoseStatus.status == KeyPoseStatus.Status.None) {
                             keyPoseStatus.status = KeyPoseStatus.Status.Visible;
                         } else if (keyPoseStatus.status == KeyPoseStatus.Status.Visible) {
@@ -156,8 +177,8 @@ namespace SprUnity {
                         }
                     }
                     GUI.backgroundColor = defaultColor;
-                    GUILayout.Label(keyPoseStatus.keyPose.name);
-                    if (GUILayout.Button("Play", GUILayout.Width(60))) {
+                    GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                    if (GUILayout.Button("Play", GUILayout.Width(60), GUILayout.Height(buttonheight))) {
                         if (EditorApplication.isPlaying) {
                             // @とりあえずコメントアウト
                             keyPoseStatus.keyPose.Action(body);
@@ -166,25 +187,28 @@ namespace SprUnity {
                     //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
                     GUILayout.EndHorizontal();
                     //GUILayout.EndArea();
-                    if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)) {
-                        if (Event.current.type == EventType.MouseDown) {
-                            if (Event.current.button == 0) {
-                                keyPoseStatus.isSelected = !keyPoseStatus.isSelected;
-                                Repaint();
-                            }
-                        }
-                    }
+                    //if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)) {
+                    //    if (Event.current.type == EventType.MouseDown) {
+                    //        if (Event.current.button == 0) {
+                    //            keyPoseStatus.isSelected = !keyPoseStatus.isSelected;
+                    //            Repaint();
+                    //        }
+                    //    }
+                    //}
                 }
-                if (GUILayout.Button("Add KeyPoseCurrent")) {
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Add KeyPoseCurrent", GUILayout.Height(buttonheight))) {
                     AddKeyPose(keyPoseGroupStatus.keyPoseGroup);
                 }
+                GUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
             }
 
+            EditorGUILayout.EndScrollView();
+
+            GUI.skin = null;
             GUILayout.Box("", GUILayout.Width(this.position.width - 10), GUILayout.Height(1));
-            GUILayout.EndScrollView();
-            
-            Rect parameterWindow = new Rect(0, position.height / 2, 
+            Rect parameterWindow = new Rect(0, position.height / 2,
                 position.width, position.height - parameterWindowHeight);
             DrawParameters(parameterWindow, body);
             GUI.skin = null; // 他のwindowに影響が出ないように元に戻す
@@ -201,7 +225,7 @@ namespace SprUnity {
                 }
             }
             GUILayout.FlexibleSpace(); //これで一番下に表示できる
-            EditorGUILayout.BeginVertical(GUI.skin.customStyles[0]);
+            EditorGUILayout.BeginVertical();
             if (keyPoses.Count != 0) {
                 for (int j = 0; j < keyPoses.Count; j++) {
                     KeyPoseData keyPose = keyPoses[j];
@@ -224,64 +248,72 @@ namespace SprUnity {
                 }
             }
             EditorGUILayout.EndVertical();
+            GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Height(10));
         }
         public static void OnSceneGUI(SceneView sceneView) {
-            var body = ActionEditorWindowManager.instance.body;
-            if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
-            if (body == null) return;
-            //var target = ActionEditorWindowManager.instance.targetObject;
-            if (latestEditableKeyPose == null) {
-                return;
-            }
-            var boneKeyPoseFromLocal = latestEditableKeyPose.GetBoneKeyPoses(body);
-            foreach (var boneKeyPose in boneKeyPoseFromLocal) {
-                var parentTransform = body[boneKeyPose.coordinateParent].transform;
-                Pose baseTransform = new Pose(parentTransform.position, parentTransform.rotation);
-                if (boneKeyPose.usePosition) {
-                    EditorGUI.BeginChangeCheck();
-                    Vector3 position = Handles.PositionHandle(boneKeyPose.position, Quaternion.identity);
-                    if (EditorGUI.EndChangeCheck()) {
-                        Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Position");
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
-                            // worldはBoneLocal->World(or BodyLocal)
-                            boneKeyPose.position = position;
-                            boneKeyPose.ConvertWorldToBoneLocal();
-                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
-                            // localならWorld(or BoneLocal)->Local
-                            boneKeyPose.position = position;
-                            boneKeyPose.ConvertWorldToBoneLocal(body);
-                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                            boneKeyPose.position = position;
-                            boneKeyPose.ConvertWorldToBodyLocal(body);
-                        }
-                        EditorUtility.SetDirty(latestEditableKeyPose);
-                    }
-                }
+            // KeyPoseDataに書いてあるのでなしでよいはず
 
-                if (boneKeyPose.useRotation) {
-                    EditorGUI.BeginChangeCheck();
-                    Quaternion rotation = Handles.RotationHandle(boneKeyPose.rotation, boneKeyPose.position);
-                    if (EditorGUI.EndChangeCheck()) {
-                        Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Rotation");
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
-                            // target存在する場合はBoneLocal->World(or BodyLocal)
-                            boneKeyPose.rotation = rotation;
-                            boneKeyPose.ConvertWorldToBoneLocal();
-                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
-                            // target存在しないならWorld(or BoneLocal)->Local
-                            boneKeyPose.rotation = rotation;
-                            boneKeyPose.ConvertWorldToBoneLocal();
-                        } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                            // target存在しないならWorld(or BoneLocal)->Local
-                            boneKeyPose.rotation = rotation;
-                            boneKeyPose.ConvertWorldToBodyLocal(body);
-                        }
-                        EditorUtility.SetDirty(latestEditableKeyPose);
-                    }
-                }
-            }
+            //var body = ActionEditorWindowManager.instance.body;
+            //if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+            //if (body == null) return;
+            ////var target = ActionEditorWindowManager.instance.targetObject;
+            //if (latestEditableKeyPose == null) {
+            //    return;
+            //}
+            //// 他のハンドルが表示されると二重になるので他のハンドルを表示しない
+            //if (Tools.current != Tool.None && Tools.current != Tool.View) {
+            //    Tools.current = Tool.None;
+            //}
+
+            //var boneKeyPoseFromLocal = latestEditableKeyPose.GetBoneKeyPoses(body);
+            //foreach (var boneKeyPose in boneKeyPoseFromLocal) {
+            //    var parentTransform = body[boneKeyPose.coordinateParent].transform;
+            //    Pose baseTransform = new Pose(parentTransform.position, parentTransform.rotation);
+            //    if (boneKeyPose.usePosition) {
+            //        EditorGUI.BeginChangeCheck();
+            //        //Vector3 position = Handles.PositionHandle(boneKeyPose.position, Quaternion.identity);
+            //        Vector3 position = AxisMove(boneKeyPose.position, boneKeyPose.rotation, 1);
+            //        if (EditorGUI.EndChangeCheck()) {
+            //            Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Position");
+            //            if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+            //                // worldはBoneLocal->World(or BodyLocal)
+            //                boneKeyPose.position = position;
+            //                boneKeyPose.ConvertWorldToBoneLocal();
+            //            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+            //                // localならWorld(or BoneLocal)->Local
+            //                boneKeyPose.position = position;
+            //                boneKeyPose.ConvertWorldToBoneLocal(body);
+            //            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+            //                boneKeyPose.position = position;
+            //                boneKeyPose.ConvertWorldToBodyLocal(body);
+            //            }
+            //            EditorUtility.SetDirty(latestEditableKeyPose);
+            //        }
+            //    }
+
+            //    if (boneKeyPose.useRotation) {
+            //        EditorGUI.BeginChangeCheck();
+            //        Quaternion rotation = Handles.RotationHandle(boneKeyPose.rotation, boneKeyPose.position);
+            //        if (EditorGUI.EndChangeCheck()) {
+            //            Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Rotation");
+            //            if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+            //                // target存在する場合はBoneLocal->World(or BodyLocal)
+            //                boneKeyPose.rotation = rotation;
+            //                boneKeyPose.ConvertWorldToBoneLocal();
+            //            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+            //                // target存在しないならWorld(or BoneLocal)->Local
+            //                boneKeyPose.rotation = rotation;
+            //                boneKeyPose.ConvertWorldToBoneLocal();
+            //            } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+            //                // target存在しないならWorld(or BoneLocal)->Local
+            //                boneKeyPose.rotation = rotation;
+            //                boneKeyPose.ConvertWorldToBodyLocal(body);
+            //            }
+            //            EditorUtility.SetDirty(latestEditableKeyPose);
+            //        }
+            //    }
+            //}
         }
-
 
         public static void GetKeyPoses() {
             if (!ActionEditorWindowManager.instance.keyPoseWindow) return;
