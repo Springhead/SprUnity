@@ -159,6 +159,13 @@ namespace SprUnity {
                         }
                     }
                 }
+
+                // 調整用の手を表示
+                if(boneKeyPose.boneId == HumanBodyBones.LeftHand) {
+
+                }else if(boneKeyPose.boneId == HumanBodyBones.RightHand) {
+
+                }
             }
         }
 
