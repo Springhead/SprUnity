@@ -17,7 +17,63 @@ namespace SprUnity {
         private float handleSize = 0.05f;
         private float selectedHandleSize = 0.15f;
         private BoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
+        private Material mat;
+        private Mesh leftHand;
+        private Mesh rightHand;
+        private Mesh head;
+        private Mesh leftFoot;
+        private Mesh rightFoot;
+
         void OnEnable() {
+            //if (mat == null) {
+            //Shader shader = Shader.Find("Standard");
+            //mat = new Material(shader);
+            //mat.SetOverrideTag("RenderType", "Transparent");
+            //    mat.color = new Color(255, 255, 255);
+            //mat.SetFloat("_Metallic", 0f);
+            //mat.SetFloat("_GlossMapScale", 0.7f);
+            //}
+
+            // Editor上ではMonoScript.FromScriptableObject(this)がnull
+            // どうやってKeyPoseDataEditorのパスを取得すればよいかわからない
+
+            var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
+            
+            mat = AssetDatabase.LoadAssetAtPath(modelpath + "clear.mat", typeof(Material)) as Material;
+            if(mat == null) {
+                Debug.Log("mat null");
+            }
+
+            leftHand = AssetDatabase.LoadAssetAtPath(
+                modelpath + "LeftHand.fbx", typeof(Mesh)) as Mesh;
+            if (leftHand == null) {
+                Debug.Log("fbx null");
+            }
+
+            rightHand = AssetDatabase.LoadAssetAtPath(
+                modelpath + "RightHand.fbx", typeof(Mesh)) as Mesh;
+            if (rightHand == null) {
+                Debug.Log("fbx null");
+            }
+
+            head = AssetDatabase.LoadAssetAtPath(
+                modelpath + "Head.fbx", typeof(Mesh)) as Mesh;
+            if (head == null) {
+                Debug.Log("fbx null");
+            }
+
+            leftFoot = AssetDatabase.LoadAssetAtPath(
+                modelpath + "LeftFoot.fbx", typeof(Mesh)) as Mesh;
+            if (leftFoot == null) {
+                Debug.Log("fbx null");
+            }
+
+            rightFoot = AssetDatabase.LoadAssetAtPath(
+                modelpath + "RightFoot.fbx", typeof(Mesh)) as Mesh;
+            if (rightFoot == null) {
+                Debug.Log("fbx null");
+            }
+
             SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
 
@@ -75,7 +131,7 @@ namespace SprUnity {
                     }
                 }
                 // 選択中のboneKeyPoseは範囲内だったら選択されたままに
-                if(preselected != null) {
+                if (preselected != null) {
                     var Point = intersectPoint(SceneView.lastActiveSceneView.camera.transform.forward,
                         preselected.position, ray.direction, ray.origin);
                     if ((Point - preselected.position).magnitude < selectedHandleSize) {
@@ -161,10 +217,17 @@ namespace SprUnity {
                 }
 
                 // 調整用の手を表示
-                if(boneKeyPose.boneId == HumanBodyBones.LeftHand) {
-
-                }else if(boneKeyPose.boneId == HumanBodyBones.RightHand) {
-
+                mat.SetPass(1); // OnEnableでやってもダメだった
+                if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
+                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation, 1);
+                } else if (boneKeyPose.boneId == HumanBodyBones.RightHand) {
+                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation, 1);
+                } else if (boneKeyPose.boneId == HumanBodyBones.Head) {
+                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation, 1);
+                } else if (boneKeyPose.boneId == HumanBodyBones.LeftFoot) {
+                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation, 1);
+                } else if (boneKeyPose.boneId == HumanBodyBones.RightFoot) {
+                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation, 1);
                 }
             }
         }

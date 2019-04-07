@@ -145,11 +145,12 @@ namespace SprUnity {
             if (texture == null) {
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseBoneWindow.cs", "");
-                var bytes = System.IO.File.ReadAllBytes(scriptpath + path);
+                scriptpath = System.IO.Path.GetDirectoryName(scriptpath);
+                Debug.Log(scriptpath);
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + "\\" + path);
                 if (bytes != null) {
                     texture = new Texture2D(1, 1);
-                    texture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + path));
+                    texture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + "\\" + path));
                     texture.filterMode = FilterMode.Bilinear;
                 } else {
                     Debug.Log("picture null");
