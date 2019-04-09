@@ -10,18 +10,10 @@ public class SampleSequenceAction : ScriptableAction {
 
 	// Use this for initialization
 	void Start () {
-        raiseHand.keyPose = ScriptableAction.Instantiate<KeyPoseData>(inLow);
-        waveIn.keyPose = ScriptableAction.Instantiate<KeyPoseData>(inLow);
-        waveOut.keyPose = ScriptableAction.Instantiate<KeyPoseData>(outLow);
-        for (int i = 0; i < raiseHand.keyPose.boneKeyPoses.Count; i++) {
-            raiseHand.keyPose.boneKeyPoses[i].Enable(false);
-        }
-        for (int i = 0; i < waveIn.keyPose.boneKeyPoses.Count; i++) {
-            waveIn.keyPose.boneKeyPoses[i].Enable(false);
-        }
-        for (int i = 0; i < waveOut.keyPose.boneKeyPoses.Count; i++) {
-            waveOut.keyPose.boneKeyPoses[i].Enable(false);
-        }
+        HumanBodyBones[] copyBones = new HumanBodyBones[] { HumanBodyBones.LeftHand, HumanBodyBones.RightHand };
+        raiseHand.keyPose.ParserSpecifiedParts(inLow, copyBones);
+        waveIn.keyPose.ParserSpecifiedParts(inLow, copyBones);
+        waveOut.keyPose.ParserSpecifiedParts(outLow, copyBones);
         base.Start();
     }
 

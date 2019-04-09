@@ -164,6 +164,24 @@ namespace SprUnity {
             set { boneKeyPoseTiming.y = value; }
         }
 
+        public BoneKeyPose Clone() {
+            BoneKeyPose k = new BoneKeyPose();
+            k.boneId = this.boneId;
+            k.boneIdString = this.boneIdString;
+            k.coordinateMode = this.coordinateMode;
+            k.position = this.position;
+            k.rotation = this.rotation;
+            k.coordinateParent = this.coordinateParent;
+            k.localPosition = this.localPosition;
+            k.normalizedLocalPosition = this.normalizedLocalPosition;
+            k.localRotation = this.localRotation;
+            k.usePosition = this.usePosition;
+            k.useRotation = this.useRotation;
+            k.lookAtRatio = this.lookAtRatio;
+            k.boneKeyPoseTiming = this.boneKeyPoseTiming;
+            return k;
+        }
+
         public void Enable(bool e) {
             usePosition = useRotation = e;
         }
@@ -172,17 +190,30 @@ namespace SprUnity {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 Bone coordinateBaseBone = body[coordinateParent];
-                position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * (normalizedLocalPosition * body.height);
-                rotation = coordinateBaseBone.transform.rotation * localRotation;
+                if (coordinateBaseBone.ikActuator?.phIKActuator != null) {
+                    Posed ikSolidPose = coordinateBaseBone.ikActuator.phIKActuator.GetSolidTempPose();
+                    position = ikSolidPose.Pos().ToVector3() + ikSolidPose.Ori().ToQuaternion() * (normalizedLocalPosition * body.height);
+                    rotation = ikSolidPose.Ori().ToQuaternion() * localRotation;
+                } else {
+                    position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * (normalizedLocalPosition * body.height);
+                    rotation = coordinateBaseBone.transform.rotation * localRotation;
+                }
             }
         }
         public void ConvertWorldToBoneLocal(Body body = null) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 Bone coordinateBaseBone = body[coordinateParent];
-                localPosition = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * (position - coordinateBaseBone.transform.position);
-                normalizedLocalPosition = localPosition / body.height;
-                localRotation = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * rotation;
+                if (coordinateBaseBone.ikActuator?.phIKActuator != null) {
+                    Posed ikSolidPose = coordinateBaseBone.ikActuator.phIKActuator.GetSolidTempPose();
+                    localPosition = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * (position - ikSolidPose.Pos().ToVector3());
+                    normalizedLocalPosition = localPosition / body.height;
+                    localRotation = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * rotation;
+                } else {
+                    localPosition = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * (position - coordinateBaseBone.transform.position);
+                    normalizedLocalPosition = localPosition / body.height;
+                    localRotation = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * rotation;
+                }
             }
         }
         public void ConvertBoneLocalToOtherBoneLocal(Body body, HumanBodyBones from, HumanBodyBones to) {
@@ -236,8 +267,72 @@ namespace SprUnity {
         public float testSpring = 1.0f;
         public float testDamper = 1.0f;
 
-        public void Parser(KeyPoseData data) {
+        public BoneKeyPose this[string key] {
+            get {
+                foreach (var boneKeyPose in boneKeyPoses) {
+                    if (boneKeyPose.boneId.ToString() == key) {
+                        return boneKeyPose;
+                    }
+                }
+                return null;
+            }
+        }
+        // <!!> Is it better ?
+        public BoneKeyPose this[HumanBodyBones key] {
+            get { return this[key.ToString()]; }
+        }
 
+        public void ParserSpecifiedParts(KeyPoseData data, HumanBodyBones[] boneIds = null) {
+            boneKeyPoses.Clear();
+            foreach(var boneKeyPose in data.boneKeyPoses) {
+                foreach(var boneId in boneIds) {
+                    if(boneId == boneKeyPose.boneId) {
+                        boneKeyPoses.Add(boneKeyPose.Clone());
+                    }
+                }
+            }
+        }
+        public void Parser(KeyPoseData data) {
+            boneKeyPoses.Clear();
+            foreach (var boneKeyPose in data.boneKeyPoses) {
+                boneKeyPoses.Add(boneKeyPose.Clone());
+            }
+        }
+
+        public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
+            if (!rotate.HasValue) { rotate = Quaternion.identity; }
+
+            if (duration < 0) { duration = testDuration; }
+            if (startTime < 0) { startTime = 0; }
+            if (spring < 0) { spring = testSpring; }
+            if (damper < 0) { damper = testDamper; }
+
+            List<BoneSubMovementPair> logs = new List<BoneSubMovementPair>();
+            if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
+            if (body != null) {
+                foreach (var boneKeyPose in boneKeyPoses) {
+                    if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
+                        Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
+                        Quaternion ratioRotate = Quaternion.Slerp(Quaternion.identity, (Quaternion)rotate, boneKeyPose.lookAtRatio);
+                        var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
+                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
+                            Bone baseBone = body[boneKeyPose.coordinateParent];
+                            pose.position = baseBone.transform.position + baseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
+                            pose.rotation = boneKeyPose.localRotation * baseBone.transform.rotation;
+                        }
+                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                            pose.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
+                            pose.rotation = boneKeyPose.localRotation * body.transform.rotation;
+                        }
+                        var springDamper = new Vector2(spring, damper);
+                        var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
+                        BoneSubMovementPair log = new BoneSubMovementPair(bone, sub.Clone());
+                        Debug.Log(sub.p0 + " " + sub.p1 + " " + sub.t0 + " " + sub.t1);
+                        logs.Add(log);
+                    }
+                }
+            }
+            return logs;
         }
     }
 
@@ -362,7 +457,7 @@ namespace SprUnity {
                         }
                         var springDamper = new Vector2(spring, damper);
                         var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
-                        BoneSubMovementPair log = new BoneSubMovementPair(bone, new SubMovement(sub));
+                        BoneSubMovementPair log = new BoneSubMovementPair(bone, sub.Clone());
                         Debug.Log(sub.p0 + " " + sub.p1 + " " + sub.t0 + " " + sub.t1);
                         logs.Add(log);
                     }

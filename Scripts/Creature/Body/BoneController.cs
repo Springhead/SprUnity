@@ -67,16 +67,20 @@ public class SubMovement {
     // DEfault Constructor
     public SubMovement() { }
     // Copy Constructor
-    public SubMovement(SubMovement s) {
-        s0 = s.s0;
-        p0 = s.p0;
-        q0 = s.q0;
-        t0 = s.t0;
+    public SubMovement Clone() {
+        SubMovement s = new SubMovement();
 
-        s1 = s.s1;
-        p1 = s.p1;
-        q1 = s.q1;
-        t1 = s.t1;
+        s.s0 = s0;
+        s.p0 = p0;
+        s.q0 = q0;
+        s.t0 = t0;
+
+        s.s1 = s1;
+        s.p1 = p1;
+        s.q1 = q1;
+        s.t1 = t1;
+
+        return s;
     }
 }
 

@@ -35,25 +35,9 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- ----- -----
         public void Start() {
-            _sample1.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
-            _sample2.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
-            _sample3.keyPose = ScriptableObject.Instantiate<KeyPoseData>(sample1);
-            for(int i = 0; i < _sample1.keyPose.boneKeyPoses.Count; i++) {
-                _sample1.keyPose.boneKeyPoses[i].usePosition = false;
-                _sample1.keyPose.boneKeyPoses[i].useRotation = false;
-            }
-            for (int i = 0; i < _sample2.keyPose.boneKeyPoses.Count; i++) {
-                _sample2.keyPose.boneKeyPoses[i].usePosition = false;
-                _sample2.keyPose.boneKeyPoses[i].useRotation = false;
-            }
-            for (int i = 0; i < _sample3.keyPose.boneKeyPoses.Count; i++) {
-                _sample3.keyPose.boneKeyPoses[i].usePosition = false;
-                _sample3.keyPose.boneKeyPoses[i].useRotation = false;
-            }
-            _sample1.keyPose[HumanBodyBones.RightHand].usePosition = true;
-            _sample1.keyPose[HumanBodyBones.RightHand].useRotation = true;
-            _sample2.keyPose[HumanBodyBones.RightHand].usePosition = true;
-            _sample2.keyPose[HumanBodyBones.RightHand].useRotation = true;
+            _sample1.keyPose.ParserSpecifiedParts(sample1, new HumanBodyBones[] { HumanBodyBones.RightHand});
+            _sample2.keyPose.ParserSpecifiedParts(sample2, new HumanBodyBones[] { HumanBodyBones.RightHand });
+            _sample3.keyPose.ParserSpecifiedParts(sample3[0], new HumanBodyBones[] { HumanBodyBones.RightHand });
             base.Start();
         }
         

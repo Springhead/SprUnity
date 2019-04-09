@@ -30,7 +30,9 @@ public class SampleCatPunchAction : ScriptableAction {
     public KeyPoseData catPunch;
     public KeyPoseData catPunchBack;
     public KeyPoseTimePair go, punch, back;
-    public BoneKeyPose bone;
+
+    // Intermediate products
+
 
     public GameObject target;
 
@@ -39,21 +41,13 @@ public class SampleCatPunchAction : ScriptableAction {
 
 	// Use this for initialization
 	void Start () {
-        go.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
-        punch.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
-        back.keyPose = ScriptableObject.Instantiate<KeyPoseData>(catPunch);
-        for (int i = 0; i < go.keyPose.boneKeyPoses.Count; i++) {
-            go.keyPose.boneKeyPoses[i].usePosition = false;
-            go.keyPose.boneKeyPoses[i].useRotation = false;
-        }
-        for (int i = 0; i < go.keyPose.boneKeyPoses.Count; i++) {
-            punch.keyPose.boneKeyPoses[i].usePosition = false;
-            punch.keyPose.boneKeyPoses[i].useRotation = false;
-        }
-        for (int i = 0; i < back.keyPose.boneKeyPoses.Count; i++) {
-            back.keyPose.boneKeyPoses[i].usePosition = false;
-            back.keyPose.boneKeyPoses[i].useRotation = false;
-        }
+        HumanBodyBones[] copyBones = new HumanBodyBones[] { HumanBodyBones.LeftHand, HumanBodyBones.RightHand };
+        go.keyPose = new KeyPose();
+        go.keyPose.ParserSpecifiedParts(catPunch, copyBones);
+        punch.keyPose = new KeyPose();
+        punch.keyPose.ParserSpecifiedParts(catPunch, copyBones);
+        back.keyPose = new KeyPose();
+        back.keyPose.ParserSpecifiedParts(catPunch, copyBones);
         base.Start();
     }
 

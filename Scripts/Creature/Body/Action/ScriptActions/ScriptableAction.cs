@@ -21,10 +21,11 @@ namespace SprUnity {
         }
     }
 
+    // classname KeyFrame
     [Serializable]
     public class KeyPoseTimePair {
         public string label;
-        public KeyPoseData keyPose;
+        public KeyPose keyPose;
         public enum StartCondition {
             AbsoluteTime,
             AbsoluteTimeFromPreviousKeyPoseStart,
@@ -84,7 +85,42 @@ namespace SprUnity {
             }
         }
     }
+    /*
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(KeyPoseTimePair))]
+    public class KeyPoseTimePairPropertyDrawer : PropertyDrawer {
+        bool m_hideFlag = false;
 
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+            var rect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+
+            m_hideFlag = EditorGUI.Foldout(rect, m_hideFlag, label);
+
+            if (!m_hideFlag) {
+                return;
+            }
+
+            var backupIndent = EditorGUI.indentLevel;
+
+            label = EditorGUI.BeginProperty(position, label, property);
+
+            float y = position.y;
+            {
+                SerializedProperty keyPose = property.FindPropertyRelative("keyPose");
+
+                y += EditorGUIUtility.singleLineHeight;
+                backupIndent++;
+                
+                var KeyPoseRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(KeyPoseRect, )
+            }
+            EditorGUI.EndProperty();
+
+            EditorGUI.indentLevel = backupIndent;
+        }
+    }
+#endif
+*/
     public class SubMovementLog {
         private string source;
         public SubMovement subMovement; 
@@ -98,6 +134,8 @@ namespace SprUnity {
     public class BoneSubMovementLogs {
         public Bone bone;
         public List<SubMovementLog> subMovements;
+        public List<Vector3> culculatedTrajectory = new List<Vector3>();
+        public List<Vector3> loggedTrajectory = new List<Vector3>();
         public BoneSubMovementLogs(Bone bone) {
             this.bone = bone;
             subMovements = new List<SubMovementLog>();
@@ -119,7 +157,19 @@ namespace SprUnity {
 #endif
     public class ActionTimeScheduler {
 
-    }    
+    } 
+    
+
+    public class KeyPoseHandler : Dictionary<string, Pose>{
+        // 変換途中の座標とか入れる
+        void DrawHandlers() {
+            foreach(var p in this) {
+
+            }
+        }
+    }
+
+
 
     public abstract class ScriptableAction : MonoBehaviour {
 
@@ -142,6 +192,8 @@ namespace SprUnity {
         [HideInInspector]
         public List<BoneSubMovementLogs> boneSubMovementsHistory;
 
+        protected CharacterSceneLoggerBehaviour sceneLog;
+
         // Use this for initialization
         public void Start() {
             timer = 0.0f;
@@ -157,6 +209,7 @@ namespace SprUnity {
                     field.SetValue(this, Instantiate<KeyPoseData>((KeyPoseData)field.GetValue(this)));
                 }
             }
+            sceneLog.Start();
         }
 
         // Update is called once per frame
@@ -196,6 +249,7 @@ namespace SprUnity {
             actionEnabled = true;
             timer = 0.0f;
             InitializeHistory();
+            sceneLog.SaveScene();
             // Turn Perception Generators on 
         }
 
@@ -263,6 +317,14 @@ namespace SprUnity {
             for (int i = 0; i < boneSubMovementsHistory.Count; i++) {
                 foreach (var log in logs) {
                     if (log.bone == boneSubMovementsHistory[i].bone) boneSubMovementsHistory[i].Add(log, s);
+                }
+            }
+        }
+
+        void OnDrawGizmos() {
+            foreach(var boneHistory in boneSubMovementsHistory) {
+                if (boneHistory.bone.controller.controlPosition) {
+
                 }
             }
         }

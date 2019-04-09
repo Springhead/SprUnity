@@ -75,6 +75,21 @@ namespace SprUnity {
                 Gizmos.DrawWireSphere(transform.position, 0.01f);
             }
 
+            if (parent != null && ikActuator?.phIKActuator != null && parent?.ikActuator?.phIKActuator != null) {
+                {
+                    Gizmos.color = Color.white;
+                    var from = ikActuator.phIKActuator.GetSolidPullbackPose().Pos().ToVector3();
+                    var to = parent.ikActuator.phIKActuator.GetSolidPullbackPose().Pos().ToVector3();
+                    Gizmos.DrawLine(from, to);
+                }
+                {
+                    Gizmos.color = Color.green;
+                    var from = ikActuator.phIKActuator.GetSolidTempPose().Pos().ToVector3();
+                    var to = parent.ikActuator.phIKActuator.GetSolidTempPose().Pos().ToVector3();
+                    Gizmos.DrawLine(from, to);
+                }
+            }
+
             // Draw Solid
             {
                 Gizmos.color = Color.blue;
