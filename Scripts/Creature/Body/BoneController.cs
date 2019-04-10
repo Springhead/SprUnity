@@ -362,7 +362,5 @@ public class BoneController : MonoBehaviour {
                 bone.damperRatio = spring[1];
             }
         }
-
-        */
     }
 }
