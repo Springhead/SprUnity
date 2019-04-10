@@ -79,10 +79,11 @@ namespace SprUnity {
             keyPoseGroupStatuses = new List<KeyPoseGroupStatus>();
             actions = new List<ActionStateMachineStatus>();
 
-            EditorApplication.hierarchyChanged -= Reload;
-            EditorApplication.hierarchyChanged += Reload;
-            EditorApplication.projectChanged -= Reload;
-            EditorApplication.projectChanged += Reload;
+            EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+            EditorApplication.hierarchyChanged += OnHierarchyChanged;
+            EditorApplication.projectChanged -= OnProjectChanged;
+            EditorApplication.projectChanged += OnProjectChanged;
+
             Debug.Log("Manager constructed");
         }
 
@@ -94,8 +95,6 @@ namespace SprUnity {
             if (body == null) {
                 body = GameObject.FindObjectOfType<Body>();
             }
-            //KeyPoseWindow.GetKeyPoses();
-            //ActionSelectWindow.GetActions();
             actionSaveFolder = Application.dataPath + "/Actions/Actions";
             KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
             Debug.Log("Manager OnEnable");
@@ -106,14 +105,25 @@ namespace SprUnity {
         }
 
         void Reload() {
-            KeyPoseWindow.GetKeyPoses();
-            ActionSelectWindow.GetActions();
+            KeyPoseWindow.ReloadKeyPoseList();
+            ActionSelectWindow.ReloadActionList();
             body = GameObject.FindObjectOfType<Body>();
             if (stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
         }
 
         public void SearchBody() {
             body = GameObject.FindObjectOfType<Body>();
+        }
+
+        // ----- ----- ----- ----- ----- -----
+
+        void OnHierarchyChanged() {
+            ActionSelectWindow.ReloadActionList();
+        }
+
+        void OnProjectChanged() {
+            KeyPoseWindow.ReloadKeyPoseList();
+            ActionSelectWindow.ReloadActionList();
         }
     }
 

@@ -37,13 +37,15 @@ namespace SprUnity {
     public class ActionState : ScriptableObject {
         // member values
         public ActionStateMachine stateMachine;
-        public KeyPoseInterpolationGroup keyframe;
+        public KeyPoseData keyframe;
         public List<ActionTransition> transitions = new List<ActionTransition>();
         public List<string> useParams;
 
         public float duration = 0.5f;
         public float spring = 1.0f;
         public float damper = 1.0f;
+
+        public KeyPoseTransformer transformers;
 
         [HideInInspector]
         private float timeFromEnter;
@@ -57,10 +59,13 @@ namespace SprUnity {
         // baseKeyPose 0.0 <--> 1.0 referencePointOnTrajectory
         public float internalRatio = 0.0f;
 
-        //[HideInInspector]
+        [HideInInspector]
         public Rect stateNodeRect = new Rect(0, 0, 200, 50);
+        [HideInInspector]
         public bool isDragged;
+        [HideInInspector]
         public bool isSelected;
+        [HideInInspector]
         public int serialCount;
 
         static public GUIStyle appliedStyle = new GUIStyle();
@@ -119,7 +124,7 @@ namespace SprUnity {
                     parameters.Add(stateMachine.parameters[l]);
                 }
                 // ターゲット位置による変換後のKeyPose
-                keyframe.Action(body, duration, 0, spring, damper, parameters);
+                keyframe.Action(body, duration, 0, spring, damper);
             }
             Debug.Log("Enter state:" + name + " at time:" + Time.time);
         }

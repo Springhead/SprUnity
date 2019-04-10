@@ -21,6 +21,9 @@ namespace SprUnity {
         // インスタンス
         static ActionSelectWindow window;
 
+        private GUISkin myskin;
+        private string skinpath = "GUISkins/SprGUISkin.guiskin";
+
         // GUI
         private Vector2 scrollPos;
 
@@ -28,7 +31,7 @@ namespace SprUnity {
         static void Open() {
             window = GetWindow<ActionSelectWindow>();
             ActionEditorWindowManager.instance.actionSelectWindow = window;
-            GetActions();
+            ReloadActionList();
         }
 
         public void AddItemsToMenu(GenericMenu menu) {
@@ -38,12 +41,17 @@ namespace SprUnity {
         }
 
         public void OnEnable() {
-            Open();
             // <!!> これ、ここか？
             for (int i = 0; i < ActionEditorWindowManager.instance.actions.Count; i++) {
                 var action = ActionEditorWindowManager.instance.actions[i];
                 action.isSelected = SessionState.GetBool(action.action.name, false);
                 Debug.Log(action.action.name + " " + action.isSelected + " " + SessionState.GetBool(action.action.name, false));
+            }
+            if (myskin == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
         }
 
@@ -57,6 +65,13 @@ namespace SprUnity {
 
         public void OnGUI() {
             if (window == null) Open();
+
+            if (myskin != null) {
+                GUI.skin = myskin;
+            } else {
+                Debug.Log("GUISkin is null");
+            }
+
             bool textChangeComp = false;
             scrollPos = GUILayout.BeginScrollView(scrollPos);
             GUILayout.Label("Actions");
@@ -64,22 +79,8 @@ namespace SprUnity {
             if (ActionEditorWindowManager.instance.actionSelectWindow == null) GUILayout.Label("Manager.actionSelectWindow null");
             foreach (var action in ActionEditorWindowManager.instance.actions) {
                 GUILayout.BeginHorizontal(GUILayout.Height(20));
-                EditorGUI.BeginChangeCheck();
                 action.isSelected = GUILayout.Toggle(action.isSelected, "", GUILayout.Width(15));
-                action.action.name = GUILayout.TextField(action.action.name);
-                if (Event.current.keyCode == KeyCode.Return && Input.eatKeyPressOnTextFieldFocus) {
-                    textChangeComp = true;
-                    GUI.FocusControl("");
-                    Event.current.Use();
-                }
-                if (EditorGUI.EndChangeCheck()) {
-                    EditorUtility.SetDirty(action.action);
-                }/*
-            if (textChangeComp) {
-                string mainPath = AssetDatabase.GetAssetPath(action.action);
-                //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
-                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(action.action));
-            }*/
+                GUILayout.Label(action.action.name);
                 GUILayout.EndHorizontal();
             }
             foreach (var action in ActionEditorWindowManager.instance.actions) {
@@ -88,20 +89,26 @@ namespace SprUnity {
             foreach (var obj in Selection.gameObjects) {
                 var actions = obj.GetComponents<ScriptableAction>();
                 for (int i = 0; i < actions.Count(); i++) {
-                    actions[i].isEditing = GUILayout.Toggle(actions[i].isEditing, actions[i].name + "." + actions[i].GetType().ToString());
+                    GUILayout.BeginHorizontal(GUILayout.Height(20));
+                    actions[i].isEditing = GUILayout.Toggle(actions[i].isEditing, "", GUILayout.Width(15));
+                    GUILayout.Label(actions[i].name + "." + actions[i].GetType().ToString());
+                    GUILayout.EndHorizontal();
                 }
             }
             GUILayout.EndScrollView();
+
+            GUI.skin = null;
         }
 
-        public static void GetActions() {
+        public static void ReloadActionList() {
             if (!ActionEditorWindowManager.instance.actionSelectWindow) return;
-            // Asset全検索、そのうえ、全アセットを
+            // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
 
-            ActionEditorWindowManager.instance.actions = new List<ActionStateMachineStatus>();
+            List<ActionStateMachineStatus> reloadedList = new List<ActionStateMachineStatus>();
+            //ActionEditorWindowManager.instance.actions = new List<ActionStateMachineStatus>();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -111,9 +118,16 @@ namespace SprUnity {
                     ActionStateMachineStatus actionStatus = new ActionStateMachineStatus();
                     actionStatus.action = action;
                     actionStatus.isSelected = false;
-                    ActionEditorWindowManager.instance.actions.Add(actionStatus);
+                    foreach(var existingAction in ActionEditorWindowManager.instance.actions) {
+                        if(existingAction.action == action) {
+                            actionStatus.isSelected = existingAction.isSelected;
+                            continue;
+                        }
+                    }
+                    reloadedList.Add(actionStatus);
                 }
             }
+            ActionEditorWindowManager.instance.actions = reloadedList;
         }
 
         void CreateAction() {

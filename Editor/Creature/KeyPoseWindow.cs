@@ -70,18 +70,18 @@ namespace SprUnity {
         static void Open() {
             window = GetWindow<KeyPoseWindow>();
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
-            GetKeyPoses();
+            ReloadKeyPoseList();
             window.minSize = new Vector2(250, 300);
         }
 
         public void AddItemsToMenu(GenericMenu menu) {
             menu.AddItem(new GUIContent("Reload"), false, () => {
-                GetKeyPoses();
+                ReloadKeyPoseList();
             });
         }
 
         public void OnEnable() {
-            GetKeyPoses();
+            ReloadKeyPoseList();
             //visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
             visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
             if (editableButtonTexture == null) {
@@ -315,7 +315,7 @@ namespace SprUnity {
             //}
         }
 
-        public static void GetKeyPoses() {
+        public static void ReloadKeyPoseList() {
             if (!ActionEditorWindowManager.instance.keyPoseWindow) return;
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();

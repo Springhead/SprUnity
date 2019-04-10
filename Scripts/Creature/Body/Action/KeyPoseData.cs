@@ -671,8 +671,9 @@ namespace SprUnity {
                         var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
                         if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneBaseLocal) {
                             Bone baseBone = body[boneKeyPose.coordinateParent];
-                            pose.position = baseBone.transform.position + baseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
-                            pose.rotation = boneKeyPose.localRotation * baseBone.transform.rotation;
+                            Posed ikSolidPose = baseBone.ikActuator.phIKActuator.GetSolidTempPose();
+                            pose.position = ikSolidPose.Pos().ToVector3() + ikSolidPose.Ori().ToQuaternion() * (boneKeyPose.normalizedLocalPosition * body.height);
+                            pose.rotation = boneKeyPose.localRotation * ikSolidPose.Ori().ToQuaternion();
                         }
                         if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
                             pose.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
