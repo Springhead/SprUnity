@@ -121,6 +121,7 @@ namespace SprUnity {
                     foreach(var existingAction in ActionEditorWindowManager.instance.actions) {
                         if(existingAction.action == action) {
                             actionStatus.isSelected = existingAction.isSelected;
+                            actionStatus.templeteTransition = existingAction.templeteTransition;
                             continue;
                         }
                     }

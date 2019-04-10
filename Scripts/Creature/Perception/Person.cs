@@ -64,6 +64,7 @@ public class Person : MonoBehaviour {
 
     void Update() {
         // <!!>
+        /*
         if (human) {
             var netAttr = GetAttr<Network.Attribute>();
             string debugText = "";
@@ -76,6 +77,7 @@ public class Person : MonoBehaviour {
                 debugTextMesh.text = debugText;
             }
         }
+        */
     }
 
     void FixedUpdate() {

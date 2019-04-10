@@ -244,7 +244,7 @@ namespace SprUnity {
 
         void OnGUI() {
             if (window == null) Open();
-            /*
+            
             var actions = ActionEditorWindowManager.instance.selectedAction;
             if (actions.Count == 1) {
                 currentAction = actions[0];
@@ -275,7 +275,7 @@ namespace SprUnity {
                     endSubmovementTime.Add(enterTime + (transition.toState ? transition.toState.duration : 0));
                     Vector2 springDamper = new Vector2((transition.toState ? transition.toState.spring : 0), (transition.toState ? transition.toState.damper : 0));
                     if (nextKeyFrame) {
-                        foreach (var boneKeyPose in nextKeyFrame.keyposes[0].boneKeyPoses) {
+                        foreach (var boneKeyPose in nextKeyFrame.boneKeyPoses) {
                             for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                                 if (boneStatusForTimelines[j].bone == boneKeyPose.boneId) {
                                     submovements[j][i].p0 = lastPose[j].position;
@@ -299,7 +299,7 @@ namespace SprUnity {
                 totalTime = 0;
             }
             totalTime = Mathf.Max(5.0f, totalTime * 1.2f);
-            */
+            /*
             foreach (var obj in Selection.gameObjects) {
                 var actions = obj.GetComponents<ScriptableAction>();
                 foreach(var a in actions) {
@@ -307,6 +307,7 @@ namespace SprUnity {
                 }
             }
             totalTime = Mathf.Max(5.0f, action.generatedKeyPosesHistory.Count() > 0 ? action.generatedKeyPosesHistory.Last().endTime * 1.1f : 0.0f);
+            */
             GUILayout.BeginVertical();
             DrawSpringDamperGraph();
             DrawVelocityGraph();
@@ -404,7 +405,7 @@ namespace SprUnity {
             float[] xAxis = new float[2] { 0, totalTime };
             float[] yAxis = new float[2] { 0f, 1f };
             DrawGraphBase(new Rect(graphLeft, graphTop, graphWidth, graphHeight), xAxis, yAxis, 1.0f, 0.2f, "", "");
-            /*
+            
             if (currentAction != null) {
                 // Draw Individual
                 for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
@@ -462,7 +463,7 @@ namespace SprUnity {
                 }
                 // Draw Integrated
             }
-            */
+            /*/
             if(action != null) {
                 for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                     List<SubMovementLog> logs = null;
@@ -497,6 +498,7 @@ namespace SprUnity {
                     }
                 }
             }
+                */
             GUILayout.EndArea();
         }
 
