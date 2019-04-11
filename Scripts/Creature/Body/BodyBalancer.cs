@@ -70,7 +70,7 @@ namespace SprUnity {
 
                 targHipsPos.y = initialHipsHeight + hipsHeight; // <!!>
 
-                float alpha = 0.3f;
+                float alpha = 0.5f;
                 targHipsPosLPF = ((1 - alpha) * targHipsPosLPF) + (alpha * targHipsPos);
 
                 if (body["Hips"].ikEndEffector != null && body["Hips"].ikEndEffector.phIKEndEffector != null) {

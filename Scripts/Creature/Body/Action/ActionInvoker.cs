@@ -20,9 +20,14 @@ namespace SprUnity {
         public string name = "";
         public Person lookAt = null;
         public List<KeyPoseTiming> keyPoseTimings = new List<KeyPoseTiming>();
+        public bool finish = false;
+        public bool abort = false;
     }
 
     public class ActionInvoker : MonoBehaviour {
+
+        private static ActionInvoker instance = null;
+        public static ActionInvoker GetInstance() { return instance; }
 
         public Body body = null;
         public List<KeyPoseSequence> keyPoseSequences = new List<KeyPoseSequence>();
@@ -37,6 +42,10 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
+        void Awake() {
+            instance = this;
+        }
+
         void Start() {
         }
 
@@ -46,9 +55,7 @@ namespace SprUnity {
             for (int i = 0; i < hotKeys.Count(); i++) {
                 if (Input.GetKeyDown(hotKeys[i])) {
                     if (keyPoseSequences.Count > i) {
-                        time = 0.0f;
-                        index = 0;
-                        inActionSequence = keyPoseSequences[i];
+                        Action(keyPoseSequences[i].name);
                     }
                 }
             }
@@ -57,30 +64,33 @@ namespace SprUnity {
         private void FixedUpdate() {
             if (body == null || body.initialized) {
                 if (inActionSequence != null && inActionSequence.keyPoseTimings.Count() > 0) {
-                    if (inActionSequence.keyPoseTimings[index].start <= time) {
-                        Quaternion rotate = Quaternion.identity;
-                        if (inActionSequence.lookAt != null) {
-                            Vector3 lookDir = inActionSequence.lookAt.head.transform.position - body["Hips"].transform.position;
-                            lookDir.y = 0; lookDir.Normalize();
-                            Quaternion lookRotation = Quaternion.FromToRotation(Vector3.forward, lookDir);
-                            rotate = Quaternion.Slerp(Quaternion.identity, lookRotation, 1);
-                        }
+                    if (index < inActionSequence.keyPoseTimings.Count()) {
+                        if (inActionSequence.keyPoseTimings[index].start <= time) {
+                            Quaternion rotate = Quaternion.identity;
+                            if (inActionSequence.lookAt != null) {
+                                Vector3 lookDir = inActionSequence.lookAt.head.transform.position - body["Hips"].transform.position;
+                                lookDir.y = 0; lookDir.Normalize();
+                                Quaternion lookRotation = Quaternion.FromToRotation(Vector3.forward, lookDir);
+                                rotate = Quaternion.Slerp(Quaternion.identity, lookRotation, 1);
+                            }
 
-                        var kp = inActionSequence.keyPoseTimings[index];
-                        kp.keyPose.Action(
-                            body: body,
-                            startTime: 0,
-                            duration: kp.duration,
-                            spring: kp.springDamper.x,
-                            damper: kp.springDamper.y,
-                            rotate: rotate
-                            );
-                        index++;
+                            var kp = inActionSequence.keyPoseTimings[index];
+                            kp.keyPose.Action(
+                                body: body,
+                                startTime: 0,
+                                duration: kp.duration,
+                                spring: kp.springDamper.x,
+                                damper: kp.springDamper.y,
+                                rotate: rotate
+                                );
+                            index++;
+                        }
                     }
 
                     time += Time.fixedDeltaTime;
 
-                    if (inActionSequence.keyPoseTimings.Count() <= index) {
+                    if (inActionSequence.keyPoseTimings.Count() <= index && GetRemainTime() <= 0) {
+                        inActionSequence.finish = true;
                         time = 0.0f;
                         index = 0;
                         inActionSequence = null;
@@ -91,15 +101,31 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
-        public void Action(string name, Person lookAt = null) {
+        public KeyPoseSequence Action(string name, Person lookAt = null) {
             foreach (var sequence in keyPoseSequences) {
                 if (sequence.name == name) {
+                    if (inActionSequence != null) {
+                        inActionSequence.abort = true;
+                        inActionSequence.finish = true;
+                    }
                     inActionSequence = sequence;
                     inActionSequence.lookAt = lookAt;
+                    inActionSequence.abort = false;
+                    inActionSequence.finish = false;
                     time = 0.0f;
                     index = 0;
+                    return inActionSequence;
                 }
             }
+            return null;
+        }
+
+        public float GetRemainTime() {
+            if (inActionSequence == null) { return -1e-3f; }
+
+            var lastKeyPose = inActionSequence.keyPoseTimings.Last();
+            var endTime = lastKeyPose.start + lastKeyPose.duration;
+            return (endTime - time);
         }
 
     }

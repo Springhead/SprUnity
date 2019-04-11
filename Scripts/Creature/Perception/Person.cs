@@ -70,7 +70,7 @@ public class Person : MonoBehaviour {
             debugText += "id : " + id + "\r\n";
             debugText += "helmet : " + netAttr.helmet + "\r\n";
             debugText += "vip : " + netAttr.vip + "\r\n";
-            debugText += "appoint : " + netAttr.appointmentStatus + "\r\n";
+            debugText += "appoint : " + netAttr.appointment + "\r\n";
             debugText += "name : " + netAttr.personName + "\r\n";
             if (debugTextMesh != null) {
                 debugTextMesh.text = debugText;

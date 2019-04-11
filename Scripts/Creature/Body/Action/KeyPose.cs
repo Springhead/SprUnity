@@ -53,6 +53,13 @@ namespace SprUnity {
             if (GUILayout.Button("Use Current Pose")) {
                 keyPose.InitializeByCurrentPose();
             }
+
+            if (GUILayout.Button("Save")) {
+#if UNITY_EDITOR
+                EditorUtility.SetDirty(keyPose);
+                AssetDatabase.SaveAssets();
+#endif
+            }
         }
 
         public void OnSceneGUI(SceneView sceneView) {
@@ -259,7 +266,7 @@ namespace SprUnity {
             if (body != null) {
                 boneKeyPoses.Clear();
                 foreach (var bone in body.bones) {
-                    if (bone.ikEndEffector != null && bone.controller != null && bone.controller.enabled) {
+                    if (bone.controller != null && bone.controller.enabled) {
                         BoneKeyPose boneKeyPose = new BoneKeyPose();
                         boneKeyPose.position = bone.transform.position;
                         boneKeyPose.rotation = bone.transform.rotation;
@@ -270,44 +277,45 @@ namespace SprUnity {
                             }
                         }
 
-                        if (bone.ikEndEffector.phIKEndEffector != null) {
-                            if (bone.ikEndEffector.phIKEndEffector.IsPositionControlEnabled()) {
-                                boneKeyPose.position = bone.ikEndEffector.phIKEndEffector.GetTargetPosition().ToVector3();
-                                boneKeyPose.usePosition = true;
-                            } else {
-                                boneKeyPose.usePosition = false;
-                            }
-
-                            if (bone.ikEndEffector.phIKEndEffector.IsOrientationControlEnabled()) {
-                                boneKeyPose.rotation = bone.ikEndEffector.phIKEndEffector.GetTargetOrientation().ToQuaternion();
-                                boneKeyPose.useRotation = true;
-                            } else {
-                                boneKeyPose.useRotation = false;
-                            }
-
-                        } else {
-                            if (bone.ikEndEffector.desc.bPosition) {
-#if UNITY_EDITOR
-                                if (EditorApplication.isPlaying) {
-                                    boneKeyPose.position = ((Vec3d)(bone.ikEndEffector.desc.targetPosition)).ToVector3();
+                        if (bone.ikEndEffector != null) {
+                            if (bone.ikEndEffector.phIKEndEffector != null) {
+                                if (bone.ikEndEffector.phIKEndEffector.IsPositionControlEnabled()) {
+                                    boneKeyPose.position = bone.ikEndEffector.phIKEndEffector.GetTargetPosition().ToVector3();
+                                    boneKeyPose.usePosition = true;
+                                } else {
+                                    boneKeyPose.usePosition = false;
                                 }
-#endif
-                                boneKeyPose.usePosition = true;
-                            } else {
-                                boneKeyPose.usePosition = false;
-                            }
 
-                            if (bone.ikEndEffector.desc.bOrientation) {
-#if UNITY_EDITOR
-                                if (EditorApplication.isPlaying) {
-                                    boneKeyPose.rotation = ((Quaterniond)(bone.ikEndEffector.desc.targetOrientation)).ToQuaternion();
+                                if (bone.ikEndEffector.phIKEndEffector.IsOrientationControlEnabled()) {
+                                    boneKeyPose.rotation = bone.ikEndEffector.phIKEndEffector.GetTargetOrientation().ToQuaternion();
+                                    boneKeyPose.useRotation = true;
+                                } else {
+                                    boneKeyPose.useRotation = false;
                                 }
-#endif
-                                boneKeyPose.useRotation = true;
-                            } else {
-                                boneKeyPose.useRotation = false;
-                            }
 
+                            } else {
+                                if (bone.ikEndEffector.desc.bPosition) {
+#if UNITY_EDITOR
+                                    if (EditorApplication.isPlaying) {
+                                        boneKeyPose.position = ((Vec3d)(bone.ikEndEffector.desc.targetPosition)).ToVector3();
+                                    }
+#endif
+                                    boneKeyPose.usePosition = true;
+                                } else {
+                                    boneKeyPose.usePosition = false;
+                                }
+
+                                if (bone.ikEndEffector.desc.bOrientation) {
+#if UNITY_EDITOR
+                                    if (EditorApplication.isPlaying) {
+                                        boneKeyPose.rotation = ((Quaterniond)(bone.ikEndEffector.desc.targetOrientation)).ToQuaternion();
+                                    }
+#endif
+                                    boneKeyPose.useRotation = true;
+                                } else {
+                                    boneKeyPose.useRotation = false;
+                                }
+                            }
                         }
 
                         boneKeyPose.ConvertWorldToBoneLocal();
