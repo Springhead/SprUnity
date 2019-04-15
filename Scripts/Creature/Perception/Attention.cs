@@ -22,6 +22,11 @@ public class AttentionAttr : Person.Attribute {
 
 public class Attention : MonoBehaviour {
 
+    private static Attention instance = null;
+    public static Attention GetInstance() { return instance; }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
     public Body body = null;
     public LookController lookController = null;
 
@@ -48,6 +53,10 @@ public class Attention : MonoBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviour Methods
 
+    void Awake() {
+        instance = this;
+    }
+
     void Start() {
     }
 
@@ -69,11 +78,11 @@ public class Attention : MonoBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // Public APIs
 
-    public void OverrideGazeTarget(Person person, float attention = -1, bool forceStraight = false, float overrideStare = -1) {
+    public void OverrideGazeTarget(Person person, float attention = -1, bool forceStraight = false, float overrideStare = -1, float speed = -1) {
         if (attention >= 0.0f) {
             person.GetAttr<AttentionAttr>().attention = attention;
         }
-        ChangeGazeTarget(person, forceStraight, overrideStare);
+        ChangeGazeTarget(person, forceStraight, overrideStare, speed);
     }
 
     public void OverrideGazeTransitionTime(float time) {
@@ -236,12 +245,13 @@ public class Attention : MonoBehaviour {
 
     }
 
-    void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false, float overrideStare = -1) {
+    void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false, float overrideStare = -1, float speed = -1) {
         if (newAttentionTarget != null) {
             // 目を動かす
             var attention = newAttentionTarget.GetAttr<AttentionAttr>().attention;
             lookController.target = newAttentionTarget.gameObject;
-            lookController.speed = 0.2f;
+            if (speed < 0) { speed = 0.2f; }
+            lookController.speed = speed;
             if (forceStraight || (newAttentionTarget.human && lookController.straight == false)) {
                 lookController.straight = true;
             } else {

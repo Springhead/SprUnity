@@ -50,7 +50,7 @@ namespace SprUnity {
         }
 
         void Update() {
-            KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y, KeyCode.U, KeyCode.I, KeyCode.O, KeyCode.P };
+            KeyCode[] hotKeys = { KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R, KeyCode.T, KeyCode.Y, KeyCode.U, KeyCode.I, KeyCode.O, KeyCode.Z, KeyCode.X, KeyCode.C };
 
             for (int i = 0; i < hotKeys.Count(); i++) {
                 if (Input.GetKeyDown(hotKeys[i])) {

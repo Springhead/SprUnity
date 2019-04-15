@@ -48,6 +48,8 @@ public class LookController2 : LookController {
     enum ManualControlTarget { Eye, Head };
     private ManualControlTarget manualControlTarget = ManualControlTarget.Eye;
 
+    private float noddingTimer = -1;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     // 頭の基準姿勢（サッケードのたびに変化する）
@@ -163,6 +165,8 @@ public class LookController2 : LookController {
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
+        if (noddingTimer > 0) { noddingTimer -= Time.fixedDeltaTime; }
+
         if (waitTimer > 0) {
             waitTimer -= Time.fixedDeltaTime;
         } else {
@@ -271,7 +275,9 @@ public class LookController2 : LookController {
 
                 // 動作指示
                 if (manualHead) { durationHead = 0.1f; }
-                body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation), new Vector2(1, 1), durationHead + 0.1f, durationHead, usePos: false);
+                if (noddingTimer > 0) {
+                    body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation), new Vector2(1, 1), durationHead + 0.1f, durationHead, usePos: false);
+                }
 
                 // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
@@ -297,4 +303,13 @@ public class LookController2 : LookController {
         }
 
 	}
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+    public void Nod() {
+        body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation * Quaternion.Euler(-2, 0, 0)), new Vector2(1, 1), 0.1f, 0.1f, usePos: false);
+        body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation * Quaternion.Euler(10, 0, 0)), new Vector2(1, 1), 0.3f, 0.3f, usePos: false);
+        body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation * Quaternion.Euler(0, 0, 0)), new Vector2(1, 1), 0.5f, 0.3f, usePos: false);
+        noddingTimer = 0.5f;
+    }
 }
