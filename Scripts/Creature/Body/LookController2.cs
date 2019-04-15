@@ -275,7 +275,7 @@ public class LookController2 : LookController {
 
                 // 動作指示
                 if (manualHead) { durationHead = 0.1f; }
-                if (noddingTimer > 0) {
+                if (noddingTimer <= 0) {
                     body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation), new Vector2(1, 1), durationHead + 0.1f, durationHead, usePos: false);
                 }
 
