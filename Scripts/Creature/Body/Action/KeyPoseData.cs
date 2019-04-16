@@ -219,22 +219,22 @@ namespace SprUnity {
                 // 調整用の手を表示
                 mat.SetPass(1); // OnEnableでやってもダメだった
                 if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
-                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation, 1);
+                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
                 } else if (boneKeyPose.boneId == HumanBodyBones.RightHand) {
-                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation, 1);
+                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
                 } else if (boneKeyPose.boneId == HumanBodyBones.Head) {
-                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation, 1);
+                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
                 } else if (boneKeyPose.boneId == HumanBodyBones.LeftFoot) {
-                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation, 1);
+                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
                 } else if (boneKeyPose.boneId == HumanBodyBones.RightFoot) {
-                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation, 1);
+                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
                 }
             }
         }
 
         /// xyz軸のDiscハンドルを生成する
         public static Quaternion AxisRotate(Quaternion rotation, Vector3 position, float size) {
-            var rotationMatrix = Matrix4x4.TRS(Vector3.zero, rotation, Vector3.one);
+            var rotationMatrix = Matrix4x4.TRS(Vector3.zero, rotation.normalized, Vector3.one);
             if (Event.current.type == EventType.Repaint) {
                 Transform sceneCamT = SceneView.lastActiveSceneView.camera.transform;
                 Handles.color = new Color(1, 1, 1, 0.5f);
@@ -261,7 +261,7 @@ namespace SprUnity {
         /// xyz軸のFreeMoveハンドルを生成する
         public static Vector3 AxisMove(Vector3 position, Quaternion rotation, float sizeS) {
 
-            var rotationMatrix = Matrix4x4.TRS(Vector3.zero, rotation, Vector3.one);
+            var rotationMatrix = Matrix4x4.TRS(Vector3.zero, rotation.normalized, Vector3.one);
             var dirX = rotationMatrix.MultiplyPoint(Vector3.right);
             var dirY = rotationMatrix.MultiplyPoint(Vector3.up);
             var dirZ = rotationMatrix.MultiplyPoint(Vector3.forward);
