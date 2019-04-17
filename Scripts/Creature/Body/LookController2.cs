@@ -312,4 +312,8 @@ public class LookController2 : LookController {
         body["Head"].controller.AddSubMovement(new Pose(new Vector3(), targetHeadRotation * Quaternion.Euler(0, 0, 0)), new Vector2(1, 1), 0.5f, 0.3f, usePos: false);
         noddingTimer = 0.5f;
     }
+
+    public bool IsNodding() {
+        return noddingTimer > 0;
+    }
 }
