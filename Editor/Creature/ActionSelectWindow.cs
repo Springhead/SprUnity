@@ -47,7 +47,7 @@ namespace SprUnity {
                 action.isSelected = SessionState.GetBool(action.action.name, false);
                 Debug.Log(action.action.name + " " + action.isSelected + " " + SessionState.GetBool(action.action.name, false));
             }
-            if (myskin == null) {
+            if (myskin == null) { // !?
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
                 scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");

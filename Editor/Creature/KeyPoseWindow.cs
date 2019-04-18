@@ -39,7 +39,32 @@ namespace SprUnity {
             this.keyPoseStatuses = new List<KeyPoseStatus>();
         }
     }
+    public enum BONES {
+        Head = HumanBodyBones.Head,
+        Neck = HumanBodyBones.Neck,
 
+        Chest = HumanBodyBones.Chest,
+        Sphin = HumanBodyBones.Spine,
+        Hips = HumanBodyBones.Hips,
+
+        LeftShoulder = HumanBodyBones.LeftShoulder,
+        LeftUpperArm = HumanBodyBones.LeftUpperArm,
+        LeftLowerArm = HumanBodyBones.LeftLowerArm,
+        LeftHand = HumanBodyBones.LeftHand,
+
+        RightShoulder = HumanBodyBones.RightShoulder,
+        RightUpperArm = HumanBodyBones.RightUpperArm,
+        RightLowerArm = HumanBodyBones.RightLowerArm,
+        RightHand = HumanBodyBones.RightHand,
+
+        LeftUpperLeg = HumanBodyBones.LeftUpperLeg,
+        LeftLowerLeg = HumanBodyBones.LeftLowerLeg,
+        LeftFoot = HumanBodyBones.LeftFoot,
+
+        RightUpperLeg = HumanBodyBones.RightUpperLeg,
+        RightLowerLeg = HumanBodyBones.RightLowerLeg,
+        RightFoot = HumanBodyBones.RightFoot,
+    }
     public class KeyPoseWindow : EditorWindow, IHasCustomMenu {
 
         //
@@ -65,7 +90,35 @@ namespace SprUnity {
         static float parameterheight = 150;
         static float buttonheight = 25;
 
+        static KeyPoseData recordKeyPose;
+        static BoneKeyPose recordBoneKeyPose;
 
+        static HumanBodyBones[] bones = {
+            HumanBodyBones.Head,
+            HumanBodyBones.Neck,
+
+            HumanBodyBones.Chest,
+            HumanBodyBones.Spine,
+            HumanBodyBones.Hips,
+
+            HumanBodyBones.LeftShoulder,
+            HumanBodyBones.LeftUpperArm,
+            HumanBodyBones.LeftLowerArm,
+            HumanBodyBones.LeftHand,
+
+            HumanBodyBones.RightShoulder,
+            HumanBodyBones.RightUpperArm,
+            HumanBodyBones.RightLowerArm,
+            HumanBodyBones.RightHand,
+
+            HumanBodyBones.LeftUpperLeg,
+            HumanBodyBones.LeftLowerLeg,
+            HumanBodyBones.LeftFoot,
+
+            HumanBodyBones.RightUpperLeg,
+            HumanBodyBones.RightLowerLeg,
+            HumanBodyBones.RightFoot,
+        };
         [MenuItem("Window/KeyPose Window")]
         static void Open() {
             window = GetWindow<KeyPoseWindow>();
@@ -187,6 +240,7 @@ namespace SprUnity {
                     //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
                     GUILayout.EndHorizontal();
                     //GUILayout.EndArea();
+                    RightClickMenu(GUILayoutUtility.GetLastRect(), keyPoseStatus.keyPose);
                     //if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)) {
                     //    if (Event.current.type == EventType.MouseDown) {
                     //        if (Event.current.button == 0) {
@@ -211,6 +265,7 @@ namespace SprUnity {
             Rect parameterWindow = new Rect(0, position.height / 2,
                 position.width, position.height - parameterWindowHeight);
             DrawParameters(parameterWindow, body);
+
             GUI.skin = null; // 他のwindowに影響が出ないように元に戻す
         }
 
@@ -230,17 +285,26 @@ namespace SprUnity {
                 for (int j = 0; j < keyPoses.Count; j++) {
                     KeyPoseData keyPose = keyPoses[j];
                     GUILayout.Label(keyPose.name + " Parameters");
+
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("name", GUILayout.Width(0.25f * displayRect.width));
+                    GUILayout.Label("pos", GUILayout.Width(0.08f * displayRect.width));
+                    GUILayout.Label("rot", GUILayout.Width(0.08f * displayRect.width));
+                    GUILayout.Label("coordinate", GUILayout.Width(0.25f * displayRect.width));
+                    GUILayout.Label("dependent", GUILayout.Width(0.25f * displayRect.width));
+                    GUILayout.EndHorizontal();
+
                     EditorGUI.BeginChangeCheck();
                     for (int i = 0; i < keyPose.boneKeyPoses.Count; i++) {
                         GUI.changed = false;
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label(keyPose.boneKeyPoses[i].boneId.ToString(), GUILayout.Width(0.27f * displayRect.width));
-                        keyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(keyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(15));
-                        keyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(keyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(15));
+                        GUILayout.Label(keyPose.boneKeyPoses[i].boneId.ToString(), GUILayout.Width(0.25f * displayRect.width));
+                        keyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(keyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(0.08f * displayRect.width));
+                        keyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(keyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(0.08f * displayRect.width));
                         keyPose.boneKeyPoses[i].coordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.25f * displayRect.width));
-                        var tempParentBone = (HumanBodyBones)EditorGUILayout.EnumPopup(keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.25f * displayRect.width));
-                        if (tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
-                            keyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(body, keyPose.boneKeyPoses[i].coordinateParent, tempParentBone);
+                        var tempParentBone = (BONES)EditorGUILayout.EnumPopup((BONES)keyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.25f * displayRect.width));
+                        if ((HumanBodyBones)tempParentBone != keyPose.boneKeyPoses[i].coordinateParent) {
+                            keyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(body, keyPose.boneKeyPoses[i].coordinateParent, (HumanBodyBones)tempParentBone);
                         }
                         if (GUI.changed) EditorUtility.SetDirty(keyPose);
                         GUILayout.EndHorizontal();
@@ -353,6 +417,56 @@ namespace SprUnity {
             //ActionEditorWindowManager.instance.singleKeyPoses.Add(new KeyPoseStatus(keyPoseGroup));
             //Open();
             kpg.CreateKeyPoseInWin();
+        }
+
+        void RightClickMenu(Rect rect, KeyPoseData keyPoseData) {
+            if (rect.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDown && Event.current.button == 1) {
+                GenericMenu menu = new GenericMenu();
+                foreach (var boneKeyPose in keyPoseData.boneKeyPoses) {
+                    menu.AddItem(new GUIContent(boneKeyPose.boneId.ToString()), false,
+                        () => {
+                            recordBoneKeyPose = boneKeyPose;
+                            recordKeyPose = keyPoseData;
+                        });
+                }
+                menu.AddItem(new GUIContent("All"), false,
+                    () => {
+                        recordBoneKeyPose = null;
+                        recordKeyPose = keyPoseData;
+                    });
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent("Paste"), false,
+                    () => {
+                        if (recordBoneKeyPose != null) { //一部
+                            foreach (var boneKeyPose in keyPoseData.boneKeyPoses) {
+                                if (boneKeyPose.boneId == recordBoneKeyPose.boneId) {
+                                    boneKeyPose.usePosition = recordBoneKeyPose.usePosition;
+                                    boneKeyPose.useRotation = recordBoneKeyPose.usePosition;
+                                    boneKeyPose.coordinateMode = recordBoneKeyPose.coordinateMode;
+                                    boneKeyPose.coordinateParent = recordBoneKeyPose.coordinateParent;
+                                    boneKeyPose.position = recordBoneKeyPose.position;
+                                    boneKeyPose.rotation = recordBoneKeyPose.rotation;
+                                    break;
+                                }
+                            }
+                        } else if (recordKeyPose != null) { //All
+                            foreach (var boneKeyPose in keyPoseData.boneKeyPoses) {
+                                foreach (var record in recordKeyPose.boneKeyPoses) {
+                                    if (boneKeyPose.boneId == record.boneId) {
+                                        boneKeyPose.usePosition = record.usePosition;
+                                        boneKeyPose.useRotation = record.usePosition;
+                                        boneKeyPose.coordinateMode = record.coordinateMode;
+                                        boneKeyPose.coordinateParent = record.coordinateParent;
+                                        boneKeyPose.position = record.position;
+                                        boneKeyPose.rotation = record.rotation;
+                                    }
+                                }
+                            }
+                        }
+                        Repaint();
+                    });
+                menu.ShowAsContext();
+            }
         }
 
         void RemoveKeyPose() {

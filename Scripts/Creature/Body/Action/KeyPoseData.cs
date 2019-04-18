@@ -217,17 +217,17 @@ namespace SprUnity {
                 }
 
                 // 調整用の手を表示
-                mat.SetPass(1); // OnEnableでやってもダメだった
+                mat.SetPass(0); // 1だと影しか見えない？ 
                 if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
-                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
+                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
                 } else if (boneKeyPose.boneId == HumanBodyBones.RightHand) {
-                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
+                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
                 } else if (boneKeyPose.boneId == HumanBodyBones.Head) {
-                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
+                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
                 } else if (boneKeyPose.boneId == HumanBodyBones.LeftFoot) {
-                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
+                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
                 } else if (boneKeyPose.boneId == HumanBodyBones.RightFoot) {
-                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 1);
+                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
                 }
             }
         }

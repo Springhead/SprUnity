@@ -30,16 +30,22 @@ namespace SprUnity {
         // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
         private List<List<ActionTransition>> transitionGraph;
 
+        // GUI
+        private Vector2 scrollPos;
+        private static List<string> actionNames;
+        private int index;
+
         [MenuItem("Window/Action State Machine Window")]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>(typeof(SceneView));
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
             ActionTransitionWindowEditor.Initialize();
             ActionStateWindowEditor.Initialize();
+            ReloadActionList();
         }
 
         void OnEnable() {
-            //Open();
+            Open(); //これをしないとソースコード変更したときにエラーが出てしまうが完成したらいらないかも？
             if (graphBackground) {
                 if (actionGraph == null) {
                     actionGraph = ScriptableObject.CreateInstance<Graph>();
@@ -63,14 +69,67 @@ namespace SprUnity {
             ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("floaw node 5") as Texture2D;
             ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
+
+            for (int i = 0; i < ActionEditorWindowManager.instance.actions.Count; i++) {
+                var action = ActionEditorWindowManager.instance.actions[i];
+                action.isSelected = SessionState.GetBool(action.action.name, false);
+                Debug.Log(action.action.name + " " + action.isSelected + " " + SessionState.GetBool(action.action.name, false));
+            }
         }
 
         void OnDisable() {
+            foreach (var action in ActionEditorWindowManager.instance.actions) {
+                SessionState.SetBool(action.action.name, action.isSelected);
+            }
             window = null;
             ActionEditorWindowManager.instance.stateMachineWindow = null;
         }
 
         void OnGUI() {
+            // Actionのセレクト用
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
+
+            //if (window == null) GUILayout.Label("window null");
+            //foreach (var action in ActionEditorWindowManager.instance.actions) {
+            //    GUILayout.BeginHorizontal(GUILayout.Height(20));
+            //action.isSelected = GUILayout.Toggle(action.isSelected, "", GUILayout.Width(15));
+            //if (action.isSelected) {
+            //    foreach(var act in ActionEditorWindowManager.instance.actions) {
+            //        if (act != action) {
+            //            act.isSelected = false;
+            //        }
+            //    }
+            //}
+            //GUILayout.Label(action.action.name);
+            //GUILayout.EndHorizontal();
+            //}
+
+            GUILayout.BeginHorizontal(GUILayout.Height(40));
+            GUILayout.Label("Actions",GUILayout.Width(50));
+            index = EditorGUILayout.Popup(index, actionNames.ToArray(),GUILayout.Width(100));
+            foreach (var action in ActionEditorWindowManager.instance.actions) {
+                if(action.action.name == actionNames[index]) {
+                    action.isSelected = true;
+                } else {
+                    action.isSelected = false;
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            foreach (var action in ActionEditorWindowManager.instance.actions) {
+                Debug.Log(action.action.name + " " + action.isSelected);
+            }
+            foreach (var obj in Selection.gameObjects) {
+                var acts = obj.GetComponents<ScriptableAction>();
+                for (int i = 0; i < acts.Count(); i++) {
+                    GUILayout.BeginHorizontal(GUILayout.Height(20));
+                    acts[i].isEditing = GUILayout.Toggle(acts[i].isEditing, "", GUILayout.Width(15));
+                    GUILayout.Label(acts[i].name + "." + acts[i].GetType().ToString());
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.EndScrollView();
+
             if (graphBackground) {
                 if (window && actionGraphGUI != null) {
                     actionGraphGUI.BeginGraphGUI(window, new Rect(0, 0, window.position.width, window.position.height));
@@ -79,47 +138,42 @@ namespace SprUnity {
                 }
             }
 
-
-
             ProcessNodeEvents();
             //ProcessEntryNodeEvents();
             ProcessEvents();
 
 
             BeginWindows();
-            var actionSelectWindow = ActionEditorWindowManager.instance.actionSelectWindow;
-            if (actionSelectWindow) {
-                var actions = ActionEditorWindowManager.instance.selectedAction;
-                if (actions.Count == 1) {
-                    var action = actions[0].action;
-                    if (lastEditedStateMachine != action) { initialized = false; }
-                    if (!initialized) {
-                        InitializeGraphMatrix();
-                        initialized = true;
+            var actions = ActionEditorWindowManager.instance.selectedAction;
+            if (actions.Count == 1) {
+                var action = actions[0].action;
+                if (lastEditedStateMachine != action) { initialized = false; }
+                if (!initialized) {
+                    InitializeGraphMatrix();
+                    initialized = true;
+                }
+                Object[] subObjects = action.GetSubAssets();
+                Debug.Log(subObjects.Length);
+                action.entryRect = GUI.Window(subObjects.Length, action.entryRect, (i) => GUI.DragWindow(), "Entry");
+                action.exitRect = GUI.Window(subObjects.Length + 1, action.exitRect, (i) => GUI.DragWindow(), "Exit");
+                foreach (var item in subObjects.Select((v, i) => new { Index = i, Value = v })) {
+                    // EntryNode
+                    // ExitNode
+                    // ステートの表示
+                    ActionState state = item.Value as ActionState;
+                    if (state != null) {
+                        state.Draw(item.Index);
+                        bool changed = state.ProcessEvents();
+                        if (changed) { GUI.changed = true; initialized = false; }
+                        continue;
                     }
-                    Object[] subObjects = action.GetSubAssets();
-                    Debug.Log(subObjects.Length);
-                    action.entryRect = GUI.Window(subObjects.Length, action.entryRect, (i) => GUI.DragWindow(), "Entry");
-                    action.exitRect = GUI.Window(subObjects.Length + 1, action.exitRect, (i) => GUI.DragWindow(), "Exit");
-                    foreach (var item in subObjects.Select((v, i) => new { Index = i, Value = v })) {
-                        // EntryNode
-                        // ExitNode
-                        // ステートの表示
-                        ActionState state = item.Value as ActionState;
-                        if (state != null) {
-                            state.Draw(item.Index);
-                            bool changed = state.ProcessEvents();
-                            if (changed) { GUI.changed = true; initialized = false; }
-                            continue;
-                        }
-                        // 遷移の表示
-                        ActionTransition transition = item.Value as ActionTransition;
-                        if (transition != null) {
-                            transition.Draw();
-                            bool changed = transition.ProcessEvents();
-                            if (changed) { GUI.changed = true; initialized = false; }
-                            continue;
-                        }
+                    // 遷移の表示
+                    ActionTransition transition = item.Value as ActionTransition;
+                    if (transition != null) {
+                        transition.Draw();
+                        bool changed = transition.ProcessEvents();
+                        if (changed) { GUI.changed = true; initialized = false; }
+                        continue;
                     }
                 }
             }
@@ -223,6 +277,38 @@ namespace SprUnity {
         private void OnClickAddState(Vector2 mousePosition) {
             if (ActionEditorWindowManager.instance.selectedAction.Count != 1) return;
             ActionEditorWindowManager.instance.selectedAction[0].action.CreateState();
+        }
+
+        public static void ReloadActionList() {
+            actionNames = new List<string>();
+            // Asset全検索
+            var guids = AssetDatabase.FindAssets("*").Distinct();
+            // 特定フォルダ
+            // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
+
+            List<ActionStateMachineStatus> reloadedList = new List<ActionStateMachineStatus>();
+            //ActionEditorWindowManager.instance.actions = new List<ActionStateMachineStatus>();
+
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                var action = obj as ActionStateMachine;
+                if (action != null && AssetDatabase.IsMainAsset(obj)) {
+                    ActionStateMachineStatus actionStatus = new ActionStateMachineStatus();
+                    actionStatus.action = action;
+                    actionStatus.isSelected = false;
+                    foreach (var existingAction in ActionEditorWindowManager.instance.actions) {
+                        if (existingAction.action == action) {
+                            actionStatus.isSelected = existingAction.isSelected;
+                            actionStatus.templeteTransition = existingAction.templeteTransition;
+                            continue;
+                        }
+                    }
+                    reloadedList.Add(actionStatus);
+                    actionNames.Add(actionStatus.action.name);
+                }
+            }
+            ActionEditorWindowManager.instance.actions = reloadedList;
         }
     }
 
