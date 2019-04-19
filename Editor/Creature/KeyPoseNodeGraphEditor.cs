@@ -68,7 +68,7 @@ namespace SprUnity {
             if (false) {
                 if (window && actionGraphGUI != null) {
                     actionGraphGUI.BeginGraphGUI(window, new Rect(0, 0, window.position.width, window.position.height));
-                    Debug.Log("called");
+                    //Debug.Log("called");
                     actionGraphGUI.EndGraphGUI();
                 }
             }

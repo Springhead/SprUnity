@@ -124,27 +124,111 @@ namespace SprUnity {
     public class SubMovementLog {
         private string source;
         public SubMovement subMovement; 
+        public SubMovementLog() {
+            this.source = "";
+            this.subMovement = null;
+        }
         public SubMovementLog(string s, SubMovement sub) {
             this.source = s;
             this.subMovement = sub;
         }
+        public SubMovementLog Clone() {
+            SubMovementLog clone = new SubMovementLog();
+            clone.source = this.source;
+            clone.subMovement = this.subMovement.Clone();
+            return clone;
+        }
     }
 
     [Serializable]
-    public class BoneSubMovementLogs {
+    public class BoneSubMovementStream {
         public Bone bone;
-        public List<SubMovementLog> subMovements;
-        public List<Vector3> culculatedTrajectory = new List<Vector3>();
+        public List<SubMovementLog> logSubMovements;
+        public List<SubMovementLog> futureSubMovements;
+        public List<float[]> logSubmovementSources = new List<float[]>();
+        public List<float[]> futureSubMovementSources = new List<float[]>();
+        public List<Vector3> calculatedTrajectory = new List<Vector3>();
         public List<Vector3> loggedTrajectory = new List<Vector3>();
-        public BoneSubMovementLogs(Bone bone) {
+        public BoneSubMovementStream(Bone bone) {
             this.bone = bone;
-            subMovements = new List<SubMovementLog>();
+            logSubMovements = new List<SubMovementLog>();
+            futureSubMovements = new List<SubMovementLog>();
+
         }
-        public void Add(BoneSubMovementPair subMovement, string s) {
-            if (subMovement.bone == this.bone) subMovements.Add(new SubMovementLog(s, subMovement.subMovement));
+        public void AddLog(BoneSubMovementPair subMovement, string s) {
+            if (subMovement.bone == this.bone) logSubMovements.Add(new SubMovementLog(s, subMovement.subMovement));
+        }
+        public void AddFuture(BoneSubMovementPair subMovement, string s) {
+            if (subMovement.bone == this.bone) futureSubMovements.Add(new SubMovementLog(s, subMovement.subMovement));
+        }
+        public void ClearLog() {
+            logSubMovements.Clear();
+        }
+        public void ClearFuture() {
+            futureSubMovements.Clear();
+        }
+        public BoneSubMovementStream Clone() {
+            BoneSubMovementStream clone = new BoneSubMovementStream(this.bone);
+            foreach(var subMovement in this.logSubMovements) {
+                clone.logSubMovements.Add(subMovement.Clone());
+            }
+            return clone;
         }
     }
 
+    public class ActionLog {
+        // 開始時のSceneLog
+        public CharacterSceneLogger sceneLog;
+        // 発行されたSubMovementとかその軌道とか
+        public List<BoneSubMovementStream> subMovementLogs;
+        public ActionLog(Body body = null) {
+            sceneLog = new CharacterSceneLogger(body);
+            subMovementLogs = new List<BoneSubMovementStream>();
+        }
+        public void AddLog(BoneSubMovementPair boneSubMovement, string s) {
+            foreach(var subMovementLog in subMovementLogs) {
+                if(boneSubMovement.bone == subMovementLog.bone) {
+                    subMovementLog.AddLog(boneSubMovement, s);
+                    return;
+                }
+            }
+            // なければ追加
+            BoneSubMovementStream newLogs = new BoneSubMovementStream(boneSubMovement.bone);
+            newLogs.AddLog(boneSubMovement, s);
+            subMovementLogs.Add(newLogs);
+        }
+        public void AddFuture(BoneSubMovementPair boneSubMovement, string s) {
+            foreach (var subMovementLog in subMovementLogs) {
+                if (boneSubMovement.bone == subMovementLog.bone) {
+                    subMovementLog.AddFuture(boneSubMovement, s);
+                    return;
+                }
+            }
+            // なければ追加
+            BoneSubMovementStream newLogs = new BoneSubMovementStream(boneSubMovement.bone);
+            newLogs.AddFuture(boneSubMovement, s);
+            subMovementLogs.Add(newLogs);
+        }
+        public void ClearLog() {
+            foreach(var subMovementLog in subMovementLogs) {
+                subMovementLog.ClearLog();
+            }
+        }
+        public void ClearFuture() {
+            foreach (var subMovementLog in subMovementLogs) {
+                subMovementLog.ClearFuture();
+            }
+        }
+        public ActionLog Clone() {
+            ActionLog clone = new ActionLog();
+            clone.sceneLog = this.sceneLog.Clone();
+            clone.subMovementLogs = new List<BoneSubMovementStream>();
+            foreach(var subMovementLog in this.subMovementLogs) {
+                clone.subMovementLogs.Add(subMovementLog.Clone());
+            }
+            return clone;
+        }
+    }
 
 #if UNITY_EDITOR
     public class AutoInstantiateAttribute : Attribute { }
@@ -154,11 +238,7 @@ namespace SprUnity {
             this.name = n;
         }
     }
-#endif
-    public class ActionTimeScheduler {
-
-    } 
-    
+#endif    
 
     public class KeyPoseHandler : Dictionary<string, Pose>{
         // 変換途中の座標とか入れる
@@ -188,18 +268,18 @@ namespace SprUnity {
         [HideInInspector]
         public List<KeyPoseTimePair> generatedKeyPosesHistory;
         [HideInInspector]
-        public List<BoneSubMovementLogs> boneSubMevements;
+        public List<BoneSubMovementStream> boneSubMevements;
         [HideInInspector]
-        public List<BoneSubMovementLogs> boneSubMovementsHistory;
+        public List<BoneSubMovementStream> boneSubMovementsHistory;
 
-        protected CharacterSceneLoggerBehaviour sceneLog;
+        protected CharacterSceneLogger sceneLog;
 
         // Use this for initialization
         public void Start() {
             timer = 0.0f;
             generatedKeyPoses = new List<KeyPoseTimePair>();
             generatedKeyPosesHistory = new List<KeyPoseTimePair>();
-            boneSubMovementsHistory = new List<BoneSubMovementLogs>();
+            boneSubMovementsHistory = new List<BoneSubMovementStream>();
             Type t = this.GetType();
             FieldInfo[] fields = t.GetFields();
             for(int i = 0; i < fields.Length; i++) {
@@ -209,7 +289,7 @@ namespace SprUnity {
                     field.SetValue(this, Instantiate<KeyPoseData>((KeyPoseData)field.GetValue(this)));
                 }
             }
-            sceneLog.Start();
+            sceneLog = new CharacterSceneLogger();
         }
 
         // Update is called once per frame
@@ -249,7 +329,7 @@ namespace SprUnity {
             actionEnabled = true;
             timer = 0.0f;
             InitializeHistory();
-            sceneLog.SaveScene();
+            sceneLog.Save();
             // Turn Perception Generators on 
         }
 
@@ -303,7 +383,7 @@ namespace SprUnity {
             if (this.body == null) return;
             foreach(var bone in body.bones) {
                 if(bone.controller != null) {
-                    boneSubMovementsHistory.Add(new BoneSubMovementLogs(bone));
+                    boneSubMovementsHistory.Add(new BoneSubMovementStream(bone));
                 }
             }
         }
@@ -311,12 +391,12 @@ namespace SprUnity {
         private void AddSubMovementHistory(List<BoneSubMovementPair> logs, string s) {
             foreach (var log in logs) {
                 float duration = log.subMovement.t1 - log.subMovement.t0;
-                log.subMovement.t0 = timer;
-                log.subMovement.t1 = timer + duration;
+                log.subMovement.t0 += timer;
+                log.subMovement.t1 += timer;
             }
             for (int i = 0; i < boneSubMovementsHistory.Count; i++) {
                 foreach (var log in logs) {
-                    if (log.bone == boneSubMovementsHistory[i].bone) boneSubMovementsHistory[i].Add(log, s);
+                    if (log.bone == boneSubMovementsHistory[i].bone) boneSubMovementsHistory[i].AddLog(log, s);
                 }
             }
         }

@@ -46,6 +46,7 @@ public class Person : MonoBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     private TextMesh debugTextMesh = null;
+
     void Start() {
         id = Guid.NewGuid().ToString("N").Substring(0, 10);
         persons.Add(this);

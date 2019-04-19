@@ -49,18 +49,45 @@ public class BoneControllerState {
             controller.subTrajectory.Enqueue(traj);
         }
     }
+    public BoneControllerState Clone() {
+        BoneControllerState clone = new BoneControllerState();
+        var controller = bone.controller;
+        clone.controlPosition = this.controlPosition;
+        clone.controlRotation = this.controlRotation;
+        clone.currTime = this.currTime;
+        clone.posTrajectory.Clear();
+        foreach (var traj in posTrajectory) {
+            clone.posTrajectory.Enqueue(traj);
+        }
+        clone.rotTrajectory.Clear();
+        foreach (var traj in rotTrajectory) {
+            clone.rotTrajectory.Enqueue(traj);
+        }
+        clone.subTrajectory.Clear();
+        foreach (var traj in subTrajectory) {
+            clone.subTrajectory.Enqueue(traj);
+        }
+        return clone;
+    }
 }
 
-public class SceneLog {
+public class CharacterSceneLogger {
+
+    public PHSceneBehaviour phSceneBehaviour;
     public ObjectStatesIf savedScene;
+
     List<BoneControllerState> boneControllerStates;
-    public SceneLog(Body body = null) {
+
+    public CharacterSceneLogger(Body body = null) {
         savedScene = ObjectStatesIf.Create();
+        if (phSceneBehaviour == null) {
+            phSceneBehaviour = GameObject.FindObjectOfType<PHSceneBehaviour>();
+        }
         if (body == null) body = GameObject.FindObjectOfType<Body>();
         if (body == null) return;
         boneControllerStates = new List<BoneControllerState>();
-        foreach(var bone in body.bones) {
-            if(bone.controller != null) {
+        foreach (var bone in body.bones) {
+            if (bone.controller != null) {
                 BoneControllerState boneState = new BoneControllerState();
                 boneState.bone = bone;
                 boneControllerStates.Add(boneState);
@@ -68,40 +95,31 @@ public class SceneLog {
         }
     }
 
-    public void Save(PHSceneIf phScene) {
-        savedScene.SaveState(phScene);
-        foreach(var boneState in boneControllerStates) {
+    public void Save() {
+        if (phSceneBehaviour.phScene == null) return;
+        savedScene.SaveState(phSceneBehaviour.phScene);
+        foreach (var boneState in boneControllerStates) {
             boneState.Save();
         }
     }
 
-    public void Load(PHSceneIf phScene) {
-        savedScene.LoadState(phScene);
-        foreach(var boneState in boneControllerStates) {
+    public void Load() {
+        if (phSceneBehaviour.phScene == null) return;
+        savedScene.LoadState(phSceneBehaviour.phScene);
+        foreach (var boneState in boneControllerStates) {
             boneState.Load();
         }
-    }
-}
-
-public class CharacterSceneLoggerBehaviour {
-
-    public PHSceneBehaviour phSceneBehaviour;
-    private SceneLog log;
-
-	// Use this for initialization
-	public void Start () {
-        if (phSceneBehaviour == null)
-            phSceneBehaviour = GameObject.FindObjectOfType<PHSceneBehaviour>();
-	}
-	
-	public void SaveScene() {
-        if (log == null) log = new SceneLog();
-        log.Save(phSceneBehaviour.phScene);
-    }
-
-    public void LoadScene() {
-        if (log == null) return;
-        log.Load(phSceneBehaviour.phScene);
         phSceneBehaviour.phScene.GetIKEngine().ApplyExactState();
+    }
+
+    public CharacterSceneLogger Clone() {
+        CharacterSceneLogger clone = new CharacterSceneLogger();
+        clone.phSceneBehaviour = this.phSceneBehaviour;
+        clone.savedScene = this.savedScene;
+        clone.boneControllerStates.Clear();
+        foreach(var boneControllerState in boneControllerStates) {
+            clone.boneControllerStates.Add(boneControllerState.Clone());
+        }
+        return clone;
     }
 }

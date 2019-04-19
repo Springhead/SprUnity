@@ -11,9 +11,16 @@ namespace SprUnity {
 
     [Serializable]
     public class ActionStateMachineStatus {
-        public ActionStateMachine action;
+        public ActionStateMachine stateMachineAction;
         public bool isSelected = false;
-        public List<ActionTransition> templeteTransition = new List<ActionTransition>();
+        public List<ActionTransition> specifiedTransition = new List<ActionTransition>();
+        //
+        public string name {
+            get {
+                if (stateMachineAction != null) return stateMachineAction.name;
+                return "";
+            }
+        }
     }
 
     public class ActionSelectWindow : EditorWindow, IHasCustomMenu {
@@ -44,20 +51,20 @@ namespace SprUnity {
             // <!!> これ、ここか？
             for (int i = 0; i < ActionEditorWindowManager.instance.actions.Count; i++) {
                 var action = ActionEditorWindowManager.instance.actions[i];
-                action.isSelected = SessionState.GetBool(action.action.name, false);
-                Debug.Log(action.action.name + " " + action.isSelected + " " + SessionState.GetBool(action.action.name, false));
+                action.isSelected = SessionState.GetBool(action.name, false);
+                Debug.Log(action.name + " " + action.isSelected + " " + SessionState.GetBool(action.name, false));
             }
             if (myskin == null) { // !?
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                scriptpath = scriptpath.Replace("ActionSelectWindow.cs", "");
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
         }
 
         public void OnDisable() {
             foreach (var action in ActionEditorWindowManager.instance.actions) {
-                SessionState.SetBool(action.action.name, action.isSelected);
+                SessionState.SetBool(action.name, action.isSelected);
             }
             window = null;
             ActionEditorWindowManager.instance.actionSelectWindow = null;
@@ -72,19 +79,30 @@ namespace SprUnity {
                 Debug.Log("GUISkin is null");
             }
 
-            bool textChangeComp = false;
             scrollPos = GUILayout.BeginScrollView(scrollPos);
+            EditorGUI.BeginChangeCheck();
             GUILayout.Label("Actions");
             if (window == null) GUILayout.Label("window null");
             if (ActionEditorWindowManager.instance.actionSelectWindow == null) GUILayout.Label("Manager.actionSelectWindow null");
             foreach (var action in ActionEditorWindowManager.instance.actions) {
+                GUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.BeginHorizontal(GUILayout.Height(20));
                 action.isSelected = GUILayout.Toggle(action.isSelected, "", GUILayout.Width(15));
-                GUILayout.Label(action.action.name);
+                GUILayout.Label(action.name);
                 GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("SpecifiedPlay")) {
+                    // 
+                }
+                if (GUILayout.Button("NormalPlay")) {
+
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
             }
             foreach (var action in ActionEditorWindowManager.instance.actions) {
-                Debug.Log(action.action.name + " " + action.isSelected);
+                Debug.Log(action.name + " " + action.isSelected);
             }
             foreach (var obj in Selection.gameObjects) {
                 var actions = obj.GetComponents<ScriptableAction>();
@@ -94,6 +112,9 @@ namespace SprUnity {
                     GUILayout.Label(actions[i].name + "." + actions[i].GetType().ToString());
                     GUILayout.EndHorizontal();
                 }
+            }
+            if (EditorGUI.EndChangeCheck()) {
+                ActionEditorWindowManager.instance.actionSelectChanged = true;
             }
             GUILayout.EndScrollView();
 
@@ -116,12 +137,12 @@ namespace SprUnity {
                 var action = obj as ActionStateMachine;
                 if (action != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionStateMachineStatus actionStatus = new ActionStateMachineStatus();
-                    actionStatus.action = action;
+                    actionStatus.stateMachineAction = action;
                     actionStatus.isSelected = false;
                     foreach(var existingAction in ActionEditorWindowManager.instance.actions) {
-                        if(existingAction.action == action) {
+                        if(existingAction.stateMachineAction == action) {
                             actionStatus.isSelected = existingAction.isSelected;
-                            actionStatus.templeteTransition = existingAction.templeteTransition;
+                            //actionStatus.templeteTransition = existingAction.templeteTransition;
                             continue;
                         }
                     }

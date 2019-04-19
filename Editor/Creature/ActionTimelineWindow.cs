@@ -147,7 +147,6 @@ namespace SprUnity {
 
         float springDamperMax = 1.0f;
 
-        float currentTime;
         float totalTime = 0;
         List<float> startSubmovementTime = new List<float>();
         List<float> endSubmovementTime = new List<float>();
@@ -183,7 +182,7 @@ namespace SprUnity {
 
         private ScriptableAction action;
 
-        [MenuItem("Window/Action Timeline Window")]
+        [MenuItem("Window/SprUnity Action/Action Timeline Window")]
         static void Open() {
             window = GetWindow<ActionTimelineWindow>();
             ActionEditorWindowManager.instance.timelineWindow = window;
@@ -197,13 +196,13 @@ namespace SprUnity {
             style.border = new RectOffset(12, 12, 12, 12);
             // <!!>これ、ここか？
             foreach (var action in ActionEditorWindowManager.instance.actions) {
-                action.templeteTransition = new List<ActionTransition>();
+                action.specifiedTransition = new List<ActionTransition>();
                 for (int i = 0; ; i++) {
-                    Debug.Log("tri to load:" + SessionState.GetInt(action.action.name + i, -1));
-                    ActionTransition transition = EditorUtility.InstanceIDToObject(SessionState.GetInt(action.action.name + i, -1)) as ActionTransition;
-                    SessionState.EraseInt(action.action.name + i);
+                    Debug.Log("tri to load:" + SessionState.GetInt(action.stateMachineAction.name + i, -1));
+                    ActionTransition transition = EditorUtility.InstanceIDToObject(SessionState.GetInt(action.stateMachineAction.name + i, -1)) as ActionTransition;
+                    SessionState.EraseInt(action.stateMachineAction.name + i);
                     if (transition == null) break;
-                    else action.templeteTransition.Add(transition);
+                    else action.specifiedTransition.Add(transition);
                 }
             }
             boneStatusForTimelines = new List<BoneStatusForTimeline>() {
@@ -222,12 +221,15 @@ namespace SprUnity {
             showDamper = SessionState.GetBool("ActionTimeLineShowDamper", true);
             showVelocity = SessionState.GetBool("ActionTimeLineShowVelocity", true);
             showAngularVelocity = SessionState.GetBool("ActionTimeLineShowAngularVelocity", false);
+
+            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+            SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
 
         public void OnDisable() {
             foreach (var action in ActionEditorWindowManager.instance.actions) {
-                for (int i = 0; i < action.templeteTransition.Count; i++) {
-                    SessionState.SetInt(action.action.name + i, action.templeteTransition[i].GetInstanceID());
+                for (int i = 0; i < action.specifiedTransition.Count; i++) {
+                    SessionState.SetInt(action.stateMachineAction.name + i, action.specifiedTransition[i].GetInstanceID());
                 }
             }
             foreach (var boneStatus in boneStatusForTimelines) {
@@ -265,7 +267,7 @@ namespace SprUnity {
                     i++;
                 }
                 i = 0;
-                foreach (var transition in currentAction.templeteTransition) {
+                foreach (var transition in currentAction.specifiedTransition) {
                     // これはExitへの遷移なので別処理
                     if (transition.toState == null) break;
                     // Entryは除くため
@@ -316,10 +318,6 @@ namespace SprUnity {
             DrawBoneTable();
         }
 
-        public void OnSceneGUI(SceneView sceneView) {
-
-        }
-
         void DrawSpringDamperGraph(Rect area = new Rect()) {
             GUILayout.BeginArea(new Rect(0, 0, this.position.width, this.position.height / 3));
             GUILayout.Label("Spring & Damper");
@@ -335,12 +333,10 @@ namespace SprUnity {
             float[] xAxis = new float[2] { 0, totalTime };
             float[] yAxis = new float[2] { 0f, springDamperMax };
             DrawGraphBase(new Rect(graphLeft, graphTop, graphWidth, graphHeight), xAxis, yAxis, 1.0f, 0.2f, "", "");
-            // Draw Time Axis
-            GUI.HorizontalSlider(new Rect(graphLeft, graphBottom, graphWidth, 20), currentTime, 0, totalTime);
             if (currentAction != null) {
                 // Draw Individual
-                for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
-                    var transition = currentAction.templeteTransition[i];
+                for (int i = 0; i < currentAction.specifiedTransition.Count; i++) {
+                    var transition = currentAction.specifiedTransition[i];
                     if (transition.toState == null) break;
                     float spring = transition.toState ? transition.toState.spring : 0;
                     float damper = transition.toState ? transition.toState.damper : 0;
@@ -368,22 +364,19 @@ namespace SprUnity {
                         }
                     }
                 }
-                for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
-                    var transition = currentAction.templeteTransition[i];
+                for (int i = 0; i < currentAction.specifiedTransition.Count; i++) {
+                    var transition = currentAction.specifiedTransition[i];
                     if (transition.toState == null) break;
                     if (springDamperHandle[i][0].ProcessEvents()) {
-                        Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + " spring change");
+                        Undo.RecordObject(currentAction.specifiedTransition[i].toState, "Undo " + currentAction.specifiedTransition[i].toState.name + " spring change");
                         float spring = (graphBottom - springDamperHandle[i][0].box.y) * (springDamperMax / graphHeight);
-                        currentAction.templeteTransition[i].toState.spring = spring;
+                        currentAction.specifiedTransition[i].toState.spring = spring;
                     }
                     if (springDamperHandle[i][1].ProcessEvents()) {
-                        Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + "damper change");
+                        Undo.RecordObject(currentAction.specifiedTransition[i].toState, "Undo " + currentAction.specifiedTransition[i].toState.name + "damper change");
                         float damper = (graphBottom - springDamperHandle[i][1].box.y) * (springDamperMax / graphHeight);
-                        currentAction.templeteTransition[i].toState.damper = damper;
+                        currentAction.specifiedTransition[i].toState.damper = damper;
                     }
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (startSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (endSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * ((startSubmovementTime[i] + endSubmovementTime[i]) / (2 * totalTime)), graphBottom, 10, 10), "");
                 }
                 // Draw Integrated
             }
@@ -405,11 +398,11 @@ namespace SprUnity {
             float[] xAxis = new float[2] { 0, totalTime };
             float[] yAxis = new float[2] { 0f, 1f };
             DrawGraphBase(new Rect(graphLeft, graphTop, graphWidth, graphHeight), xAxis, yAxis, 1.0f, 0.2f, "", "");
-            
+            /*
             if (currentAction != null) {
                 // Draw Individual
-                for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
-                    var transition = currentAction.templeteTransition[i];
+                for (int i = 0; i < currentAction.specifiedTransition.Count; i++) {
+                    var transition = currentAction.specifiedTransition[i];
                     if (transition.toState == null) break;
                     transitionTimeHandle[i][0].box.x = graphLeft + graphWidth * (startSubmovementTime[i] / totalTime);
                     transitionTimeHandle[i][0].box.y = graphBottom;
@@ -438,32 +431,26 @@ namespace SprUnity {
                             }
                         }
                     }
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (startSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (endSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * ((startSubmovementTime[i] + endSubmovementTime[i]) / (2 * totalTime)), graphBottom, 10, 10), "");
                 }
-                for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
-                    var transition = currentAction.templeteTransition[i];
+                for (int i = 0; i < currentAction.specifiedTransition.Count; i++) {
+                    var transition = currentAction.specifiedTransition[i];
                     if (transition.toState == null) break;
                     if (transitionTimeHandle[i][0].ProcessEvents()) {
-                        Undo.RecordObject(currentAction.templeteTransition[i], "Undo " + currentAction.templeteTransition[i].name + " time change");
+                        Undo.RecordObject(currentAction.specifiedTransition[i], "Undo " + currentAction.specifiedTransition[i].name + " time change");
                         float time = (transitionTimeHandle[i][0].box.x - graphLeft) * (totalTime / graphWidth);
                         if (i != 0) {
-                            currentAction.templeteTransition[i].time = time - startSubmovementTime[i - 1];
+                            currentAction.specifiedTransition[i].time = time - startSubmovementTime[i - 1];
                         }
                     }
                     if (transitionTimeHandle[i][1].ProcessEvents()) {
-                        Undo.RecordObject(currentAction.templeteTransition[i].toState, "Undo " + currentAction.templeteTransition[i].toState.name + "duration change");
+                        Undo.RecordObject(currentAction.specifiedTransition[i].toState, "Undo " + currentAction.specifiedTransition[i].toState.name + "duration change");
                         float time = (transitionTimeHandle[i][1].box.x - graphLeft) * (totalTime / graphWidth);
-                        currentAction.templeteTransition[i].toState.duration = time - startSubmovementTime[i];
+                        currentAction.specifiedTransition[i].toState.duration = time - startSubmovementTime[i];
                     }
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (startSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * (endSubmovementTime[i] / totalTime), graphBottom, 10, 10), "");
-                    //GUI.Box(new Rect(graphLeft + graphWidth * ((startSubmovementTime[i] + endSubmovementTime[i]) / (2 * totalTime)), graphBottom, 10, 10), "");
                 }
                 // Draw Integrated
             }
-            /*/
+            /*/ /*
             if(action != null) {
                 for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                     List<SubMovementLog> logs = null;
@@ -499,6 +486,124 @@ namespace SprUnity {
                 }
             }
                 */
+            if (EditorApplication.isPlaying) {
+                if (currentAction != null) {
+                    ActionStateMachineController controller = ActionEditorWindowManager.instance.lastSelectedActionManager[currentAction.name];
+                    if (controller != null) {
+                        for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                            List<SubMovementLog> logs = null;
+                            List<SubMovementLog> future = null;
+                            for (int i = 0; i < controller.ActionLog.subMovementLogs.Count; i++) {
+                                if (boneStatusForTimelines[j].bone.ToString() == controller.ActionLog.subMovementLogs[i].bone.label) {
+                                    logs = controller.ActionLog.subMovementLogs[i].logSubMovements;
+                                    future = controller.ActionLog.subMovementLogs[i].futureSubMovements;
+                                    break;
+                                }
+                            }
+                            if (logs != null) {
+                                for (int i = 0; i < logs.Count(); i++) {
+                                    if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                        Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
+                                        Vector2 nextPos = new Vector2();
+                                        Vector3 vel = new Vector3();
+                                        Color color = boneStatusForTimelines[j].color;
+                                        float currentSubmovementTime;
+                                        for (int k = 0; k < segments; k++) {
+                                            currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
+                                            nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
+                                            nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
+                                            //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                            Drawing.DrawLine(lastPos, nextPos, color, 3, true);
+                                            lastPos = nextPos;
+                                        }
+                                    }
+                                }
+                            } else {
+                                Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                            }
+                            if (future != null) {
+                                for (int i = 0; i < future.Count(); i++) {
+                                    if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                        Vector3 vel = new Vector3();
+                                        Color color = boneStatusForTimelines[j].color;
+                                        int halfSegment = segments / 2;
+                                        for (int k = 0; k < halfSegment; k++) {
+                                            float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
+                                            Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                            //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                            float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
+                                            Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                            Drawing.DrawLine(p0, p1, color, 3, true);
+                                        }
+                                    }
+                                }
+                            } else {
+                                Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (currentAction != null && currentAction.stateMachineAction.Enabled) {
+                    for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                        List<SubMovementLog> logs = null;
+                        List<SubMovementLog> future = null;
+                        for (int i = 0; i < currentAction.stateMachineAction.ActionLog.subMovementLogs.Count; i++) {
+                            if (boneStatusForTimelines[j].bone.ToString() == currentAction.stateMachineAction.ActionLog.subMovementLogs[i].bone.label) {
+                                logs = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].logSubMovements;
+                                future = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].futureSubMovements;
+                                break;
+                            }
+                        }
+                        if (logs != null) {
+                            for (int i = 0; i < logs.Count(); i++) {
+                                if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                    Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
+                                    Vector2 nextPos = new Vector2();
+                                    Vector3 vel = new Vector3();
+                                    Color color = boneStatusForTimelines[j].color;
+                                    float currentSubmovementTime;
+                                    for (int k = 0; k < segments; k++) {
+                                        currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
+                                        nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
+                                        nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
+                                        //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                        Drawing.DrawLine(lastPos, nextPos, color, 3, true);
+                                        lastPos = nextPos;
+                                    }
+                                }
+                            }
+                        } else {
+                            Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                        }
+                        if (future != null) {
+                            for (int i = 0; i < future.Count(); i++) {
+                                if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                    Vector3 vel = new Vector3();
+                                    Color color = boneStatusForTimelines[j].color;
+                                    int halfSegment = segments / 2;
+                                    for (int k = 0; k < halfSegment; k++) {
+                                        float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
+                                        Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                        //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                        float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
+                                        Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                        Drawing.DrawLine(p0, p1, color, 3, true);
+                                    }
+                                }
+                            }
+                        } else {
+                            Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                        }
+                    }
+                }
+            }
             GUILayout.EndArea();
         }
 
@@ -511,12 +616,12 @@ namespace SprUnity {
                 var stream = actions[0];
 
                 // 各種設定
-                int numTransitionsInStream = stream.templeteTransition.Count;
+                int numTransitionsInStream = stream.specifiedTransition.Count;
                 GUILayout.Label("num:" + numTransitionsInStream);
                 int boxWidth = (int)Mathf.Max(Mathf.Min(position.width / (numTransitionsInStream + 5), maxBoxWidth), minBoxWidth);
                 //int boxWidth = (int)(position.width / (numStatesInStream + 5));
-                int nTransitionsFromCurrernt = stream.action.entryTransitions.Count;
-                var transitionsFromCurrent = stream.action.entryTransitions;
+                int nTransitionsFromCurrernt = stream.stateMachineAction.entryTransitions.Count;
+                var transitionsFromCurrent = stream.stateMachineAction.entryTransitions;
                 Vector2 boxSize = new Vector2(boxWidth, 20);
                 Vector2 boxPositionBase;
                 Vector2 transitionFromPos;
@@ -538,28 +643,28 @@ namespace SprUnity {
                             transitionsFromCurrent[j].toState.name;
                         Rect boxPosition = new Rect(new Vector2(boxPositionBase.x, boxPositionBase.y + j * 30), boxSize);
                         GUI.Box(boxPosition, stateName);
-                        if (transitionsFromCurrent[j] == stream.templeteTransition[i]) {
+                        if (transitionsFromCurrent[j] == stream.specifiedTransition[i]) {
                             float boxY = (boxPosition.y + boxPosition.yMax) / 2;
                             Drawing.DrawLine(transitionFromPos, new Vector2(boxPosition.x, boxY), Color.white, 2f, true);
                             transitionFromPos = new Vector2(boxPosition.xMax, boxY);
                         }
                         Rect buttonRect = new Rect(boxPosition.x - 10, boxPosition.y, 20, 20);
                         if (GUI.Button(buttonRect, "")) {
-                            if (transitionsFromCurrent[j] != stream.templeteTransition[i]) {
+                            if (transitionsFromCurrent[j] != stream.specifiedTransition[i]) {
                                 List<ActionTransition> changedTransitions = new List<ActionTransition>();
                                 for (int k = 0; k < i; k++) {
-                                    changedTransitions.Add(stream.templeteTransition[i]);
+                                    changedTransitions.Add(stream.specifiedTransition[i]);
                                 }
                                 changedTransitions.Add(transitionsFromCurrent[j]);
-                                stream.templeteTransition = changedTransitions;
+                                stream.specifiedTransition = changedTransitions;
                                 ReloadHandles();
                                 ReloadSubmovements();
                                 goto Last;
                             }
                         }
                     }
-                    if (stream.templeteTransition[i].toState != null) {
-                        transitionsFromCurrent = stream.templeteTransition[i].toState.transitions;
+                    if (stream.specifiedTransition[i].toState != null) {
+                        transitionsFromCurrent = stream.specifiedTransition[i].toState.transitions;
                         nTransitionsFromCurrernt = transitionsFromCurrent.Count;
                     } else {
                         transitionsFromCurrent = new List<ActionTransition>();
@@ -578,7 +683,7 @@ namespace SprUnity {
                     GUI.Box(boxPosition, stateName);
                     Rect buttonRect = new Rect(boxPosition.x - 10, boxPosition.y, 20, 20);
                     if (GUI.Button(buttonRect, "")) {
-                        stream.templeteTransition.Add(transitionsFromCurrent[j]);
+                        stream.specifiedTransition.Add(transitionsFromCurrent[j]);
                         ReloadHandles();
                         ReloadSubmovements();
                     }
@@ -643,7 +748,7 @@ namespace SprUnity {
             //GUI.Label(new Rect(xLabelPos, labelSize), xAxis[1].ToString());
 
             Vector2 yLabelPos;
-            Debug.Log("yGrid:" + yGrid);
+            //Debug.Log("yGrid:" + yGrid);
             for (int i = 0; i < yGrid; i++) {
                 var lineColor = (i == 0) ? Color.white : Color.gray;
                 var lineWidth = (i == 0) ? 2f : 1f;
@@ -659,14 +764,81 @@ namespace SprUnity {
             return graphArea;
         }
 
+        void OnSceneGUI(SceneView sceneView) {
+            if (currentAction != null && currentAction.stateMachineAction.Enabled) {
+                for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                    List<SubMovementLog> logs = null;
+                    List<SubMovementLog> future = null;
+                    for (int i = 0; i < currentAction.stateMachineAction.ActionLog.subMovementLogs.Count; i++) {
+                        if (boneStatusForTimelines[j].bone.ToString() == currentAction.stateMachineAction.ActionLog.subMovementLogs[i].bone.label) {
+                            logs = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].logSubMovements;
+                            future = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].futureSubMovements;
+                            break;
+                        }
+                    }
+                    if (logs != null && logs.Count > 0) {
+                        Vector3[] trajectory = new Vector3[(int)(logs.Last().subMovement.t1 * 20)];
+                        Vector3 basePos = logs[0].subMovement.p0;
+                        int currentLog = 0;
+                        for(int i = 0; i < trajectory.Length; i++) {
+                            if (logs[currentLog].subMovement.t1 < (i * 0.05)) {
+                                currentLog++;
+                            }
+                            trajectory[i] = logs[currentLog].subMovement.p0;
+                        }
+                        for (int i = 0; i < logs.Count(); i++) {
+                            if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                int stride = (int)(logs[i].subMovement.t0 * 20);
+                                int last = (int)(logs[i].subMovement.t1 * 20);
+                                for (int k = stride; k < last; k++) {
+                                    Vector3 pos;
+                                    Quaternion ori;
+                                    logs[i].subMovement.GetCurrentPose(k * 0.05f, out pos, out ori);
+                                    trajectory[k] += pos;
+                                }
+                            }
+                        }
+                        for (int i = 0; i < trajectory.Length - 1; i++) {
+                            Handles.DrawLine(trajectory[i], trajectory[i + 1]);
+                        }
+                    } else {
+                        //Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                    }
+                    /*
+                    if (future != null) {
+                        for (int i = 0; i < future.Count(); i++) {
+                            if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                Vector3 vel = new Vector3();
+                                Color color = boneStatusForTimelines[j].color;
+                                int halfSegment = segments / 2;
+                                for (int k = 0; k < halfSegment; k++) {
+                                    float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
+                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
+                                    Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                    //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                    float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
+                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
+                                    Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                    Drawing.DrawLine(p0, p1, color, 3, true);
+                                }
+                            }
+                        }
+                    } else {
+                        Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                    }
+                    */
+                }
+            }
+        }
+
         // SpringDamperやVelocityの変更用のハンドルをリロードする
-        // templeteTransitionが変更されたら呼ぶこと
+        // specifiedTransitionが変更されたら呼ぶこと
         void ReloadHandles() {
             springDamperHandle = new List<VerticalDraggableBox[]>();
             transitionTimeHandle = new List<HorizontalDraggableBox[]>();
             Vector2 handleSize = new Vector2(10, 10);
             Vector2 handlePos = new Vector2();
-            for (int i = 0; i < currentAction.templeteTransition.Count; i++) {
+            for (int i = 0; i < currentAction.specifiedTransition.Count; i++) {
                 springDamperHandle.Add(new VerticalDraggableBox[2] {
                 new VerticalDraggableBox(new Rect(handlePos, handleSize), "S" + i),
                 new VerticalDraggableBox(new Rect(handlePos, handleSize), "D" + i),
@@ -684,11 +856,15 @@ namespace SprUnity {
             submovements = new List<List<SubMovement>>();
             foreach (var bone in boneStatusForTimelines) {
                 List<SubMovement> sub = new List<SubMovement>();
-                foreach (var transition in currentAction.templeteTransition) {
+                foreach (var transition in currentAction.specifiedTransition) {
                     sub.Add(new SubMovement());
                 }
                 submovements.Add(sub);
             }
+        }
+
+        void UpdateTrajectory() {
+
         }
     }
 
