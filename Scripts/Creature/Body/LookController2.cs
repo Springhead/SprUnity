@@ -252,7 +252,7 @@ public class LookController2 : LookController {
                 // <!!> 今回は頭基準姿勢は固定とする
                 baseHeadRotation = Quaternion.identity;
 
-                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.3f);
+                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.8f);
 
                 // -- 手動オーバーライド
                 if (manualHead) {
