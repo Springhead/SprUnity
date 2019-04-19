@@ -93,6 +93,13 @@ namespace SprUnity {
         static KeyPoseData recordKeyPose;
         static BoneKeyPose recordBoneKeyPose;
 
+        private Material mat;
+        private Mesh leftHand;
+        private Mesh rightHand;
+        private Mesh head;
+        private Mesh leftFoot;
+        private Mesh rightFoot;
+
         static HumanBodyBones[] bones = {
             HumanBodyBones.Head,
             HumanBodyBones.Neck,
@@ -156,6 +163,45 @@ namespace SprUnity {
                 scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
+
+
+            var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
+
+            mat = AssetDatabase.LoadAssetAtPath(modelpath + "clear.mat", typeof(Material)) as Material;
+            if (mat == null) {
+                Debug.Log("mat null");
+            }
+
+            leftHand = AssetDatabase.LoadAssetAtPath(
+                modelpath + "LeftHand.fbx", typeof(Mesh)) as Mesh;
+            if (leftHand == null) {
+                Debug.Log("fbx null");
+            }
+
+            rightHand = AssetDatabase.LoadAssetAtPath(
+                modelpath + "RightHand.fbx", typeof(Mesh)) as Mesh;
+            if (rightHand == null) {
+                Debug.Log("fbx null");
+            }
+
+            head = AssetDatabase.LoadAssetAtPath(
+                modelpath + "Head.fbx", typeof(Mesh)) as Mesh;
+            if (head == null) {
+                Debug.Log("fbx null");
+            }
+
+            leftFoot = AssetDatabase.LoadAssetAtPath(
+                modelpath + "LeftFoot.fbx", typeof(Mesh)) as Mesh;
+            if (leftFoot == null) {
+                Debug.Log("fbx null");
+            }
+
+            rightFoot = AssetDatabase.LoadAssetAtPath(
+                modelpath + "RightFoot.fbx", typeof(Mesh)) as Mesh;
+            if (rightFoot == null) {
+                Debug.Log("fbx null");
+            }
+
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
@@ -314,7 +360,9 @@ namespace SprUnity {
             EditorGUILayout.EndVertical();
             GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Height(10));
         }
-        public static void OnSceneGUI(SceneView sceneView) {
+
+        void OnSceneGUI(SceneView sceneView) {
+            DrawHuman();
             // KeyPoseDataに書いてあるのでなしでよいはず
 
             //var body = ActionEditorWindowManager.instance.body;
@@ -377,6 +425,30 @@ namespace SprUnity {
             //        }
             //    }
             //}
+        }
+
+        void DrawHuman() {
+            foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
+                foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
+                    if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) {
+                        foreach (var boneKeyPose in keyPoseStatus.keyPose.boneKeyPoses) {
+                            // 調整用の手などを表示
+                            mat.SetPass(0); // 1だと影しか見えない？ 
+                            if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
+                                Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
+                            } else if (boneKeyPose.boneId == HumanBodyBones.RightHand) {
+                                Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
+                            } else if (boneKeyPose.boneId == HumanBodyBones.Head) {
+                                Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
+                            } else if (boneKeyPose.boneId == HumanBodyBones.LeftFoot) {
+                                Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
+                            } else if (boneKeyPose.boneId == HumanBodyBones.RightFoot) {
+                                Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static void ReloadKeyPoseList() {
@@ -464,6 +536,7 @@ namespace SprUnity {
                             }
                         }
                         Repaint();
+                        SceneView.RepaintAll();
                     });
                 menu.ShowAsContext();
             }

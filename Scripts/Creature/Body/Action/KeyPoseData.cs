@@ -215,20 +215,6 @@ namespace SprUnity {
                         }
                     }
                 }
-
-                // 調整用の手を表示
-                mat.SetPass(0); // 1だと影しか見えない？ 
-                if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
-                    Graphics.DrawMeshNow(leftHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
-                } else if (boneKeyPose.boneId == HumanBodyBones.RightHand) {
-                    Graphics.DrawMeshNow(rightHand, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
-                } else if (boneKeyPose.boneId == HumanBodyBones.Head) {
-                    Graphics.DrawMeshNow(head, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
-                } else if (boneKeyPose.boneId == HumanBodyBones.LeftFoot) {
-                    Graphics.DrawMeshNow(leftFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
-                } else if (boneKeyPose.boneId == HumanBodyBones.RightFoot) {
-                    Graphics.DrawMeshNow(rightFoot, boneKeyPose.position, boneKeyPose.rotation.normalized, 0);
-                }
             }
         }
 
@@ -362,9 +348,9 @@ namespace SprUnity {
             BoneBaseLocal, // Local coordinate (Bone GameObject)
             BodyLocal, // Local coordinate (Body GameObject)
         };
-        public CoordinateMode coordinateMode;
+        public CoordinateMode coordinateMode = CoordinateMode.BodyLocal;
         // World Info
-        public Vector3 position = new Vector3();
+        public Vector3 position;
         public Quaternion rotation = new Quaternion();
         // Local Info
         public HumanBodyBones coordinateParent;
@@ -439,6 +425,7 @@ namespace SprUnity {
                 }
             }
         }
+
         public void ConvertBoneLocalToOtherBoneLocal(Body body, HumanBodyBones from, HumanBodyBones to) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
