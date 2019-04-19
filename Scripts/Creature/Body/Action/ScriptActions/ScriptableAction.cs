@@ -145,13 +145,15 @@ namespace SprUnity {
         public Bone bone;
         public List<SubMovementLog> logSubMovements;
         public List<SubMovementLog> futureSubMovements;
-        public List<float[]> logSubmovementSources;
-        public List<float[]> futureSubMovementSources;
+        public List<float[]> logSubmovementSources = new List<float[]>();
+        public List<float[]> futureSubMovementSources = new List<float[]>();
         public List<Vector3> calculatedTrajectory = new List<Vector3>();
         public List<Vector3> loggedTrajectory = new List<Vector3>();
         public BoneSubMovementStream(Bone bone) {
             this.bone = bone;
             logSubMovements = new List<SubMovementLog>();
+            futureSubMovements = new List<SubMovementLog>();
+
         }
         public void AddLog(BoneSubMovementPair subMovement, string s) {
             if (subMovement.bone == this.bone) logSubMovements.Add(new SubMovementLog(s, subMovement.subMovement));

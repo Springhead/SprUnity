@@ -486,59 +486,121 @@ namespace SprUnity {
                 }
             }
                 */
-            if (currentAction != null && currentAction.stateMachineAction.Enabled) {
-                for (int j = 0; j < boneStatusForTimelines.Count; j++) {
-                    List<SubMovementLog> logs = null;
-                    List<SubMovementLog> future = null;
-                    for (int i = 0; i < currentAction.stateMachineAction.ActionLog.subMovementLogs.Count; i++) {
-                        if (boneStatusForTimelines[j].bone.ToString() == currentAction.stateMachineAction.ActionLog.subMovementLogs[i].bone.label) {
-                            logs = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].logSubMovements;
-                            future = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].futureSubMovements;
-                            break;
-                        }
-                    }
-                    if (logs != null) {
-                        for (int i = 0; i < logs.Count(); i++) {
-                            if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
-                                Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
-                                Vector2 nextPos = new Vector2();
-                                Vector3 vel = new Vector3();
-                                Color color = boneStatusForTimelines[j].color;
-                                float currentSubmovementTime;
-                                for (int k = 0; k < segments; k++) {
-                                    currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
-                                    nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
-                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
-                                    nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
-                                    //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
-                                    Drawing.DrawLine(lastPos, nextPos, color, 3, true);
-                                    lastPos = nextPos;
+            if (EditorApplication.isPlaying) {
+                if (currentAction != null) {
+                    ActionStateMachineController controller = ActionEditorWindowManager.instance.lastSelectedActionManager[currentAction.name];
+                    if (controller != null) {
+                        for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                            List<SubMovementLog> logs = null;
+                            List<SubMovementLog> future = null;
+                            for (int i = 0; i < controller.ActionLog.subMovementLogs.Count; i++) {
+                                if (boneStatusForTimelines[j].bone.ToString() == controller.ActionLog.subMovementLogs[i].bone.label) {
+                                    logs = controller.ActionLog.subMovementLogs[i].logSubMovements;
+                                    future = controller.ActionLog.subMovementLogs[i].futureSubMovements;
+                                    break;
                                 }
                             }
-                        }
-                    } else {
-                        Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
-                    }
-                    if (future != null) {
-                        for (int i = 0; i < future.Count(); i++) {
-                            if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
-                                Vector3 vel = new Vector3();
-                                Color color = boneStatusForTimelines[j].color;
-                                int halfSegment = segments / 2;
-                                for (int k = 0; k < halfSegment; k++) {
-                                    float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
-                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
-                                    Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
-                                    //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
-                                    float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
-                                    logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
-                                    Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
-                                    Drawing.DrawLine(p0, p1, color, 3, true);
+                            if (logs != null) {
+                                for (int i = 0; i < logs.Count(); i++) {
+                                    if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                        Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
+                                        Vector2 nextPos = new Vector2();
+                                        Vector3 vel = new Vector3();
+                                        Color color = boneStatusForTimelines[j].color;
+                                        float currentSubmovementTime;
+                                        for (int k = 0; k < segments; k++) {
+                                            currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
+                                            nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
+                                            nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
+                                            //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                            Drawing.DrawLine(lastPos, nextPos, color, 3, true);
+                                            lastPos = nextPos;
+                                        }
+                                    }
                                 }
+                            } else {
+                                Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                            }
+                            if (future != null) {
+                                for (int i = 0; i < future.Count(); i++) {
+                                    if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                        Vector3 vel = new Vector3();
+                                        Color color = boneStatusForTimelines[j].color;
+                                        int halfSegment = segments / 2;
+                                        for (int k = 0; k < halfSegment; k++) {
+                                            float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
+                                            Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                            //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                            float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
+                                            logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
+                                            Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                            Drawing.DrawLine(p0, p1, color, 3, true);
+                                        }
+                                    }
+                                }
+                            } else {
+                                Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
                             }
                         }
-                    } else {
-                        Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                    }
+                }
+            } else {
+                if (currentAction != null && currentAction.stateMachineAction.Enabled) {
+                    for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                        List<SubMovementLog> logs = null;
+                        List<SubMovementLog> future = null;
+                        for (int i = 0; i < currentAction.stateMachineAction.ActionLog.subMovementLogs.Count; i++) {
+                            if (boneStatusForTimelines[j].bone.ToString() == currentAction.stateMachineAction.ActionLog.subMovementLogs[i].bone.label) {
+                                logs = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].logSubMovements;
+                                future = currentAction.stateMachineAction.ActionLog.subMovementLogs[i].futureSubMovements;
+                                break;
+                            }
+                        }
+                        if (logs != null) {
+                            for (int i = 0; i < logs.Count(); i++) {
+                                if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                    Vector2 lastPos = new Vector2(graphLeft + graphWidth * (logs[i].subMovement.t0 / totalTime), graphBottom);
+                                    Vector2 nextPos = new Vector2();
+                                    Vector3 vel = new Vector3();
+                                    Color color = boneStatusForTimelines[j].color;
+                                    float currentSubmovementTime;
+                                    for (int k = 0; k < segments; k++) {
+                                        currentSubmovementTime = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(k + 1) / segments) + logs[i].subMovement.t0;
+                                        nextPos.x = graphLeft + graphWidth * (currentSubmovementTime / totalTime);
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime, out vel);
+                                        nextPos.y = graphBottom - graphHeight * (vel.magnitude / yAxis[1]);
+                                        //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                        Drawing.DrawLine(lastPos, nextPos, color, 3, true);
+                                        lastPos = nextPos;
+                                    }
+                                }
+                            }
+                        } else {
+                            Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                        }
+                        if (future != null) {
+                            for (int i = 0; i < future.Count(); i++) {
+                                if (logs[i].subMovement.t0 != logs[i].subMovement.t1 && boneStatusForTimelines[j].solo) {
+                                    Vector3 vel = new Vector3();
+                                    Color color = boneStatusForTimelines[j].color;
+                                    int halfSegment = segments / 2;
+                                    for (int k = 0; k < halfSegment; k++) {
+                                        float currentSubmovementTime0 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k) / segments) + logs[i].subMovement.t0;
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime0, out vel);
+                                        Vector2 p0 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime0 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                        //Debug.Log(currentSubmovementTime + " " + vel.magnitude);
+                                        float currentSubmovementTime1 = (logs[i].subMovement.t1 - logs[i].subMovement.t0) * ((float)(2 * k + 1) / segments) + logs[i].subMovement.t0;
+                                        logs[i].subMovement.GetCurrentVelocity(currentSubmovementTime1, out vel);
+                                        Vector2 p1 = new Vector2(graphLeft + graphWidth * (currentSubmovementTime1 / totalTime), graphBottom - graphHeight * (vel.magnitude / yAxis[1]));
+                                        Drawing.DrawLine(p0, p1, color, 3, true);
+                                    }
+                                }
+                            }
+                        } else {
+                            Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
+                        }
                     }
                 }
             }

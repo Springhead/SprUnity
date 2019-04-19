@@ -5,14 +5,7 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     400000: //RootNode
-    2100000: F00_000_HairBack_00_HAIR
-    2100002: F00_000_00_Body_00_SKIN
-    2100004: F00_000_00_FaceMouth_00_FACE
-    2100006: F00_000_00_EyeExtra_01_EYE
-    2100008: F00_000_00_Face_00_SKIN
-    2100010: F00_000_00_EyeHighlight_00_EYE
-    2100012: F00_000_00_EyeIris_00_EYE
-    2100014: F00_000_00_EyeWhite_00_EYE
+    2100000: No Name
     4300000: Body.baked
     9500000: //RootNode
     13700000: //RootNode

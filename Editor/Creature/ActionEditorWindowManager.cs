@@ -57,9 +57,7 @@ namespace SprUnity {
             }
         }
         public ActionStateMachine lastSelectedStateMachine;
-        // public ActionTimelineWindow関係
-        public bool showSpring;
-        public bool showDamper;
+        public ActionManager lastSelectedActionManager;
 
         // PullbackPoseWindow関係
         // public PullbackPoseGroupWindow関係
@@ -73,10 +71,6 @@ namespace SprUnity {
         //
         public string actionSaveFolder;
         public string KeyPoseSaveFolder;
-
-        //
-        public GameObject targetObject;
-
 
         // Management flags
         public bool actionSelectChanged = false;
@@ -134,6 +128,9 @@ namespace SprUnity {
 
         void OnHierarchyChanged() {
             ActionSelectWindow.ReloadActionList();
+            if (Selection.activeGameObject.GetComponent<ActionManager>()) {
+                instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
+            }
         }
 
         void OnProjectChanged() {

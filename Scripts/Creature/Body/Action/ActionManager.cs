@@ -30,7 +30,7 @@ namespace SprUnity {
 
         ActionStateMachine stateMachine;
         private float stateMachineTime = 0;
-
+        //
         private TransitionFlagList flagList;
         private StateMachineParameters parameters;
         // 
@@ -38,8 +38,7 @@ namespace SprUnity {
         public ActionState CurrentState { get { return currentState; } }
         float timeInCurrentStateFromEnter;
         
-        // 適用するBody
-        // Start時に対応させる
+        // 
         [HideInInspector]
         public Body body;
 
@@ -65,6 +64,7 @@ namespace SprUnity {
             this.stateMachine = stateMachine;
             this.body = body;
             if (body == null) this.body = GameObject.FindObjectOfType<Body>();
+            actionLog = new ActionLog(body);
         }
 
         // 
@@ -102,7 +102,10 @@ namespace SprUnity {
             enabled = true;
             stateMachineTime = 0;
 
-            actionLog = new ActionLog();
+            flagList = stateMachine.flags.Clone();
+            parameters = stateMachine.parameters.Clone();
+
+            actionLog = new ActionLog(body);
             futureTransitions = new List<ActionTransition>();
         }
 
@@ -151,7 +154,7 @@ namespace SprUnity {
         // Enter event of the state
         public List<BoneSubMovementPair> OnEnter() {
             timeInCurrentStateFromEnter = 0.0f;
-            Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
+            //Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 // ターゲット位置による変換後のKeyPose
@@ -186,6 +189,7 @@ namespace SprUnity {
                 }
                 //OK. transit to next state
                 if (isFlagEnabledAll) {
+                    //Debug.Log("Transit");
                     currentState.OnExit();
                     currentState = transition.toState;
                     if (currentState == null) {
@@ -207,7 +211,7 @@ namespace SprUnity {
         public Body body = null;
 
         public List<ActionStateMachine> actions = new List<ActionStateMachine>();
-        private List<ActionStateMachineController> controllers;
+        private List<ActionStateMachineController> controllers = new List<ActionStateMachineController>();
 
         [HideInInspector]
         public ActionStateMachineController inAction = null;
@@ -221,9 +225,9 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
-        public ActionStateMachine this[string key] {
+        public ActionStateMachineController this[string key] {
             get {
-                foreach (var action in actions) { if (action.name.Contains(key)) return action; }
+                foreach (var action in controllers) { if (action.Name.Contains(key)) return action; }
                 return null;
             }
         }
