@@ -120,7 +120,7 @@ namespace SprUnity {
             if (myskin != null) {
                 GUI.skin = myskin;
             } else {
-                Debug.Log("GUISkin is null");
+                //Debug.Log("GUISkin is null");
             }
 
             float windowWidth = this.position.width;

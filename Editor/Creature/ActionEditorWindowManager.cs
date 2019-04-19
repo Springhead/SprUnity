@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEditor;
 
@@ -55,6 +56,7 @@ namespace SprUnity {
                 return selected;
             }
         }
+        public ActionStateMachine lastSelectedStateMachine;
         // public ActionTimelineWindow関係
         public bool showSpring;
         public bool showDamper;
@@ -75,6 +77,14 @@ namespace SprUnity {
         //
         public GameObject targetObject;
 
+
+        // Management flags
+        public bool actionSelectChanged = false;
+
+
+        // Log data
+
+
         ActionEditorWindowManager() {
             keyPoseGroupStatuses = new List<KeyPoseGroupStatus>();
             actions = new List<ActionStateMachineStatus>();
@@ -83,6 +93,11 @@ namespace SprUnity {
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
             EditorApplication.projectChanged -= OnProjectChanged;
             EditorApplication.projectChanged += OnProjectChanged;
+            EditorApplication.update -= Update;
+            EditorApplication.update += Update;
+
+            EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeChanged;
 
             Debug.Log("Manager constructed");
         }
@@ -115,7 +130,7 @@ namespace SprUnity {
             body = GameObject.FindObjectOfType<Body>();
         }
 
-        // ----- ----- ----- ----- ----- -----
+        #region EventDelegates
 
         void OnHierarchyChanged() {
             ActionSelectWindow.ReloadActionList();
@@ -125,6 +140,28 @@ namespace SprUnity {
             KeyPoseWindow.ReloadKeyPoseList();
             ActionSelectWindow.ReloadActionList();
         }
+
+        void Update() {
+            if (actionSelectChanged) {
+                if (instance.timelineWindow != null) instance.timelineWindow.Repaint();
+                if (instance.stateMachineWindow != null) instance.stateMachineWindow.Repaint();
+                actionSelectChanged = false;
+            }
+            if (selectedAction.Count == 1) {
+                if (selectedAction[0].stateMachineAction.isChanged) {
+                    instance.stateMachineWindow.Repaint();
+                }
+            }
+            if(instance.body == null) {
+                body = GameObject.FindObjectOfType<Body>();
+            }
+        }
+
+        void OnPlayModeChanged(PlayModeStateChange state) {
+
+        }
+
+        #endregion // EventDelegates
     }
 
 }

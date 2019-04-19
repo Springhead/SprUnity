@@ -18,19 +18,13 @@ namespace SprUnity {
         Graph actionGraph;
         GraphGUI actionGraphGUI;
 
-        // ActionStateのビジュアル設定
-        private GUIStyle defaultNodeStyle;
-        private GUIStyle selectedNodeStyle;
-        private GUIStyle entryNodeStyle;
-        private GUIStyle exitNodeStyle;
-
         private bool initialized = false;
         private ActionStateMachine lastEditedStateMachine;
         private List<List<int>> graphConnectionMatrix;
         // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
         private List<List<ActionTransition>> transitionGraph;
 
-        [MenuItem("Window/Action State Machine Window")]
+        [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>(typeof(SceneView));
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
@@ -50,17 +44,17 @@ namespace SprUnity {
                 }
             }
             ActionState.defaultStyle = new GUIStyle();
-            ActionState.defaultStyle.normal.background = EditorGUIUtility.Load("flow node 0") as Texture2D;
+            //ActionState.defaultStyle.normal.background = EditorGUIUtility.Load("flow node 0") as Texture2D;
             ActionState.defaultStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.defaultStyle.border = new RectOffset(12, 12, 12, 12);
 
             ActionState.selectedStyle = new GUIStyle();
-            ActionState.selectedStyle.normal.background = EditorGUIUtility.Load("floaw node 2 on") as Texture2D;
+            ActionState.selectedStyle.normal.background = EditorGUIUtility.Load("flow node 2 on") as Texture2D;
             ActionState.selectedStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.selectedStyle.border = new RectOffset(12, 12, 12, 12);
 
             ActionState.currentStateStyle = new GUIStyle();
-            ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("floaw node 5") as Texture2D;
+            ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("flow node 5") as Texture2D;
             ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
         }
@@ -71,6 +65,8 @@ namespace SprUnity {
         }
 
         void OnGUI() {
+            if (window == null) Open();
+
             if (graphBackground) {
                 if (window && actionGraphGUI != null) {
                     actionGraphGUI.BeginGraphGUI(window, new Rect(0, 0, window.position.width, window.position.height));
@@ -91,16 +87,15 @@ namespace SprUnity {
             if (actionSelectWindow) {
                 var actions = ActionEditorWindowManager.instance.selectedAction;
                 if (actions.Count == 1) {
-                    var action = actions[0].action;
+                    var action = actions[0].stateMachineAction;
                     if (lastEditedStateMachine != action) { initialized = false; }
                     if (!initialized) {
                         InitializeGraphMatrix();
                         initialized = true;
                     }
                     Object[] subObjects = action.GetSubAssets();
-                    Debug.Log(subObjects.Length);
-                    action.entryRect = GUI.Window(subObjects.Length, action.entryRect, (i) => GUI.DragWindow(), "Entry");
-                    action.exitRect = GUI.Window(subObjects.Length + 1, action.exitRect, (i) => GUI.DragWindow(), "Exit");
+                    action.entryRect = GUI.Window(subObjects.Length, action.entryRect, (i) => GUI.DragWindow(), "Entry", "flow node 5");
+                    action.exitRect = GUI.Window(subObjects.Length + 1, action.exitRect, (i) => GUI.DragWindow(), "Exit", "flow node 1");
                     foreach (var item in subObjects.Select((v, i) => new { Index = i, Value = v })) {
                         // EntryNode
                         // ExitNode
@@ -124,12 +119,10 @@ namespace SprUnity {
                 }
             }
             EndWindows();
-            //Debug.Log(GUIUtility.hotControl);
-
         }
 
         public void InitializeGraphMatrix() {
-            var action = ActionEditorWindowManager.instance.selectedAction[0].action;
+            var action = ActionEditorWindowManager.instance.selectedAction[0].stateMachineAction;
             int nStates = action.nStates;
             graphConnectionMatrix = new List<List<int>>();
             for (int i = 0; i < nStates; i++) {
@@ -180,7 +173,7 @@ namespace SprUnity {
         // ActionStateMachine全体にかかわるもの
         void ProcessEvents() {
             Event e = Event.current;
-            Debug.Log(Event.current.type);
+            //Debug.Log(Event.current.type);
             switch (e.type) {
                 case EventType.MouseDown:
                     if (e.button == 1) {
@@ -188,6 +181,12 @@ namespace SprUnity {
                     }
                     break;
                 case EventType.DragUpdated:
+                    break;
+                case EventType.MouseDrag:
+                    if (e.button == 2) {
+                        Drag(e.delta);
+                        e.Use();
+                    }
                     break;
                 case EventType.DragExited:
                     break;
@@ -197,6 +196,10 @@ namespace SprUnity {
         // Stateのノード各々のもの
         private void ProcessNodeEvents() {
 
+        }
+
+        void Drag(Vector2 delta) {
+            ;
         }
 
         // ----- ----- ----- ----- ----- -----
@@ -222,7 +225,7 @@ namespace SprUnity {
 
         private void OnClickAddState(Vector2 mousePosition) {
             if (ActionEditorWindowManager.instance.selectedAction.Count != 1) return;
-            ActionEditorWindowManager.instance.selectedAction[0].action.CreateState();
+            ActionEditorWindowManager.instance.selectedAction[0].stateMachineAction.CreateState();
         }
     }
 
