@@ -78,7 +78,7 @@ namespace SprUnity {
                 }
 
                 float ratio = Mathf.Clamp01(-hipsHeight / 0.7f);
-                SetPullbackLinkageOffset(ratio * 60, ratio * 0);
+                SetPullbackLinkageOffset(ratio);
 
             }
         }
@@ -123,20 +123,24 @@ namespace SprUnity {
             return CoM;
         }
 
-        private void SetPullbackLinkageOffset(float angleX, float angleZ) {
-            // body["Hips"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX;
-            // body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX * 0.5f;
-            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleX * 0.5f;
-            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleX;
+        public float spineX = 20;
+        public float chestX = 30;
+        public float upperChestX = 30;
 
-            // body["Neck"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX;
+        public float spineZ = 20;
+        public float chestZ = -10;
+        public float upperChestZ = 10;
+
+        private void SetPullbackLinkageOffset(float ratio) {
+            body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.x = spineX * ratio;
+            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = chestX * ratio;
+            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = upperChestX * ratio;
 
             // -----
 
-            body["Hips"].GetComponent<PullbackTargetLinkage>().offsetRot.z = -angleZ;
-            body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.z = -angleZ;
-            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleZ;
-            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleZ;
+            body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.z = spineZ * ratio;
+            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.z = chestZ * ratio;
+            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.z = upperChestZ * ratio;
         }
 
     }
