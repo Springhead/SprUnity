@@ -77,6 +77,8 @@ namespace SprUnity {
                     body["Hips"].ikEndEffector.phIKEndEffector.SetTargetPosition(targHipsPosLPF.ToVec3d());
                 }
 
+                SetPullbackLinkageOffset(Mathf.Clamp01(-hipsHeight / 0.7f) * 20);
+
             }
         }
 
@@ -118,6 +120,16 @@ namespace SprUnity {
             CoM = CoM * (1.0f / mass);
 
             return CoM;
+        }
+
+        private void SetPullbackLinkageOffset(float angle) {
+            Bone[] bones = new Bone[] { body["Hips"], body["Spine"], body["Chest"], body["UpperChest"] };
+            foreach (var bone in bones) {
+                var ptl = bone.GetComponent<PullbackTargetLinkage>();
+                ptl.offsetRot.x = angle;
+            }
+
+            body["Neck"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angle;
         }
 
     }

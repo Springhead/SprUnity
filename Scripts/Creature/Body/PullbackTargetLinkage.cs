@@ -4,11 +4,21 @@ using UnityEngine;
 using SprCs;
 using SprUnity;
 
+#if UNITY_EDITOR
+using UnityEditor;
+[CanEditMultipleObjects]
+[CustomEditor(typeof(PullbackTargetLinkage))]
+public class PullbackTargetLinkageEditor : Editor {
+}
+#endif
+
 public class PullbackTargetLinkage : MonoBehaviour {
 
     public GameObject linkTarget = null;
     public GameObject coordinateOrigin = null;
     public float linkRatio = 0.0f;
+
+    public Vector3 offsetRot = new Vector3();
 
     private PHIKBallActuatorBehaviour ikActuator;
 
@@ -20,10 +30,11 @@ public class PullbackTargetLinkage : MonoBehaviour {
 	
 	void FixedUpdate () {
         if (ikActuator != null) {
-            Quaterniond ikPullback = Quaternion.Slerp(coordinateOrigin.transform.rotation, linkTarget.transform.rotation, linkRatio).ToQuaterniond();
-            ikActuator.desc.pullbackTarget = ikPullback;
+            Quaternion targetRot = linkTarget.transform.rotation;
+            Quaternion ikPullback = Quaternion.Slerp(coordinateOrigin.transform.rotation, targetRot, linkRatio) * Quaternion.Euler(offsetRot);
+            ikActuator.desc.pullbackTarget = ikPullback.ToQuaterniond();
             if (ikActuator.phIKBallActuator != null) {
-                ikActuator.phIKBallActuator.SetPullbackTarget(ikPullback);
+                ikActuator.phIKBallActuator.SetPullbackTarget(ikPullback.ToQuaterniond());
             }
         } else {
             Debug.Log(gameObject.name + " does not have ikActuator");
