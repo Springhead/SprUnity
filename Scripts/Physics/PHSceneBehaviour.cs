@@ -258,13 +258,21 @@ public class PHSceneBehaviour : SprBehaviour {
                 if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.One) {
                     solid1s.Add(c.solid1);
                 } else if (c.targetSetMode1 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    // -- TBD
+                    foreach (var solid in phSolidBehaviours) {
+                        if (solid.name.Contains(c.solid1Pattern)) {
+                            solid1s.Add(solid);
+                        }
+                    }
                 }
 
                 if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.One) {
                     solid2s.Add(c.solid2);
                 } else if (c.targetSetMode2 == CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    // -- TBD
+                    foreach (var solid in phSolidBehaviours) {
+                        if (solid.name.Contains(c.solid2Pattern)) {
+                            solid2s.Add(solid);
+                        }
+                    }
                 }
 
                 // -----

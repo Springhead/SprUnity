@@ -31,7 +31,7 @@ public class PullbackTargetLinkage : MonoBehaviour {
 	void FixedUpdate () {
         if (ikActuator != null) {
             Quaternion targetRot = linkTarget.transform.rotation;
-            Quaternion ikPullback = Quaternion.Slerp(coordinateOrigin.transform.rotation, targetRot, linkRatio) * Quaternion.Euler(offsetRot);
+            Quaternion ikPullback = Quaternion.Euler(0, 0, offsetRot.z) * Quaternion.Euler(offsetRot.x, 0, 0) * Quaternion.Slerp(coordinateOrigin.transform.rotation, targetRot, linkRatio);
             ikActuator.desc.pullbackTarget = ikPullback.ToQuaterniond();
             if (ikActuator.phIKBallActuator != null) {
                 ikActuator.phIKBallActuator.SetPullbackTarget(ikPullback.ToQuaterniond());

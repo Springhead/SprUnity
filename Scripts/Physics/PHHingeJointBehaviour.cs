@@ -7,6 +7,7 @@ using System;
 #if UNITY_EDITOR
 using UnityEditor;
 
+[CanEditMultipleObjects]
 [CustomEditor(typeof(PHHingeJointBehaviour))]
 public class PHHingeJointBehaviourEditor : PHJointBehaviourEditor {
     public void OnSceneGUI() {

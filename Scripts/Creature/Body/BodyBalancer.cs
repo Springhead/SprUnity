@@ -77,7 +77,8 @@ namespace SprUnity {
                     body["Hips"].ikEndEffector.phIKEndEffector.SetTargetPosition(targHipsPosLPF.ToVec3d());
                 }
 
-                SetPullbackLinkageOffset(Mathf.Clamp01(-hipsHeight / 0.7f) * 20);
+                float ratio = Mathf.Clamp01(-hipsHeight / 0.7f);
+                SetPullbackLinkageOffset(ratio * 60, ratio * 0);
 
             }
         }
@@ -122,14 +123,20 @@ namespace SprUnity {
             return CoM;
         }
 
-        private void SetPullbackLinkageOffset(float angle) {
-            Bone[] bones = new Bone[] { body["Hips"], body["Spine"], body["Chest"], body["UpperChest"] };
-            foreach (var bone in bones) {
-                var ptl = bone.GetComponent<PullbackTargetLinkage>();
-                ptl.offsetRot.x = angle;
-            }
+        private void SetPullbackLinkageOffset(float angleX, float angleZ) {
+            // body["Hips"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX;
+            // body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX * 0.5f;
+            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleX * 0.5f;
+            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleX;
 
-            body["Neck"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angle;
+            // body["Neck"].GetComponent<PullbackTargetLinkage>().offsetRot.x = -angleX;
+
+            // -----
+
+            body["Hips"].GetComponent<PullbackTargetLinkage>().offsetRot.z = -angleZ;
+            body["Spine"].GetComponent<PullbackTargetLinkage>().offsetRot.z = -angleZ;
+            body["Chest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleZ;
+            body["UpperChest"].GetComponent<PullbackTargetLinkage>().offsetRot.x = angleZ;
         }
 
     }
