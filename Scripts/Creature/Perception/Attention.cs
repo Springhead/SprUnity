@@ -250,7 +250,7 @@ public class Attention : MonoBehaviour {
             // 目を動かす
             var attention = newAttentionTarget.GetAttr<AttentionAttr>().attention;
             lookController.target = newAttentionTarget.gameObject;
-            if (speed < 0) { speed = 0.5f; }
+            if (speed < 0) { speed = 0.2f; }
             lookController.speed = speed;
             if (forceStraight || (newAttentionTarget.human && lookController.straight == false)) {
                 lookController.straight = true;

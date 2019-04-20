@@ -17,6 +17,12 @@ public class LookController2Editor : Editor {
         EditorGUILayout.PrefixLabel("速");
         action.speed = EditorGUILayout.Slider(action.speed, 0.0f, 1.0f);
 
+        EditorGUILayout.PrefixLabel("頭の動く割合");
+        action.headMoveRatio = EditorGUILayout.Slider(action.headMoveRatio, 0.0f, 1.0f);
+
+        EditorGUILayout.PrefixLabel("体の動く割合");
+        action.bodyMoveRatio = EditorGUILayout.Slider(action.bodyMoveRatio, 0.0f, 1.0f);
+
         EditorGUILayout.Space();
 
         EditorGUILayout.PrefixLabel("目（水平）");
@@ -35,6 +41,12 @@ public class LookController2Editor : Editor {
 #endif
 
 public class LookController2 : LookController {
+
+    [HideInInspector]
+    public float headMoveRatio = 0.5f;
+
+    [HideInInspector]
+    public float bodyMoveRatio = 0.5f;
 
     // Manually Control Mode
     public bool manualEye = false;
@@ -165,6 +177,17 @@ public class LookController2 : LookController {
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
+        {
+            Bone[] bones = new Bone[] { body["Hips"], body["Spine"], body["Chest"], body["UpperChest"] };
+
+            body["Hips"].GetComponent<PullbackTargetLinkage>().linkRatio = (bodyMoveRatio) * (1 - 0.15f);
+            body["Neck"].GetComponent<PullbackTargetLinkage>().linkRatio = (1 - bodyMoveRatio) * (1 - 0.15f);
+
+            body["Spine"].GetComponent<PullbackTargetLinkage>().linkRatio = 0.05f;
+            body["Chest"].GetComponent<PullbackTargetLinkage>().linkRatio = 0.05f;
+            body["UpperChest"].GetComponent<PullbackTargetLinkage>().linkRatio = 0.05f;
+        }
+
         if (noddingTimer > 0) { noddingTimer -= Time.fixedDeltaTime; }
 
         if (waitTimer > 0) {
@@ -245,14 +268,15 @@ public class LookController2 : LookController {
                 }
 
                 // <!!> 本来の視線方向（キャリブレーション変換やstraightなどが入っていない）を計算し直す
-                targEyeDir = (target.transform.position - body["Head"].transform.position).normalized;
+                var targPos = target.transform.position; targPos.y = 1.6f; // <!!>
+                targEyeDir = (targPos - body["Head"].transform.position).normalized;
                 if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
                 eyeTargetRotation = Quaternion.LookRotation(targEyeDir);
 
                 // <!!> 今回は頭基準姿勢は固定とする
-                baseHeadRotation = Quaternion.identity;
+                // baseHeadRotation = Quaternion.identity;
 
-                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, 0.8f);
+                targetHeadRotation = Quaternion.Slerp(baseHeadRotation, eyeTargetRotation, headMoveRatio);
 
                 // -- 手動オーバーライド
                 if (manualHead) {
@@ -271,7 +295,8 @@ public class LookController2 : LookController {
 
                 // 頭部運動の速度を移動量とspeedの設定値に応じて決定
                 float minDurationHead = 0.2f;
-                float durationHead = Mathf.Max((1 / (60.0f * speed)) * diffAngleHead, minDurationHead);
+                float maxDurationHead = 0.7f;
+                float durationHead = Mathf.Clamp((1 / (60.0f * speed)) * diffAngleHead, minDurationHead, maxDurationHead);
 
                 // 動作指示
                 if (manualHead) { durationHead = 0.1f; }
