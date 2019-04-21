@@ -61,11 +61,12 @@ namespace SprUnity {
             }
         }
 
+        public float timeRatio = 0.5f;
         private void FixedUpdate() {
             if (body == null || body.initialized) {
                 if (inActionSequence != null && inActionSequence.keyPoseTimings.Count() > 0) {
                     if (index < inActionSequence.keyPoseTimings.Count()) {
-                        if (inActionSequence.keyPoseTimings[index].start <= time) {
+                        if ((inActionSequence.keyPoseTimings[index].start * timeRatio) <= time) {
                             Quaternion rotate = Quaternion.identity;
                             if (inActionSequence.lookAt != null) {
                                 Vector3 lookDir = inActionSequence.lookAt.head.transform.position - body["Hips"].transform.position;
@@ -78,7 +79,7 @@ namespace SprUnity {
                             kp.keyPose.Action(
                                 body: body,
                                 startTime: 0,
-                                duration: kp.duration,
+                                duration: kp.duration * timeRatio,
                                 spring: kp.springDamper.x,
                                 damper: kp.springDamper.y,
                                 rotate: rotate
@@ -124,7 +125,7 @@ namespace SprUnity {
             if (inActionSequence == null) { return -1e-3f; }
 
             var lastKeyPose = inActionSequence.keyPoseTimings.Last();
-            var endTime = lastKeyPose.start + lastKeyPose.duration;
+            var endTime = (lastKeyPose.start * timeRatio) + (lastKeyPose.duration * timeRatio);
             return (endTime - time);
         }
 
