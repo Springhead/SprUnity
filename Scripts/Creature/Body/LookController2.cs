@@ -268,7 +268,7 @@ public class LookController2 : LookController {
                 }
 
                 // <!!> 本来の視線方向（キャリブレーション変換やstraightなどが入っていない）を計算し直す
-                var targPos = target.transform.position; targPos.y = 1.6f; // <!!>
+                var targPos = target.transform.position; targPos.y = Mathf.Max(1.3f, targPos.y); // <!!>
                 targEyeDir = (targPos - body["Head"].transform.position).normalized;
                 if (targEyeDir.magnitude < 1e-5) { targEyeDir = Vector3.forward; }
                 eyeTargetRotation = Quaternion.LookRotation(targEyeDir);
