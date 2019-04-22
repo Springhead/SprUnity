@@ -14,9 +14,6 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(KeyPoseData))]
     public class KeyPoseDataEditor : Editor {
-        private float handleSize = 0.05f;
-        private float selectedHandleSize = 0.15f;
-        private BoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
 
         void OnEnable() {
             SceneView.onSceneGUIDelegate += OnSceneGUI;
@@ -282,28 +279,30 @@ namespace SprUnity {
                 }
             }
         }
+        // coordinateParentは正しいがlocalPositionやlocalRotationがWorldの時の変換
         public void ConvertWorldToBoneLocal() {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 Bone coordinateBaseBone = body[coordinateParent];
                 if (coordinateBaseBone.ikActuator?.phIKActuator != null) {
                     Posed ikSolidPose = coordinateBaseBone.ikActuator.phIKActuator.GetSolidTempPose();
-                    localPosition = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * (position - ikSolidPose.Pos().ToVector3());
+                    // Worldのpositionを求めたいので右辺はlocalPosition
+                    localPosition = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * (localPosition - ikSolidPose.Pos().ToVector3());
                     normalizedLocalPosition = localPosition / body.height;
-                    localRotation = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * rotation;
+                    localRotation = Quaternion.Inverse(ikSolidPose.Ori().ToQuaternion()) * localRotation;
                 } else {
-                    localPosition = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * (position - coordinateBaseBone.transform.position);
+                    localPosition = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * (localPosition - coordinateBaseBone.transform.position);
                     normalizedLocalPosition = localPosition / body.height;
-                    localRotation = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * rotation;
+                    localRotation = Quaternion.Inverse(coordinateBaseBone.transform.rotation) * localRotation;
                 }
             }
         }
         public void ConvertWorldToBodyLocal() {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
-                localPosition = Quaternion.Inverse(body.transform.rotation) * (position - body.transform.position);
+                localPosition = Quaternion.Inverse(body.transform.rotation) * (localPosition - body.transform.position);
                 normalizedLocalPosition = localPosition / body.height;
-                localRotation = Quaternion.Inverse(body.transform.rotation) * rotation;
+                localRotation = Quaternion.Inverse(body.transform.rotation) * localRotation;
             }
         }
         public void ConvertBodyLocalToWorld() {

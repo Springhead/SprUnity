@@ -93,7 +93,7 @@ namespace SprUnity {
         static KeyPoseData recordKeyPose;
         static BoneKeyPose recordBoneKeyPose;
 
-        private Material editableMat,visibleMat;
+        private Material editableMat, visibleMat;
         private Mesh leftHand;
         private Mesh rightHand;
         private Mesh head;
@@ -367,23 +367,25 @@ namespace SprUnity {
                     latestEditableKeyPose.boneKeyPoses[i].usePosition = GUILayout.Toggle(latestEditableKeyPose.boneKeyPoses[i].usePosition, "", GUILayout.Width(0.08f * displayRect.width));
                     latestEditableKeyPose.boneKeyPoses[i].useRotation = GUILayout.Toggle(latestEditableKeyPose.boneKeyPoses[i].useRotation, "", GUILayout.Width(0.08f * displayRect.width));
                     var tempcoordinateMode = (BoneKeyPose.CoordinateMode)EditorGUILayout.EnumPopup(latestEditableKeyPose.boneKeyPoses[i].coordinateMode, GUILayout.Width(0.25f * displayRect.width));
+                    var precoodinateMode = latestEditableKeyPose.boneKeyPoses[i].coordinateMode;
+                    latestEditableKeyPose.boneKeyPoses[i].coordinateMode = tempcoordinateMode;
                     // <!!>BodyLocalからWorldやWorldからBodyLocalはどうすべきか
-                    if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.World && tempcoordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
+                    if (precoodinateMode == BoneKeyPose.CoordinateMode.World && tempcoordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertWorldToBoneLocal();
-                    } else if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
+                    } else if (precoodinateMode == BoneKeyPose.CoordinateMode.BodyLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertBodyLocalToBoneLocal();
-                    } else if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.World) {
+                    } else if (precoodinateMode == BoneKeyPose.CoordinateMode.BodyLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.World) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertBodyLocalToWorld();
-                    } else if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.World && tempcoordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                    } else if (precoodinateMode == BoneKeyPose.CoordinateMode.World && tempcoordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertWorldToBodyLocal();
-                    } else if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                    } else if (precoodinateMode == BoneKeyPose.CoordinateMode.BoneLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertBoneLocalToBodyLocal();
-                    } else if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.World) {
+                    } else if (precoodinateMode == BoneKeyPose.CoordinateMode.BoneLocal && tempcoordinateMode == BoneKeyPose.CoordinateMode.World) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertBoneLocalToWorld();
                     }
-                    latestEditableKeyPose.boneKeyPoses[i].coordinateMode = tempcoordinateMode;
                     var tempParentBone = (BONES)EditorGUILayout.EnumPopup((BONES)latestEditableKeyPose.boneKeyPoses[i].coordinateParent, GUILayout.Width(0.25f * displayRect.width));
-                    if ((HumanBodyBones)tempParentBone != latestEditableKeyPose.boneKeyPoses[i].coordinateParent) {
+                    if (latestEditableKeyPose.boneKeyPoses[i].coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal &&
+                        (HumanBodyBones)tempParentBone != latestEditableKeyPose.boneKeyPoses[i].coordinateParent) {
                         latestEditableKeyPose.boneKeyPoses[i].ConvertBoneLocalToOtherBoneLocal(latestEditableKeyPose.boneKeyPoses[i].coordinateParent, (HumanBodyBones)tempParentBone);
                     }
                     if (GUI.changed) EditorUtility.SetDirty(latestEditableKeyPose);
@@ -558,7 +560,7 @@ namespace SprUnity {
             var h = Vector3.Dot(n, x);
             return x0 + ((h - Vector3.Dot(n, x0)) / (Vector3.Dot(n, m))) * m;
         }
-    
+
         void DrawHuman(KeyPoseData latestEditableKeyPose, KeyPoseData latestVisibleKeyPose) {
             if (latestEditableKeyPose != null) {
                 foreach (var boneKeyPose in latestEditableKeyPose.boneKeyPoses) {
@@ -577,7 +579,7 @@ namespace SprUnity {
                     }
                 }
             }
-            if (latestVisibleKeyPose != null) {
+            if (latestVisibleKeyPose != null && latestEditableKeyPose != latestVisibleKeyPose) {
                 foreach (var boneKeyPose in latestVisibleKeyPose.boneKeyPoses) {
                     // 調整用の手などを表示
                     visibleMat.SetPass(0); // 1だと影しか見えない？ 
@@ -637,7 +639,7 @@ namespace SprUnity {
         }
 
         void LeftClick(Rect rect, KeyPoseStatus keyPoseStatus) {
-            if (rect.Contains(Event.current.mousePosition+scrollPos) && Event.current.type == EventType.MouseDown && Event.current.button == 0) {
+            if (rect.Contains(Event.current.mousePosition + scrollPos) && Event.current.type == EventType.MouseDown && Event.current.button == 0) {
                 keyPoseStatus.isEditable = !keyPoseStatus.isEditable;
                 if (keyPoseStatus.isEditable) {
                     latestEditableKeyPose = keyPoseStatus.keyPose;
@@ -702,12 +704,28 @@ namespace SprUnity {
                         Repaint();
                         SceneView.RepaintAll();
                     });
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent("Delete"), false,
+                    () => {
+                        RemoveKeyPose(keyPoseData);
+                        Repaint();
+                        SceneView.RepaintAll();
+                    });
                 menu.ShowAsContext();
             }
         }
 
-        void RemoveKeyPose() {
+        void RemoveKeyPose(KeyPoseData keyPoseData) {
+            if (keyPoseData == null) {
+                Debug.LogWarning("No sub asset.");
+                return;
+            }
 
+            if (AssetDatabase.IsSubAsset(keyPoseData)) {
+                string path = AssetDatabase.GetAssetPath(keyPoseData);
+                DestroyImmediate(keyPoseData, true);
+                AssetDatabase.ImportAsset(path);
+            }
         }
 
         // KeyPoseDataを変換する
