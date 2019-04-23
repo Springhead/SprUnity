@@ -39,7 +39,6 @@ namespace SprUnity {
         }
 
         void OnEnable() {
-            Open(); //これをしないとソースコード変更したときにエラーが出てしまうが完成したらいらないかも？
             if (graphBackground) {
                 if (actionGraph == null) {
                     actionGraph = ScriptableObject.CreateInstance<Graph>();

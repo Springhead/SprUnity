@@ -640,7 +640,7 @@ namespace SprUnity {
 
         void OnSceneGUI(SceneView sceneView) {
             if (currentAction != null) {
-                ActionStateMachineController controller = ActionEditorWindowManager.instance.lastSelectedActionManager[ActionEditorWindowManager.instance.selectedAction.name];
+                ActionStateMachineController controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[ActionEditorWindowManager.instance.selectedAction.name];
                 if (controller != null) {
                     for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                         Handles.color = boneStatusForTimelines[j].color;
