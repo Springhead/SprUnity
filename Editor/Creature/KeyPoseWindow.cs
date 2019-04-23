@@ -142,6 +142,9 @@ namespace SprUnity {
             menu.AddItem(new GUIContent("Reload"), false, () => {
                 ReloadKeyPoseList();
             });
+            menu.AddItem(new GUIContent("HipsPlus"), false, () => {
+                HipsPlus();
+            });
         }
 
         public void OnEnable() {
@@ -736,8 +739,9 @@ namespace SprUnity {
                 foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
                     foreach (var boneKeyPose in keyPoseStatus.keyPose.boneKeyPoses) {
                         Debug.Log(keyPoseStatus.keyPose.name);
-                        boneKeyPose.localPosition = boneKeyPose.localPosition + body[HumanBodyBones.Hips].transform.position;
+                        //boneKeyPose.localPosition = boneKeyPose.localPosition + body[HumanBodyBones.Hips].transform.position;
                     }
+                    keyPoseStatus.keyPose.SetDirty();
                 }
             }
         }

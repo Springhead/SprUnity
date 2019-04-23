@@ -122,7 +122,7 @@ namespace SprUnity {
 
         void OnHierarchyChanged() {
             ActionSelectWindow.ReloadActionList();
-            if (Selection.activeGameObject.GetComponent<ActionManager>()) {
+            if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
                 instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
             }
         }
