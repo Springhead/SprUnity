@@ -362,7 +362,6 @@ namespace SprUnity {
                 GUILayout.Label("dependent", GUILayout.Width(0.25f * displayRect.width));
                 GUILayout.EndHorizontal();
 
-                EditorGUI.BeginChangeCheck();
                 for (int i = 0; i < latestEditableKeyPose.boneKeyPoses.Count; i++) {
                     GUI.changed = false;
                     GUILayout.BeginHorizontal();
