@@ -23,8 +23,6 @@ namespace SprUnity {
             this.keyPose = keyPose;
             this.status = Status.None;
         }
-        // 選択状態と編集状態は違うとして
-        public bool isSelected;
     }
 
     public class KeyPoseGroupStatus {
@@ -203,7 +201,6 @@ namespace SprUnity {
                     if (keyPoseStatus.status == KeyPoseStatus.Status.None) currentTexture = noneButtonTexture;
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Visible) currentTexture = visibleButtonTexture;
                     if (keyPoseStatus.status == KeyPoseStatus.Status.Editable) currentTexture = editableButtonTexture;
-                    if (keyPoseStatus.isSelected) GUI.backgroundColor = Color.red;
                     if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
                         if (keyPoseStatus.status == KeyPoseStatus.Status.None) {
                             keyPoseStatus.status = KeyPoseStatus.Status.Visible;

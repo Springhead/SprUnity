@@ -143,8 +143,8 @@ namespace SprUnity {
     [Serializable]
     public class BoneSubMovementStream {
         public Bone bone;
-        public List<SubMovementLog> logSubMovements;
-        public List<SubMovementLog> futureSubMovements;
+        public List<SubMovementLog> logSubMovements = new List<SubMovementLog>();
+        public List<SubMovementLog> futureSubMovements = new List<SubMovementLog>();
         public List<float[]> logSubmovementSources = new List<float[]>();
         public List<float[]> futureSubMovementSources = new List<float[]>();
         public List<Vector3> calculatedTrajectory = new List<Vector3>();
@@ -181,6 +181,14 @@ namespace SprUnity {
         public CharacterSceneLogger sceneLog;
         // 発行されたSubMovementとかその軌道とか
         public List<BoneSubMovementStream> subMovementLogs;
+        public BoneSubMovementStream this[HumanBodyBones boneId] {
+            get {
+                foreach(var sub in subMovementLogs) {
+                    if (sub.bone.label == boneId.ToString()) return sub;
+                }
+                return null;
+            }
+        }
         public ActionLog(Body body = null) {
             sceneLog = new CharacterSceneLogger(body);
             subMovementLogs = new List<BoneSubMovementStream>();
@@ -208,6 +216,45 @@ namespace SprUnity {
             BoneSubMovementStream newLogs = new BoneSubMovementStream(boneSubMovement.bone);
             newLogs.AddFuture(boneSubMovement, s);
             subMovementLogs.Add(newLogs);
+        }
+        public void AddFuture(BoneKeyPose boneKeyPose, string s, float startTime, float duration, float spring, float damper, Body body) {
+            var bone = body[boneKeyPose.boneId];
+            SubMovement boneSubMovement = new SubMovement();
+            foreach (var subMovementLog in subMovementLogs) {
+                if (subMovementLog.bone.label == boneKeyPose.boneId.ToString()) {
+                    SubMovement last = subMovementLog.futureSubMovements.Count > 0 ? subMovementLog.futureSubMovements.Last().subMovement : (subMovementLog.logSubMovements.Count > 0 ? subMovementLog.logSubMovements.Last().subMovement : null);
+                    if (last != null) {
+                        boneSubMovement.p0 = last.p1;
+                        boneSubMovement.q0 = last.q1;
+                        boneSubMovement.s0 = last.s1;
+                    } else {
+                        boneSubMovement.p0 = bone.transform.position;
+                        boneSubMovement.q0 = bone.transform.rotation;
+                        boneSubMovement.s0 = new Vector2(bone.springRatio, bone.damperRatio);
+                    }
+                    boneSubMovement.t0 = startTime + boneKeyPose.boneKeyPoseTiming[0] * duration;
+
+                    boneSubMovement.t1 = startTime + boneKeyPose.boneKeyPoseTiming[1] * duration;
+                    boneSubMovement.p1 = boneKeyPose.position;
+                    boneSubMovement.q1 = boneKeyPose.rotation;
+                    boneSubMovement.s1 = new Vector2(spring, damper);
+
+                    AddFuture(new BoneSubMovementPair(body[boneKeyPose.boneId], boneSubMovement), s);
+                    return;
+                }
+            }
+            boneSubMovement.t0 = startTime + boneKeyPose.boneKeyPoseTiming[0] * duration;
+            boneSubMovement.p0 = bone.transform.position;
+            boneSubMovement.q0 = bone.transform.rotation;
+            boneSubMovement.s0 = new Vector2(bone.springRatio, bone.damperRatio);
+
+            boneSubMovement.t1 = startTime + boneKeyPose.boneKeyPoseTiming[1] * duration;
+            boneSubMovement.p1 = boneKeyPose.position;
+            boneSubMovement.q1 = boneKeyPose.rotation;
+            boneSubMovement.s1 = new Vector2(spring, damper);
+
+            AddFuture(new BoneSubMovementPair(body[boneKeyPose.boneId], boneSubMovement), s);
+            return;
         }
         public void ClearLog() {
             foreach(var subMovementLog in subMovementLogs) {

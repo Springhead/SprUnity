@@ -198,6 +198,10 @@ namespace SprUnity {
         private void OnContextMenu(Vector2 mousePosition) {
 
         }
+
+        public void OnValidate() {
+            stateMachine.isChanged = true;
+        }
     }
 
 }

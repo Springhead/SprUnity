@@ -166,7 +166,7 @@ namespace SprUnity {
             stateNodeRect.position += delta;
         }
 
-        public void Draw(int id) {
+        public void Draw(int id, bool isCurrent) {
             //GUI.Box(stateNodeRect, name, GUI.skin.box);
             if (isCurrent) {
                 if (isSelected || isDragged) {
@@ -291,6 +291,10 @@ namespace SprUnity {
             Object.DestroyImmediate(transition, true);
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this.stateMachine));
 #endif
+        }
+
+        public void OnValidate() {
+            stateMachine.isChanged = true;
         }
     }
 

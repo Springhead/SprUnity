@@ -22,6 +22,9 @@ namespace SprUnity {
                     manager.Action(manager.actions[i].name);
                 }
             }
+            if (GUILayout.Button("Stop")) {
+                manager.QuitAction();
+            }
         }
     }
 #endif
@@ -29,7 +32,9 @@ namespace SprUnity {
     public class ActionStateMachineController {
 
         ActionStateMachine stateMachine;
+        public ActionStateMachine StateMachine { get { return stateMachine; } }
         private float stateMachineTime = 0;
+        private float timeOfLastEnter = 0.0f;
         //
         private TransitionFlagList flagList;
         private StateMachineParameters parameters;
@@ -45,7 +50,8 @@ namespace SprUnity {
         //
         ActionLog actionLog;
         public ActionLog ActionLog { get { return actionLog; } }
-        private List<ActionTransition> futureTransitions = new List<ActionTransition>();
+        public List<ActionTransition> futureTransitions = new List<ActionTransition>();
+        public List<ActionTransition> specifiedTransitions = new List<ActionTransition>();
         static private int maxPredictLength = 5;
 
         private bool enabled = false;
@@ -58,6 +64,8 @@ namespace SprUnity {
             }
         }
 
+        public bool isChanged = false;
+
         public string Name { get { return this.stateMachine.name; } }
 
         public ActionStateMachineController(ActionStateMachine stateMachine, Body body = null) {
@@ -65,6 +73,8 @@ namespace SprUnity {
             this.body = body;
             if (body == null) this.body = GameObject.FindObjectOfType<Body>();
             actionLog = new ActionLog(body);
+            specifiedTransitions = new List<ActionTransition>();
+            specifiedTransitions.Add(stateMachine.entryTransitions[0]);
         }
 
         // 
@@ -77,7 +87,8 @@ namespace SprUnity {
             Init();
 
             // <!!> 遷移が1パターン!!
-            currentState = stateMachine.entryTransitions[0].toState;
+            currentState = specifiedTransitions[0].toState;
+            specifiedTransitions.RemoveAt(0);
             var logs = OnEnter();
             if (logs != null) AddLog(logs, currentState.name);
         }
@@ -94,7 +105,7 @@ namespace SprUnity {
         // 
         public void End() {
             enabled = false;
-            stateMachine.isChanged = true;
+            isChanged = true;
             Reset();
         }
 
@@ -118,6 +129,8 @@ namespace SprUnity {
                 states[i].IsCurrent = false;
             }
             */
+            specifiedTransitions.Clear();
+            specifiedTransitions.Add(stateMachine.entryTransitions[0]);
         }
 
         public void AddLog(List<BoneSubMovementPair> logs, string s) {
@@ -129,12 +142,29 @@ namespace SprUnity {
         }
 
         public void PredictFutureTransition() {
+            Debug.LogWarning("Predict called");
             futureTransitions.Clear();
             actionLog.ClearFuture();
 
-            ActionState predicted = currentState;
-            if (currentState == null) predicted = stateMachine.entryTransitions[0].toState;
-            for (int i = 0; i < maxPredictLength; i++) {
+            float startTime = timeOfLastEnter;
+
+            // Specified transitions
+            foreach(var specified in specifiedTransitions) {
+                startTime += specified.time;
+                float duration = specified.toState.duration;
+                float spring = specified.toState.spring;
+                float damper = specified.toState.damper;
+                foreach(var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
+                    actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
+                }
+            }
+
+            ActionState predicted = specifiedTransitions.Count > 0 ? specifiedTransitions.Last().toState : currentState;
+            if (currentState == null && specifiedTransitions.Count == 0) {
+                predicted = stateMachine.entryTransitions[0].toState;
+                futureTransitions.Add(stateMachine.entryTransitions[0]);
+            }
+            for (int i = futureTransitions.Count; i < maxPredictLength; i++) {
                 if (predicted) {
                     if (predicted.transitions.Count == 0) break;
                     var transitables = predicted.transitions.Where(value => value.IsTransitableOnlyFlag());
@@ -143,7 +173,13 @@ namespace SprUnity {
                     futureTransitions.Add(temp);
                     predicted = temp.toState;
                     if (predicted != null) {
-                        var boneKeyPoses = predicted.keyframe.boneKeyPoses;
+                        startTime += temp.time;
+                        float duration = predicted.duration;
+                        float spring = predicted.spring;
+                        float damper = predicted.damper;
+                        foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
+                            actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
+                        }
                     }
                 } else {
                     break;
@@ -154,13 +190,14 @@ namespace SprUnity {
         // Enter event of the state
         public List<BoneSubMovementPair> OnEnter() {
             timeInCurrentStateFromEnter = 0.0f;
+            timeOfLastEnter = stateMachineTime;
             //Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
                 // ターゲット位置による変換後のKeyPose
                 return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
             }
-            stateMachine.isChanged = true;
+            isChanged = true;
             return null;
         }
 
@@ -170,7 +207,7 @@ namespace SprUnity {
 
         // Exit event of the state
         public void OnExit() {
-            stateMachine.isChanged = true;
+            isChanged = true;
         }
 
         public bool Transit() {
@@ -178,17 +215,28 @@ namespace SprUnity {
                 OnExit();
                 End();
             }
-            foreach (var transition in currentState.transitions) {
-                if (timeInCurrentStateFromEnter < transition.time) continue;
-                bool isFlagEnabledAll = true;
-                foreach(var flag in transition.flags) {
-                    if (!flagList[flag]) {
-                        isFlagEnabledAll = false;
-                        continue;
+            if(specifiedTransitions.Count > 0) {
+                if (currentState.transitions.Contains(specifiedTransitions[0])) {
+                    if (IsTransitable(specifiedTransitions[0])) {
+                        currentState.OnExit();
+                        currentState = specifiedTransitions[0].toState;
+                        specifiedTransitions.RemoveAt(0);
+                        if (currentState == null) {
+                            End();
+                        } else {
+                            var logs = OnEnter();
+                            if (logs != null) AddLog(logs, currentState.name);
+                            PredictFutureTransition();
+                        }
+                        stateMachine.isChanged = true;
+                    } else {
+                        return false;
                     }
                 }
+            }
+            foreach (var transition in currentState.transitions) {
                 //OK. transit to next state
-                if (isFlagEnabledAll) {
+                if (IsTransitable(transition)) {
                     //Debug.Log("Transit");
                     currentState.OnExit();
                     currentState = transition.toState;
@@ -200,9 +248,20 @@ namespace SprUnity {
                         PredictFutureTransition();
                     }
                     stateMachine.isChanged = true;
+                    break;
                 }
             }
             return false;
+        }
+
+        public bool IsTransitable(ActionTransition transition) {
+            if (timeInCurrentStateFromEnter < transition.time) return false;
+            foreach (var flag in transition.flags) {
+                if (!flagList[flag]) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
@@ -271,6 +330,7 @@ namespace SprUnity {
 
         public void QuitAction() {
             inAction.End();
+            inAction = null;
         }
     }
 

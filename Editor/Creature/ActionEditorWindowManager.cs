@@ -21,7 +21,6 @@ namespace SprUnity {
         public ActionStateMachineWindow stateMachineWindow;
         public KeyPoseWindow keyPoseWindow;
         public KeyPoseInterpolationWindow interpolationWindow;
-        public ActionSelectWindow actionSelectWindow;
         public ActionTimelineWindow timelineWindow;
 
         // 
@@ -37,25 +36,15 @@ namespace SprUnity {
 
         //
         public KeyPoseNodeGraphEditorWindow keyPoseNodeGraphWindow;
-
-
-        // ActionStateMachineWindow関係
+        
+        
         // KeyPoseWindow関係
         public List<KeyPoseGroupStatus> keyPoseGroupStatuses;
-        // KeyPoseInterpolationWindow関係
+
         // public ActionSelectWindow関係
-        public List<ActionStateMachineStatus> actions;
-        public List<ActionStateMachineStatus> selectedAction {
-            get {
-                var selected = new List<ActionStateMachineStatus>();
-                foreach (var action in actions) {
-                    if (action.isSelected) {
-                        selected.Add(action);
-                    }
-                }
-                return selected;
-            }
-        }
+        public List<ActionStateMachine> actions;
+        public ActionStateMachine selectedAction;
+
         public ActionStateMachine lastSelectedStateMachine;
         public ActionManager lastSelectedActionManager;
 
@@ -74,14 +63,14 @@ namespace SprUnity {
 
         // Management flags
         public bool actionSelectChanged = false;
-
+        public bool actionUpdated = false;
 
         // Log data
 
 
         ActionEditorWindowManager() {
             keyPoseGroupStatuses = new List<KeyPoseGroupStatus>();
-            actions = new List<ActionStateMachineStatus>();
+            actions = new List<ActionStateMachine>();
 
             EditorApplication.hierarchyChanged -= OnHierarchyChanged;
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
@@ -92,6 +81,11 @@ namespace SprUnity {
 
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
             EditorApplication.playModeStateChanged += OnPlayModeChanged;
+            EditorApplication.pauseStateChanged -= OnPauseChanged;
+            EditorApplication.pauseStateChanged += OnPauseChanged;
+
+            Selection.selectionChanged -= OnSelectionChanged;
+            Selection.selectionChanged += OnSelectionChanged;
 
             Debug.Log("Manager constructed");
         }
@@ -115,7 +109,7 @@ namespace SprUnity {
 
         void Reload() {
             KeyPoseWindow.ReloadKeyPoseList();
-            ActionSelectWindow.ReloadActionList();
+            ActionStateMachineWindow.ReloadActionList();
             body = GameObject.FindObjectOfType<Body>();
             if (stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
         }
@@ -140,13 +134,23 @@ namespace SprUnity {
 
         void Update() {
             if (actionSelectChanged) {
+                Debug.LogWarning(lastSelectedActionManager?[selectedAction.name]);
+                if (lastSelectedActionManager?[selectedAction.name] != null) {
+                    instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
+                }
                 if (instance.timelineWindow != null) instance.timelineWindow.Repaint();
                 if (instance.stateMachineWindow != null) instance.stateMachineWindow.Repaint();
                 actionSelectChanged = false;
             }
-            if (selectedAction.Count == 1) {
-                if (selectedAction[0].stateMachineAction.isChanged) {
-                    instance.stateMachineWindow.Repaint();
+            if (selectedAction) {
+                if (selectedAction.isChanged) {
+                if (lastSelectedActionManager?[selectedAction.name] != null) {
+                        instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
+                        instance.timelineWindow?.Repaint();
+                        instance.lastSelectedActionManager[selectedAction.name].isChanged = false;
+                }
+                    instance.stateMachineWindow?.Repaint();
+                    selectedAction.isChanged = false;
                 }
             }
             if(instance.body == null) {
@@ -156,6 +160,16 @@ namespace SprUnity {
 
         void OnPlayModeChanged(PlayModeStateChange state) {
 
+        }
+
+        void OnPauseChanged(PauseState state) {
+
+        }
+
+        void OnSelectionChanged() {
+            if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
+                instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
+            }
         }
 
         #endregion // EventDelegates
