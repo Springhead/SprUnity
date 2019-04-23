@@ -514,16 +514,6 @@ namespace SprUnity {
                         Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
                         Quaternion ratioRotate = Quaternion.Slerp(Quaternion.identity, (Quaternion)rotate, boneKeyPose.lookAtRatio);
                         var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
-                            Bone baseBone = body[boneKeyPose.coordinateParent];
-                            Posed ikSolidPose = baseBone.ikActuator.phIKActuator.GetSolidTempPose();
-                            pose.position = ikSolidPose.Pos().ToVector3() + ikSolidPose.Ori().ToQuaternion() * (boneKeyPose.normalizedLocalPosition * body.height);
-                            pose.rotation = boneKeyPose.localRotation * ikSolidPose.Ori().ToQuaternion();
-                        }
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                            pose.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
-                            pose.rotation = boneKeyPose.localRotation * body.transform.rotation;
-                        }
                         var springDamper = new Vector2(spring, damper);
                         var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
                         var subClone = sub.Clone();
