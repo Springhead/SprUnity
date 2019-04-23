@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityEngine;
 using SprUnity;
 
@@ -62,6 +63,16 @@ public class LookController2 : LookController {
 
     private float noddingTimer = -1;
 
+    public BlinkController blink = null;
+
+    public bool headMoveRatioAutoSet = true;
+    public Vector2 headMoveDistRange = new Vector2(2, 5);
+    public Vector2 headMoveRatioRange = new Vector2(0.5f, 0.2f);
+
+    public bool bodyMoveRatioAutoSet = true;
+    public Vector2 bodyMoveDistRange = new Vector2(1, 3);
+    public Vector2 bodyMoveRatioRange = new Vector2(0.7f, 0.3f);
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     // 頭の基準姿勢（サッケードのたびに変化する）
@@ -89,6 +100,15 @@ public class LookController2 : LookController {
         if (debugText != null) {
             debugText.gameObject.SetActive(false);
         }
+
+        menuTexture = new Texture2D(16, 16);
+        for (int i = 0; i < menuTexture.height; i++) {
+            for (int j = 0; j < menuTexture.height; j++) {
+                menuTexture.SetPixel(i, j, Color.grey);
+            }
+        }
+
+        LoadSetting();
     }
 
     void Update() {
@@ -159,6 +179,113 @@ public class LookController2 : LookController {
                 }
             }
         }
+
+        // --
+
+        if (Input.GetKey(KeyCode.Alpha3)) {
+            showPanel = !showPanel;
+            if (showPanel == false) { SaveSetting(); }
+        }
+    }
+
+    void LoadSetting() {
+        FileInfo fileInfo = new FileInfo(Application.dataPath + "/../Settings/" + "LookControllerSetting.txt");
+        if (fileInfo.Exists) {
+            StreamReader reader = fileInfo.OpenText();
+            string headMoveDistRangeYStr = reader.ReadLine();
+            string headMoveRatioRangeYStr = reader.ReadLine();
+            string headMoveDistRangeXStr = reader.ReadLine();
+            string headMoveRatioRangeXStr = reader.ReadLine();
+
+            string bodyMoveDistRangeYStr = reader.ReadLine();
+            string bodyMoveRatioRangeYStr = reader.ReadLine();
+            string bodyMoveDistRangeXStr = reader.ReadLine();
+            string bodyMoveRatioRangeXStr = reader.ReadLine();
+            reader.Close();
+
+            headMoveDistRange.x = float.Parse(headMoveDistRangeXStr);
+            headMoveDistRange.y = float.Parse(headMoveDistRangeYStr);
+
+            headMoveRatioRange.x = float.Parse(headMoveRatioRangeXStr);
+            headMoveRatioRange.y = float.Parse(headMoveRatioRangeYStr);
+
+            bodyMoveDistRange.x = float.Parse(bodyMoveDistRangeXStr);
+            bodyMoveDistRange.y = float.Parse(bodyMoveDistRangeYStr);
+
+            bodyMoveRatioRange.x = float.Parse(bodyMoveRatioRangeXStr);
+            bodyMoveRatioRange.y = float.Parse(bodyMoveRatioRangeYStr);
+        }
+    }
+
+    void SaveSetting() {
+        if (!Directory.Exists(Application.dataPath + "/../Settings")) {
+            Directory.CreateDirectory(Application.dataPath + "/../Settings");
+        }
+
+        FileInfo fileInfo = new FileInfo(Application.dataPath + "/../Settings/" + "LookControllerSetting.txt");
+        StreamWriter writer = fileInfo.CreateText();
+        writer.WriteLine(headMoveDistRange.y);
+        writer.WriteLine(headMoveRatioRange.y);
+        writer.WriteLine(headMoveDistRange.x);
+        writer.WriteLine(headMoveRatioRange.x);
+
+        writer.WriteLine(bodyMoveDistRange.y);
+        writer.WriteLine(bodyMoveRatioRange.y);
+        writer.WriteLine(bodyMoveDistRange.x);
+        writer.WriteLine(bodyMoveRatioRange.x);
+        writer.Close();
+    }
+
+    Texture2D menuTexture;
+    bool showPanel = false;
+    void OnGUI() {
+        if (showPanel) {
+            GUIStyle style = new GUIStyle();
+            style.normal.background = menuTexture;
+            GUI.BeginGroup(new Rect(20, 20, 400, 400), style);
+            GUI.color = Color.black;
+
+            GUI.Label(new Rect(10, 15, 100, 100), "Look Controller");
+
+            int ypos = 50;
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "顔の動く量の変化が始まる最長距離：" + headMoveDistRange.y.ToString("F2") + "[m]");
+            headMoveDistRange.y = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), headMoveDistRange.y, 0, 5);
+            ypos += 30;
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "顔の動く量：" + (int)(headMoveRatioRange.y * 100) + "%");
+            headMoveRatioRange.y = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), headMoveRatioRange.y, 0, 1);
+            ypos += 50;
+
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "顔の動く量の変化が終わる最短距離：" + headMoveDistRange.x.ToString("F2") + "[m]");
+            headMoveDistRange.x = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), headMoveDistRange.x, 0, 5);
+            ypos += 30;
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "顔の動く量：" + (int)(headMoveRatioRange.x * 100) + "%");
+            headMoveRatioRange.x = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), headMoveRatioRange.x, 0, 1);
+            ypos += 50;
+
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "体の動く量の変化が始まる最長距離：" + bodyMoveDistRange.y.ToString("F2") + "[m]");
+            bodyMoveDistRange.y = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), bodyMoveDistRange.y, 0, 5);
+            ypos += 30;
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "体の動く量：" + (int)(bodyMoveRatioRange.y * 100) + "%");
+            bodyMoveRatioRange.y = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), bodyMoveRatioRange.y, 0, 1);
+            ypos += 50;
+
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "体の動く量の変化が終わる最短距離：" + bodyMoveDistRange.x.ToString("F2") + "[m]");
+            bodyMoveDistRange.x = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), bodyMoveDistRange.x, 0, 5);
+            ypos += 30;
+
+            GUI.Label(new Rect(10, ypos, 300, 30), "体の動く量：" + (int)(bodyMoveRatioRange.x * 100) + "%");
+            bodyMoveRatioRange.x = GUI.HorizontalSlider(new Rect(10, ypos + 15, 300, 30), bodyMoveRatioRange.x, 0, 1);
+            ypos += 50;
+
+            GUI.EndGroup();
+        }
     }
 
     void FixedUpdate () {
@@ -187,6 +314,27 @@ public class LookController2 : LookController {
             body["Chest"].GetComponent<PullbackTargetLinkage>().linkRatio = 0.05f;
             body["UpperChest"].GetComponent<PullbackTargetLinkage>().linkRatio = 0.05f;
         }
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+        {
+            float distance = 5.0f;
+            if (target != null) {
+                var pos = target.transform.position; pos.y = 0;
+                distance = pos.magnitude;
+            }
+            var person = target.GetComponent<Person>();
+            if (person == null || !person.human) { distance = 5.0f; }
+
+            if (headMoveRatioAutoSet) {
+                headMoveRatio = Mathf.Clamp(Linear(new Vector2(headMoveDistRange.x, headMoveRatioRange.x), new Vector2(headMoveDistRange.y, headMoveRatioRange.y), distance), headMoveRatioRange.y, headMoveRatioRange.x);
+            }
+            if (bodyMoveRatioAutoSet) {
+                bodyMoveRatio = Mathf.Clamp(Linear(new Vector2(bodyMoveDistRange.x, bodyMoveRatioRange.x), new Vector2(bodyMoveDistRange.y, bodyMoveRatioRange.y), distance), bodyMoveRatioRange.y, bodyMoveRatioRange.x);
+            }
+        }
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         if (noddingTimer > 0) { noddingTimer -= Time.fixedDeltaTime; }
 
@@ -240,6 +388,10 @@ public class LookController2 : LookController {
                 Vector3 currREyeDir = body["RightEye"].controller.rotTrajectory.Last().q1 * new Vector3(0, 0, 1);
                 Vector3 currEyeDir = (currLEyeDir + currREyeDir) * 0.5f;
                 float diffAngleEye = Vector3.Angle(targEyeDir, currEyeDir);
+
+                if (blink != null && diffAngleEye > 25 && Random.value < 0.3f) {
+                    blink.Action();
+                }
 
                 // -- Smooth Persuitの最大追随速度は普通は30[deg/sec]らしいので、これを超えたらSaccade
                 bool saccade = (diffAngleEye / Time.fixedDeltaTime > 30.0f);
@@ -341,4 +493,13 @@ public class LookController2 : LookController {
     public bool IsNodding() {
         return noddingTimer > 0;
     }
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+
+    float Linear(Vector2 p1, Vector2 p2, float x) {
+        float A = (p2.y - p1.y) / (p2.x - p1.x);
+        float b = p1.y - A * p1.x;
+        return A * x + b;
+    }
+
 }
