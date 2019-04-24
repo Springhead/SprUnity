@@ -12,6 +12,8 @@ public class AttentionAttr : Person.Attribute {
 
     public float lastDistance = 0.0f;
 
+    public float adaptation = 0.0f;
+
     public override void OnDrawGizmos(Person person) {
         Gizmos.color = Color.gray;
         Gizmos.DrawWireSphere(person.transform.position, 0.3f * 1.0f);
@@ -73,6 +75,35 @@ public class Attention : MonoBehaviour {
 
         CompAttention();
         GazeTransition();
+
+        // -----
+
+        Vector3 currDir;
+        Vector3 headPos = body["Head"].transform.position;
+        if (currentAttentionTarget != null) {
+            currDir = (currentAttentionTarget.transform.position - headPos);
+        } else {
+            currDir = new Vector3(0, 0, 1);
+        }
+
+        foreach (var person in Person.persons) {
+            if (!person.human) {
+                var personDir = (person.transform.position - headPos);
+                float angle = Vector3.Angle(currDir, personDir);
+
+                float angleThresh = 50.0f;
+                if (angle < angleThresh) {
+                    float maxAdaptPerSec = 1 / 30.0f;
+                    float invAngle = Mathf.Max(0, angleThresh - angle);
+                    float deltaAdapt = invAngle / angleThresh * maxAdaptPerSec * Time.fixedDeltaTime;
+                    person.GetAttr<AttentionAttr>().adaptation = Mathf.Clamp01(person.GetAttr<AttentionAttr>().adaptation + deltaAdapt);
+                } else {
+                    float adaptDecleasePerSec = 1 / 60.0f;
+                    float deltaAdapt = adaptDecleasePerSec * Time.fixedDeltaTime;
+                    person.GetAttr<AttentionAttr>().adaptation = Mathf.Clamp01(person.GetAttr<AttentionAttr>().adaptation - deltaAdapt);
+                }
+            }
+        }
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -132,7 +163,7 @@ public class Attention : MonoBehaviour {
 
             if (!person.human) {
                 // 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
-                attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.0f, 1.0f);
+                attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.0f, 1.0f) * (1 - person.GetAttr<AttentionAttr>().adaptation);
             }
         }
     }

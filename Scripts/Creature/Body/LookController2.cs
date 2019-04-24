@@ -203,6 +203,8 @@ public class LookController2 : LookController {
             string bodyMoveRatioRangeYStr = reader.ReadLine();
             string bodyMoveDistRangeXStr = reader.ReadLine();
             string bodyMoveRatioRangeXStr = reader.ReadLine();
+
+            string autoSetEnableStr = reader.ReadLine();
             reader.Close();
 
             headMoveDistRange.x = float.Parse(headMoveDistRangeXStr);
@@ -216,6 +218,8 @@ public class LookController2 : LookController {
 
             bodyMoveRatioRange.x = float.Parse(bodyMoveRatioRangeXStr);
             bodyMoveRatioRange.y = float.Parse(bodyMoveRatioRangeYStr);
+
+            autoSetEnable = (autoSetEnableStr.Contains("True"));
         }
     }
 
@@ -235,6 +239,8 @@ public class LookController2 : LookController {
         writer.WriteLine(bodyMoveRatioRange.y);
         writer.WriteLine(bodyMoveDistRange.x);
         writer.WriteLine(bodyMoveRatioRange.x);
+
+        writer.WriteLine(autoSetEnable.ToString());
         writer.Close();
     }
 
@@ -320,12 +326,13 @@ public class LookController2 : LookController {
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
         if (autoSetEnable) {
+            Person person = null;
             float distance = 5.0f;
             if (target != null) {
+                person = target.GetComponent<Person>();
                 var pos = target.transform.position; pos.y = 0;
                 distance = pos.magnitude;
             }
-            var person = target.GetComponent<Person>();
             if (person == null || !person.human) { distance = 5.0f; }
 
             if (headMoveRatioAutoSet) {
@@ -449,7 +456,7 @@ public class LookController2 : LookController {
 
                 // 頭部運動の速度を移動量とspeedの設定値に応じて決定
                 float minDurationHead = 0.2f;
-                float maxDurationHead = 0.7f;
+                float maxDurationHead = 1.0f;
                 float durationHead = Mathf.Clamp((1 / (60.0f * speed)) * diffAngleHead, minDurationHead, maxDurationHead);
 
                 // 動作指示
