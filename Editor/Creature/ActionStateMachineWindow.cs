@@ -39,7 +39,6 @@ namespace SprUnity {
         }
 
         void OnEnable() {
-            Open(); //これをしないとソースコード変更したときにエラーが出てしまうが完成したらいらないかも？
             if (graphBackground) {
                 if (actionGraph == null) {
                     actionGraph = ScriptableObject.CreateInstance<Graph>();
@@ -103,6 +102,31 @@ namespace SprUnity {
             GUILayout.EndHorizontal();
             GUILayout.EndScrollView();
 
+            var action = ActionEditorWindowManager.instance.selectedAction;
+            var controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[action.name];
+            if (controller == null) {
+                // normal
+            } else {
+                // controller depend
+            }
+
+            // Draw Flags
+            GUILayout.BeginVertical();
+            if (controller != null) {
+                foreach(var flag in controller.flagList.flags) {
+                    flag.enabled = GUILayout.Toggle(flag.enabled, flag.label);
+                }
+            } else {
+                foreach (var flag in action.flags.flags) {
+                    GUILayout.BeginHorizontal();
+                    flag.enabled = GUILayout.Toggle(flag.enabled,"", GUILayout.Width(10));
+                    flag.label = GUILayout.TextField(flag.label);
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.EndVertical();
+            //
+
             if (graphBackground) {
                 if (window && actionGraphGUI != null) {
                     actionGraphGUI.BeginGraphGUI(window, new Rect(0, 0, window.position.width, window.position.height));
@@ -117,18 +141,11 @@ namespace SprUnity {
 
 
             BeginWindows();
-            var action = ActionEditorWindowManager.instance.selectedAction;
             if (action) {
                 if (lastEditedStateMachine != action) { initialized = false; }
                 if (!initialized) {
                     InitializeGraphMatrix();
                     initialized = true;
-                }
-                var controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[action.name];
-                if(controller == null) {
-                    // normal
-                } else {
-                    // controller depend
                 }
 
                 Object[] subObjects = action.GetSubAssets();
