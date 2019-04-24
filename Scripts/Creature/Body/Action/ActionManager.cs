@@ -18,7 +18,7 @@ namespace SprUnity {
             base.OnInspectorGUI();
             ActionManager manager = (ActionManager)target;
             for(int i = 0; i < manager.actions.Count; i++) {
-                if(GUILayout.Button("Action " + i)) {
+                if(GUILayout.Button(manager.actions[i].name)) {
                     manager.Action(manager.actions[i].name);
                 }
             }
@@ -36,8 +36,8 @@ namespace SprUnity {
         private float stateMachineTime = 0;
         private float timeOfLastEnter = 0.0f;
         //
-        private TransitionFlagList flagList;
-        private StateMachineParameters parameters;
+        public TransitionFlagList flagList;
+        public StateMachineParameters parameters;
         // 
         private ActionState currentState;
         public ActionState CurrentState { get { return currentState; } }
@@ -75,6 +75,8 @@ namespace SprUnity {
             actionLog = new ActionLog(body);
             specifiedTransitions = new List<ActionTransition>();
             specifiedTransitions.Add(stateMachine.entryTransitions[0]);
+            flagList = stateMachine.flags.Clone();
+            parameters = stateMachine.parameters.Clone();
         }
 
         // 
@@ -112,6 +114,7 @@ namespace SprUnity {
         void Init() {
             enabled = true;
             stateMachineTime = 0;
+            timeOfLastEnter = 0;
 
             flagList = stateMachine.flags.Clone();
             parameters = stateMachine.parameters.Clone();
@@ -129,8 +132,11 @@ namespace SprUnity {
                 states[i].IsCurrent = false;
             }
             */
+            stateMachineTime = 0;
+            timeOfLastEnter = 0;
             specifiedTransitions.Clear();
             specifiedTransitions.Add(stateMachine.entryTransitions[0]);
+            actionLog.ClearAll();
         }
 
         public void AddLog(List<BoneSubMovementPair> logs, string s) {

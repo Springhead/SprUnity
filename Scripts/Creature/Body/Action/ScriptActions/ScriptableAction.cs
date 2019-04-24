@@ -266,6 +266,10 @@ namespace SprUnity {
                 subMovementLog.ClearFuture();
             }
         }
+        public void ClearAll() {
+            ClearLog();
+            ClearFuture();
+        }
         public ActionLog Clone() {
             ActionLog clone = new ActionLog();
             clone.sceneLog = this.sceneLog.Clone();

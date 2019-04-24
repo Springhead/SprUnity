@@ -643,6 +643,9 @@ namespace SprUnity {
                 ActionStateMachineController controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[ActionEditorWindowManager.instance.selectedAction.name];
                 if (controller != null) {
                     for (int j = 0; j < boneStatusForTimelines.Count; j++) {
+                        if (!boneStatusForTimelines[j].solo) continue;
+                        bool added = false;
+                        int count = 0;
                         Handles.color = boneStatusForTimelines[j].color;
                         List<SubMovementLog> logs = null;
                         List<SubMovementLog> future = null;
@@ -652,6 +655,13 @@ namespace SprUnity {
                                 future = controller.ActionLog.subMovementLogs[i].futureSubMovements;
                                 break;
                             }
+                        }
+                        if(logs == null) {
+                            logs = future;
+                        } else if(future != null){
+                            count = future.Count;
+                            added = true;
+                            logs.AddRange(future);
                         }
                         if (logs != null && logs.Count > 0) {
                             Vector3[] trajectory = new Vector3[(int)(logs.Last().subMovement.t1 * 20)];
@@ -681,6 +691,11 @@ namespace SprUnity {
                         } else {
                             //Debug.Log("Could not find logs of Bone " + boneStatusForTimelines[j].bone.ToString());
                         }
+                        if (added) {
+                            int index = logs.Count - count;
+                            logs.RemoveRange(index, count);
+                        }
+                        // <!!> future未対応!!
                     }
                 }
             }
