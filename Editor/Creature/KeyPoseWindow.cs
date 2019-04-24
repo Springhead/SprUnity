@@ -148,35 +148,11 @@ namespace SprUnity {
         }
 
         public void OnEnable() {
+            Debug.Log("OnEnable");
             ReloadKeyPoseList();
             //visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
             visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
-            //if (editableButtonTexture == null) {
-            //    var mono = MonoScript.FromScriptableObject(this);
-            //    var scriptpath = AssetDatabase.GetAssetPath(mono);
-            //    scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
-            //    var bytes = System.IO.File.ReadAllBytes(scriptpath + editableButtonpath);
-            //    if (bytes != null) {
-            //        editableButtonTexture = new Texture2D(1, 1);
-            //        editableButtonTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableButtonpath));
-            //        editableButtonTexture.filterMode = FilterMode.Bilinear;
-            //    } else {
-            //        Debug.Log("picture null");
-            //    }
-            //}
-            if (editableLabelTexture == null) {
-                var mono = MonoScript.FromScriptableObject(this);
-                var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
-                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
-                if (bytes != null) {
-                    editableLabelTexture = new Texture2D(1, 1);
-                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
-                    editableLabelTexture.filterMode = FilterMode.Bilinear;
-                } else {
-                    Debug.Log("picture null");
-                }
-            }
+            GetEditableTexture();
             if (myskin == null) {
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
@@ -296,7 +272,7 @@ namespace SprUnity {
                     }
                     if (keyPoseStatus.isEditable) {
                         var defaultback = GUI.skin.label.normal.background;
-                        GUI.skin.label.normal.background = editableLabelTexture;
+                        GUI.skin.label.normal.background = GetEditableTexture();
                         GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
                         GUI.skin.label.normal.background = defaultback;
                     } else {
@@ -743,6 +719,23 @@ namespace SprUnity {
                     keyPoseStatus.keyPose.SetDirty();
                 }
             }
+        }
+
+        Texture2D GetEditableTexture() {
+            if (editableLabelTexture == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
+                if (bytes != null) {
+                    editableLabelTexture = new Texture2D(1, 1);
+                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
+                    editableLabelTexture.filterMode = FilterMode.Bilinear;
+                } else {
+                    Debug.Log("picture null");
+                }
+            }
+            return editableLabelTexture;
         }
     }
 
