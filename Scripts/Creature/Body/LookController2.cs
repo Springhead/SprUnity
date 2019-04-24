@@ -65,6 +65,8 @@ public class LookController2 : LookController {
 
     public BlinkController blink = null;
 
+    public bool autoSetEnable = true;
+
     public bool headMoveRatioAutoSet = true;
     public Vector2 headMoveDistRange = new Vector2(2, 5);
     public Vector2 headMoveRatioRange = new Vector2(0.5f, 0.2f);
@@ -317,7 +319,7 @@ public class LookController2 : LookController {
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
-        {
+        if (autoSetEnable) {
             float distance = 5.0f;
             if (target != null) {
                 var pos = target.transform.position; pos.y = 0;
