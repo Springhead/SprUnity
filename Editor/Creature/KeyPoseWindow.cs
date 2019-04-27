@@ -130,7 +130,7 @@ namespace SprUnity {
             HumanBodyBones.RightLowerLeg,
             HumanBodyBones.RightFoot,
         };
-        [MenuItem("Window/KeyPose Window")]
+        [MenuItem("Window/SprUnity Action/KeyPose Window")]
         static void Open() {
             window = GetWindow<KeyPoseWindow>();
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;

@@ -159,7 +159,7 @@ namespace SprUnity {
         }
 
         void OnPlayModeChanged(PlayModeStateChange state) {
-
+            
         }
 
         void OnPauseChanged(PauseState state) {

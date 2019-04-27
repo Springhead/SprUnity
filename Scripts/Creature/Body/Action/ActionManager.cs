@@ -79,6 +79,19 @@ namespace SprUnity {
             parameters = stateMachine.parameters.Clone();
         }
 
+        public float GetFinishTime() {
+            if (actionLog != null) {
+                return actionLog.GetFinishTime();
+            }
+            return 0.0f;
+        }
+        public float GetOldestStartTime() {
+            if(actionLog!= null) {
+                return actionLog.GetOldestStartTime();
+            }
+            return 0.0f;
+        }
+
         // 
         public void Begin() {
 
@@ -269,6 +282,15 @@ namespace SprUnity {
             }
             return true;
         }
+
+        public void Reflesh(int logLength, float oldestTime) {
+            if (enabled & actionLog != null) {
+                float oldest = timeOfLastEnter - oldestTime;
+                foreach (var log in actionLog.subMovementLogs) {
+                    log.Reflesh(logLength, oldest);
+                }
+            }
+        }
     }
 
     public class ActionManager : MonoBehaviour {
@@ -280,6 +302,9 @@ namespace SprUnity {
 
         [HideInInspector]
         public ActionStateMachineController inAction = null;
+
+        public int logMaxLength = 10;
+        public float logMaxKeepTimeLength = 10.0f;
 
         // ----- ----- ----- ----- -----
 
@@ -306,6 +331,7 @@ namespace SprUnity {
             controllers = new List<ActionStateMachineController>();
             foreach(var action in actions) {
                 controllers.Add(new ActionStateMachineController(action, body));
+                controllers.Last().PredictFutureTransition();
             }
         }
 
@@ -316,6 +342,9 @@ namespace SprUnity {
         private void FixedUpdate() {
             if(body != null && inAction != null) {
                 inAction.UpdateStateMachine();
+            }
+            foreach(var controller in controllers) {
+                controller.Reflesh(logMaxLength, logMaxKeepTimeLength);
             }
         }
 

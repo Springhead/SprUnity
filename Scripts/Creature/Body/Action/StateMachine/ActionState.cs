@@ -37,8 +37,10 @@ namespace SprUnity {
     public class ActionState : ScriptableObject {
         // ----- ----- ----- ----- -----
 
+        [HideInInspector]
         public ActionStateMachine stateMachine;
         public KeyPoseData keyframe;
+        [HideInInspector]
         public List<ActionTransition> transitions = new List<ActionTransition>();
         public List<string> useParams;
 
@@ -105,6 +107,7 @@ namespace SprUnity {
                 AssetDatabase.AddObjectToAsset(transition, to.stateMachine);
                 to.stateMachine.entryTransitions.Add(transition);
                 transition.stateMachine = to.stateMachine;
+                transition.time = 0.0f;
                 AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(to.stateMachine));
             }
 
@@ -236,7 +239,7 @@ namespace SprUnity {
             int nTransitions = transitions.Count;
             for (int i = 0; i < nTransitions; i++) {
                 ActionTransition transition = transitions[i]; // 
-                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name), false, () => OnRemoveTransition(transition));
+                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => OnRemoveTransition(transition));
             }
             genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
             genericMenu.ShowAsContext();

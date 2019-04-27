@@ -155,6 +155,27 @@ namespace SprUnity {
             futureSubMovements = new List<SubMovementLog>();
 
         }
+        public float GetFinishTime() {
+            if(futureSubMovements != null) {
+                if (futureSubMovements.Count > 0) {
+                    return futureSubMovements.Last().subMovement.t1;
+                }
+            } 
+            if(logSubMovements != null) {
+                if(logSubMovements.Count > 0) {
+                    return logSubMovements.Last().subMovement.t1;
+                }
+            }
+            return 0.0f;
+        }
+        public float GetOldestStartTime() {
+            if (logSubMovements != null) {
+                if (logSubMovements.Count > 0) {
+                    return logSubMovements[0].subMovement.t0;
+                }
+            }
+            return Mathf.Infinity;
+        }
         public void AddLog(BoneSubMovementPair subMovement, string s) {
             if (subMovement.bone == this.bone) logSubMovements.Add(new SubMovementLog(s, subMovement.subMovement));
         }
@@ -174,6 +195,20 @@ namespace SprUnity {
             }
             return clone;
         }
+
+        public void Reflesh(int logLength, float oldestTime) {
+            int over = logSubMovements.Count - logLength;
+            if(over > 0) {
+                logSubMovements.RemoveRange(0, over);
+            }
+            while (logSubMovements.Count > 0) {
+                if (logSubMovements[0].subMovement.t0 < oldestTime) {
+                    logSubMovements.RemoveAt(0);
+                } else {
+                    return;
+                }
+            }
+        }
     }
 
     public class ActionLog {
@@ -192,6 +227,20 @@ namespace SprUnity {
         public ActionLog(Body body = null) {
             sceneLog = new CharacterSceneLogger(body);
             subMovementLogs = new List<BoneSubMovementStream>();
+        }
+        public float GetFinishTime() {
+            float t = 0.0f;
+            foreach(var log in subMovementLogs) {
+                t = Mathf.Max(t, log.GetFinishTime());
+            }
+            return t;
+        }
+        public float GetOldestStartTime() {
+            float t = Mathf.Infinity;
+            foreach (var log in subMovementLogs) {
+                t = Mathf.Min(t, log.GetOldestStartTime());
+            }
+            return t;
         }
         public void AddLog(BoneSubMovementPair boneSubMovement, string s) {
             foreach(var subMovementLog in subMovementLogs) {

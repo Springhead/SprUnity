@@ -29,11 +29,12 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
+        [HideInInspector]
         public ActionStateMachine stateMachine;
 
-        [SerializeField]
+        [HideInInspector]
         public ActionState toState;
-        [SerializeField]
+        [HideInInspector]
         public ActionState fromState;
 
         [HideInInspector]
@@ -57,6 +58,7 @@ namespace SprUnity {
         //
         bool isSelected = false;
         Vector2 centerForMouseDetection;
+        Rect selectRect = new Rect(10, 10, 0, 0);
         static Color defaultColor = Color.white;
         static Color selectedColor = Color.red;
 
@@ -163,6 +165,9 @@ namespace SprUnity {
                 Handles.DrawSolidArc((startPos + endPos) / 2, new Vector3(0, 0, 1), new Vector3(Mathf.Cos(angle - 0.2f), Mathf.Sin(angle - 0.2f), 0), 0.4f * Mathf.Rad2Deg, 20);
                 centerForMouseDetection = new Vector2(((startPos + endPos) / 2).x, ((startPos + endPos) / 2).y);
             }
+            selectRect.width = 10; selectRect.height = 10;
+            selectRect.position = centerForMouseDetection - new Vector2(5, 5);
+            GUI.Box(selectRect, "");
 #endif
         }
 
@@ -172,7 +177,7 @@ namespace SprUnity {
             switch (e.type) {
                 case EventType.MouseDown:
                     if (e.button == 0) {
-                        if ((centerForMouseDetection - e.mousePosition).magnitude < 10) {
+                        if (selectRect.Contains(e.mousePosition)) {
                             isSelected = true;
                             Selection.activeObject = this;
                             GUI.changed = true;
@@ -182,7 +187,7 @@ namespace SprUnity {
                         }
                     }
                     if (e.button == 1) {
-                        if ((centerForMouseDetection - e.mousePosition).magnitude < 10) {
+                        if (selectRect.Contains(e.mousePosition)) {
                             OnContextMenu(e.mousePosition);
                         }
                     }
@@ -196,7 +201,20 @@ namespace SprUnity {
         }
 
         private void OnContextMenu(Vector2 mousePosition) {
+            GenericMenu genericMenu = new GenericMenu();
+            genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => OnDelete());
+            genericMenu.ShowAsContext();
+        }
 
+        private void OnDelete() {
+            var path = AssetDatabase.GetAssetPath(this.stateMachine);
+            if(fromState == null) {
+                stateMachine.entryTransitions.Remove(this);
+            } else {
+                fromState.transitions.Remove(this);
+            }
+            Object.DestroyImmediate(this, true);
+            AssetDatabase.ImportAsset(path);
         }
 
         public void OnValidate() {

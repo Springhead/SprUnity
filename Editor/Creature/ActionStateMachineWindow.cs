@@ -29,7 +29,7 @@ namespace SprUnity {
         private static List<string> actionNames;
         private int index;
 
-        [MenuItem("Window/Action State Machine Window")]
+        [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>();
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
@@ -177,6 +177,9 @@ namespace SprUnity {
                         continue;
                     }
                 }
+            }
+            if (GUI.changed) {
+                Repaint();
             }
             EndWindows();
         }

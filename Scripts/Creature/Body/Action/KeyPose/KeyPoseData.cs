@@ -501,7 +501,7 @@ namespace SprUnity {
         public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
             if (!rotate.HasValue) { rotate = Quaternion.identity; }
 
-            if (duration < 0) { duration = testDuration; }
+            if (duration <= 0) { duration = testDuration; }
             if (startTime < 0) { startTime = 0; }
             if (spring < 0) { spring = testSpring; }
             if (damper < 0) { damper = testDamper; }
