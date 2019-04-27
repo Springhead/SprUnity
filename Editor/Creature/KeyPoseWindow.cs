@@ -82,7 +82,7 @@ namespace SprUnity {
         private string editableButtonpath = "pictures/te.png";
         private string editableLabelpath = "GUISkins/labelbackEditable.png";
 
-        private KeyPoseData latestEditableKeyPose;
+        private KeyPoseData latestEditableKeyPose; 
         private KeyPoseData latestVisibleKeyPose;
         private static Dictionary<KeyPoseStatus, Rect> keyPoseDataRectDict;
 
@@ -90,8 +90,8 @@ namespace SprUnity {
         static float parameterheight = 150;
         static float buttonheight = 25;
 
-        static KeyPoseData recordKeyPose;
-        static BoneKeyPose recordBoneKeyPose;
+        private static KeyPoseData recordKeyPose;
+        private static BoneKeyPose recordBoneKeyPose;
 
         private Material editableMat, visibleMat;
         private Mesh leftHand;
@@ -131,11 +131,23 @@ namespace SprUnity {
             HumanBodyBones.RightFoot,
         };
         [MenuItem("Window/SprUnity Action/KeyPose Window")]
-        static void Open() {
+        void Open() {
             window = GetWindow<KeyPoseWindow>();
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
             ReloadKeyPoseList();
             window.minSize = new Vector2(250, 300);
+            // 選択が消えてしまうので残っている情報からフラグを正しくする
+            // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
+            foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
+                foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
+                    if(keyPoseStatus.keyPose == latestEditableKeyPose) {
+                        keyPoseStatus.isEditable = true;
+                    }
+                    if(keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                        keyPoseStatus.isVisible = true;
+                    }
+                }
+            }
         }
 
         public void AddItemsToMenu(GenericMenu menu) {
@@ -148,35 +160,11 @@ namespace SprUnity {
         }
 
         public void OnEnable() {
-            ReloadKeyPoseList();
+            Debug.Log("OnEnable");
+            //ReloadKeyPoseList();
             //visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
             visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
-            //if (editableButtonTexture == null) {
-            //    var mono = MonoScript.FromScriptableObject(this);
-            //    var scriptpath = AssetDatabase.GetAssetPath(mono);
-            //    scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
-            //    var bytes = System.IO.File.ReadAllBytes(scriptpath + editableButtonpath);
-            //    if (bytes != null) {
-            //        editableButtonTexture = new Texture2D(1, 1);
-            //        editableButtonTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableButtonpath));
-            //        editableButtonTexture.filterMode = FilterMode.Bilinear;
-            //    } else {
-            //        Debug.Log("picture null");
-            //    }
-            //}
-            if (editableLabelTexture == null) {
-                var mono = MonoScript.FromScriptableObject(this);
-                var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
-                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
-                if (bytes != null) {
-                    editableLabelTexture = new Texture2D(1, 1);
-                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
-                    editableLabelTexture.filterMode = FilterMode.Bilinear;
-                } else {
-                    Debug.Log("picture null");
-                }
-            }
+            GetEditableTexture();
             if (myskin == null) {
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
@@ -296,7 +284,7 @@ namespace SprUnity {
                     }
                     if (keyPoseStatus.isEditable) {
                         var defaultback = GUI.skin.label.normal.background;
-                        GUI.skin.label.normal.background = editableLabelTexture;
+                        GUI.skin.label.normal.background = GetEditableTexture();
                         GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
                         GUI.skin.label.normal.background = defaultback;
                     } else {
@@ -336,6 +324,7 @@ namespace SprUnity {
             GUILayout.Box("", GUILayout.Width(this.position.width - 10), GUILayout.Height(1));
             Rect parameterWindow = new Rect(0, position.height / 2,
                 position.width, position.height - parameterWindowHeight);
+
             DrawParameters(parameterWindow, body);
 
             // LayoutとRepaintの時で同じGUIになるようにここで変更？
@@ -443,15 +432,15 @@ namespace SprUnity {
 
                     if (boneKeyPose.useRotation) {
                         EditorGUI.BeginChangeCheck();
-                        Quaternion rotation = new Quaternion();
+                        Quaternion localRotation = new Quaternion();
                         if (selectedboneKeyPose != boneKeyPose) {
-                            rotation = AxisRotate(boneKeyPose.localRotation, boneKeyPose.position, handleSize);
+                            localRotation = AxisRotate(boneKeyPose.localRotation, boneKeyPose.position, handleSize);
                         } else {
-                            rotation = AxisRotate(boneKeyPose.localRotation, boneKeyPose.position, selectedHandleSize);
+                            localRotation = AxisRotate(boneKeyPose.localRotation, boneKeyPose.position, selectedHandleSize);
                         }
                         if (EditorGUI.EndChangeCheck()) {
                             Undo.RecordObject(latestEditableKeyPose, "Change KeyPose Target Rotation");
-                            boneKeyPose.rotation = rotation;
+                            boneKeyPose.localRotation = localRotation;
                             EditorUtility.SetDirty(latestEditableKeyPose);
                         }
                     }
@@ -744,6 +733,22 @@ namespace SprUnity {
                 }
             }
         }
-    }
 
+        Texture2D GetEditableTexture() {
+            if (editableLabelTexture == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
+                if (bytes != null) {
+                    editableLabelTexture = new Texture2D(1, 1);
+                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
+                    editableLabelTexture.filterMode = FilterMode.Bilinear;
+                } else {
+                    Debug.Log("picture null");
+                }
+            }
+            return editableLabelTexture;
+        }
+    }
 }
