@@ -128,10 +128,11 @@ namespace SprUnity {
             else Handles.color = defaultColor;
             if (toState != null && fromState != null) {
                 if (toState == fromState) {
-                    Vector3 center = new Vector3(fromState.stateNodeRect.x - 20, fromState.stateNodeRect.center.y, 0);
-                    Handles.DrawWireDisc(center, new Vector3(0, 0, 1), 30);
-                    Handles.DrawSolidArc(center + new Vector3(-30, -10, 0), new Vector3(0, 0, 1), new Vector3(Mathf.Cos((Mathf.PI / 2) - 0.3f), Mathf.Sin((Mathf.PI / 2) - 0.3f), 0), 0.6f * Mathf.Rad2Deg, 15);
-                    centerForMouseDetection = new Vector2(center.x - 30, center.y);
+                    float diff = transitionNumber * 10;
+                    Vector3 center = new Vector3(fromState.stateNodeRect.x - 20 - diff, fromState.stateNodeRect.center.y, 0);
+                    Handles.DrawWireDisc(center, new Vector3(0, 0, 1), 30 + diff);
+                    Handles.DrawSolidArc(center + new Vector3(-30 - diff, -10, 0), new Vector3(0, 0, 1), new Vector3(Mathf.Cos((Mathf.PI / 2) - 0.3f), Mathf.Sin((Mathf.PI / 2) - 0.3f), 0), 0.6f * Mathf.Rad2Deg, 15);
+                    centerForMouseDetection = new Vector2(center.x - 30 - diff, center.y);
                 } else {
                     //float width = Mathf.Min(50, (transitionCountSamePairs - 1) * 10);
                     float width = (transitionCountSamePairs - 1) * 10;
@@ -219,6 +220,30 @@ namespace SprUnity {
 
         public void OnValidate() {
             stateMachine.isChanged = true;
+        }
+
+        private bool Contains(Vector2 s, Vector2 f, Vector2 p) {
+            // 直線からの距離で当たり判定
+            float dist = 0;
+            if (s == f) return false;
+            float a = f.x - s.x;
+            float b = f.y - s.y;
+            float a2 = a * a;
+            float b2 = b * b;
+            float r2 = a2 + b2;
+            float tt = -(a * (s.x - p.x) + b * (s.y - p.y));
+            if(tt < 0) {
+                dist = (s.x - p.x) * (s.x - p.x) + (s.y - p.y) * (s.y - p.y);
+            }else if(tt > r2) {
+                dist = (f.x - p.x) * (f.x - p.x) * (f.y - p.y) * (f.y - p.y);
+            } else {
+                float f1 = a * (s.y - p.y) - b * (s.x - p.x);
+                dist = (f1 * f1) / r2;
+            }
+            // 判定
+            float width = 5.0f;
+            if (dist < width * width) return true;
+            else return false;
         }
     }
 

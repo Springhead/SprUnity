@@ -159,11 +159,23 @@ namespace SprUnity {
         }
 
         void OnPlayModeChanged(PlayModeStateChange state) {
-            
+            if(state == PlayModeStateChange.ExitingEditMode) {
+
+            }else if(state == PlayModeStateChange.EnteredPlayMode) {
+
+            }else if(state == PlayModeStateChange.ExitingPlayMode) {
+
+            }else if(state == PlayModeStateChange.EnteredEditMode) {
+
+            }
         }
 
         void OnPauseChanged(PauseState state) {
+            if(state == PauseState.Paused) {
 
+            }else if(state == PauseState.Unpaused) {
+
+            }
         }
 
         void OnSelectionChanged() {
