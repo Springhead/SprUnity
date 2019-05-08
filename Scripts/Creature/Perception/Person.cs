@@ -53,6 +53,7 @@ public class Person : MonoBehaviour {
         if (head == null) { head = gameObject; }
 
         // <!!>
+        /*
         if (human) {
             GameObject prefab = (GameObject)Resources.Load("Prefabs/PersonDebugInfo");
             visualizeObject = Instantiate(prefab, new Vector3(), Quaternion.identity);
@@ -61,6 +62,7 @@ public class Person : MonoBehaviour {
             debugTextMesh = visualizeObject.transform.Find("Text").gameObject.GetComponent<TextMesh>();
             SetVisualize(visualize);
         }
+        */
     }
 
     void Update() {
