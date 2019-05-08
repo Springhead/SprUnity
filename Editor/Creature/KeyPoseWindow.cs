@@ -82,7 +82,7 @@ namespace SprUnity {
         private string editableButtonpath = "pictures/te.png";
         private string editableLabelpath = "GUISkins/labelbackEditable.png";
 
-        private KeyPoseData latestEditableKeyPose; 
+        private KeyPoseData latestEditableKeyPose;
         private KeyPoseData latestVisibleKeyPose;
         private static Dictionary<KeyPoseStatus, Rect> keyPoseDataRectDict;
 
@@ -140,10 +140,10 @@ namespace SprUnity {
             // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
             foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
                 foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
-                    if(keyPoseStatus.keyPose == latestEditableKeyPose) {
+                    if (keyPoseStatus.keyPose == latestEditableKeyPose) {
                         keyPoseStatus.isEditable = true;
                     }
-                    if(keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                    if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
                         keyPoseStatus.isVisible = true;
                     }
                 }
@@ -297,18 +297,8 @@ namespace SprUnity {
                             keyPoseStatus.keyPose.Action(body);
                         }
                     }
-                    //singleKeyPose.status = (KeyPoseStatus.Status)EditorGUILayout.EnumPopup(singleKeyPose.status);
                     GUILayout.EndHorizontal();
-                    //GUILayout.EndArea();
                     RightClickMenu(GUILayoutUtility.GetLastRect(), keyPoseStatus.keyPose);
-                    //if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)) {
-                    //    if (Event.current.type == EventType.MouseDown) {
-                    //        if (Event.current.button == 0) {
-                    //            keyPoseStatus.isSelected = !keyPoseStatus.isSelected;
-                    //            Repaint();
-                    //        }
-                    //    }
-                    //}
                 }
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Add KeyPoseCurrent", GUILayout.Height(buttonheight))) {
@@ -318,6 +308,9 @@ namespace SprUnity {
                 EditorGUILayout.EndVertical();
             }
 
+            if (GUILayout.Button("Add KeyPoseGroup", GUILayout.Height(buttonheight))) {
+                AddKeyPoseGroup();
+            }
             EditorGUILayout.EndScrollView();
 
             GUI.skin = null;
@@ -555,6 +548,9 @@ namespace SprUnity {
         void DrawHuman(KeyPoseData latestEditableKeyPose, KeyPoseData latestVisibleKeyPose) {
             if (latestEditableKeyPose != null) {
                 foreach (var boneKeyPose in latestEditableKeyPose.boneKeyPoses) {
+                    if(!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
+                        continue;
+                    }
                     // 調整用の手などを表示
                     editableMat.SetPass(0); // 1だと影しか見えない？ 
                     if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
@@ -572,6 +568,9 @@ namespace SprUnity {
             }
             if (latestVisibleKeyPose != null && latestEditableKeyPose != latestVisibleKeyPose) {
                 foreach (var boneKeyPose in latestVisibleKeyPose.boneKeyPoses) {
+                    if(!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
+                        continue;
+                    }
                     // 調整用の手などを表示
                     visibleMat.SetPass(0); // 1だと影しか見えない？ 
                     if (boneKeyPose.boneId == HumanBodyBones.LeftHand) {
@@ -621,11 +620,10 @@ namespace SprUnity {
             }
         }
 
+        void AddKeyPoseGroup() {
+            KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
+        }
         void AddKeyPose(KeyPoseDataGroup kpg) {
-            //var keyPoseGroup = KeyPoseInterpolationGroup.CreateKeyPoseGroup();
-            //keyPoseGroup.keyposes[0].InitializeByCurrentPose(ActionEditorWindowManager.instance.body);
-            //ActionEditorWindowManager.instance.singleKeyPoses.Add(new KeyPoseStatus(keyPoseGroup));
-            //Open();
             kpg.CreateKeyPoseInWin();
         }
 
@@ -638,6 +636,7 @@ namespace SprUnity {
                         foreach (var keyPoseStatus2 in keyPoseGroupStatus.keyPoseStatuses) {
                             if (keyPoseStatus2.isEditable && keyPoseStatus2.keyPose != latestEditableKeyPose) {
                                 keyPoseStatus2.isEditable = false;
+                                selectedboneKeyPose = null;
                             }
                         }
                     }

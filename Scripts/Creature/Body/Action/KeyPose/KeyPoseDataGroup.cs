@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -16,13 +17,13 @@ namespace SprUnity {
             KeyPoseDataGroup keyPoseGroup = (KeyPoseDataGroup)target;
             Rect DDBox = EditorGUILayout.GetControlRect(GUILayout.Width(200), GUILayout.Height(50));
             List<Object> droppedObjects = CreateDragAndDropGUI(DDBox);
-            if(droppedObjects.Count > 0) {
+            if (droppedObjects.Count > 0) {
                 Debug.Log("D&D!");
                 string keyPoseGroupPath = AssetDatabase.GetAssetPath(keyPoseGroup);
                 foreach (var obj in droppedObjects) {
                     KeyPoseInterpolationGroup keyPoseInterpolation = obj as KeyPoseInterpolationGroup;
-                    if(keyPoseInterpolation != null) {
-                        foreach(var keyposeInGroup in keyPoseInterpolation.keyposes) {
+                    if (keyPoseInterpolation != null) {
+                        foreach (var keyposeInGroup in keyPoseInterpolation.keyposes) {
                             var clone = Instantiate(keyposeInGroup);
                             clone.name = clone.name.Split('(')[0];
                             AssetDatabase.AddObjectToAsset(clone, keyPoseGroupPath);
@@ -30,7 +31,7 @@ namespace SprUnity {
                         continue;
                     }
                     KeyPoseData keypose = obj as KeyPoseData;
-                    if(keypose != null) {
+                    if (keypose != null) {
                         var clone = Instantiate(keypose);
                         clone.name = clone.name.Split('(')[0];
                         AssetDatabase.AddObjectToAsset(clone, keyPoseGroupPath);
@@ -50,10 +51,10 @@ namespace SprUnity {
 
             EventType e = Event.current.type;
 
-            if(e == EventType.DragUpdated || e == EventType.DragPerform) {
+            if (e == EventType.DragUpdated || e == EventType.DragPerform) {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 
-                if(e == EventType.DragPerform) {
+                if (e == EventType.DragPerform) {
                     list = new List<Object>(DragAndDrop.objectReferences);
                     DragAndDrop.AcceptDrag();
                 }
@@ -68,7 +69,39 @@ namespace SprUnity {
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
     public class KeyPoseDataGroup : ScriptableObject {
+        public static void CreateKeyPoseDataGroupAsset() {
+            // Asset全検索
+            var guids = AssetDatabase.FindAssets("*").Distinct();
 
+            List<string> nameList = new List<string>();
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+                var keyPoseGroup = obj as KeyPoseDataGroup;
+                if (keyPoseGroup != null) {
+                    nameList.Add(keyPoseGroup.name);
+                }
+            }
+            var newAsset = CreateInstance<KeyPoseDataGroup>();
+            bool exist = false;
+            for (int i = 0; i < 100; i++) {
+                exist = false;
+                foreach (var name in nameList) {
+                    if (name == "KeyPoseGroup" + i) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {
+                    AssetDatabase.CreateAsset(newAsset, "Assets/Actions/KeyPoses/" + "KeyPoseGroup" + i + ".asset");
+                    AssetDatabase.Refresh();
+                    break;
+                }
+            }
+            if (exist) {
+                Debug.LogError("KeyPoseGroup's name is covered");
+            }
+        }
 #if UNITY_EDITOR
         [MenuItem("Assets/Create/Action/Add New KeyPose")]
         static void CreateKeyPose() {
