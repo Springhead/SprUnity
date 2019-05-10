@@ -255,7 +255,7 @@ namespace SprUnity {
                     grouprenaming = GUILayout.TextField(grouprenaming, GUILayout.Width(windowWidth - scrollwidth));
                     if (Event.current.keyCode == KeyCode.Return) {
                         Undo.RecordObject(keyPoseGroupStatus.keyPoseGroup, "Change KeyPoseGroup Name");
-                        renameKeyPoseGroup.name = grouprenaming;
+                        keyPoseGroupStatus.keyPoseGroup.name = grouprenaming;
                         renameKeyPoseGroup = null;
                         //保留
                         //var guids = AssetDatabase.FindAssets("",new[] { KeyPoseDataGroup.path });
@@ -270,6 +270,7 @@ namespace SprUnity {
                         //}
                         grouprenaming = "";
                         EditorUtility.SetDirty(keyPoseGroupStatus.keyPoseGroup);
+                        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseGroupStatus.keyPoseGroup));
                         Repaint();
                     }
                 } else {
@@ -318,6 +319,7 @@ namespace SprUnity {
                                 renameKeyPose = null;
                                 renaming = "";
                                 EditorUtility.SetDirty(keyPoseStatus.keyPose);
+                                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
                                 Repaint();
                             }
                         } else {
@@ -333,6 +335,7 @@ namespace SprUnity {
                                 renameKeyPose = null;
                                 renaming = "";
                                 EditorUtility.SetDirty(keyPoseStatus.keyPose);
+                                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
                                 Repaint();
                             }
                         } else {
