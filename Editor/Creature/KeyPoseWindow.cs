@@ -140,6 +140,7 @@ namespace SprUnity {
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
             ReloadKeyPoseList();
             window.minSize = new Vector2(250, 300);
+            window.titleContent = new GUIContent("KeyPose");
             // 選択が消えてしまうので残っている情報からフラグを正しくする
             // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
             foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
@@ -175,7 +176,6 @@ namespace SprUnity {
                 scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
-
 
             var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
 
@@ -255,22 +255,10 @@ namespace SprUnity {
                     grouprenaming = GUILayout.TextField(grouprenaming, GUILayout.Width(windowWidth - scrollwidth));
                     if (Event.current.keyCode == KeyCode.Return) {
                         Undo.RecordObject(keyPoseGroupStatus.keyPoseGroup, "Change KeyPoseGroup Name");
-                        keyPoseGroupStatus.keyPoseGroup.name = grouprenaming;
-                        renameKeyPoseGroup = null;
-                        //保留
-                        //var guids = AssetDatabase.FindAssets("",new[] { KeyPoseDataGroup.path });
-                        //foreach (var guid in guids) {
-                        //    var path = AssetDatabase.GUIDToAssetPath(guid);
-                        //    var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                        //    var keyPoseGroup = obj as KeyPoseDataGroup;
-                        //        Debug.Log("aru ");
-                        //    if (keyPoseGroup != null) {
-                        //        AssetDatabase.RenameAsset(path, grouprenaming);
-                        //    }
-                        //}
+                        AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(renameKeyPoseGroup), grouprenaming);
                         grouprenaming = "";
+                        renameKeyPoseGroup = null;
                         EditorUtility.SetDirty(keyPoseGroupStatus.keyPoseGroup);
-                        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseGroupStatus.keyPoseGroup));
                         Repaint();
                     }
                 } else {

@@ -32,6 +32,7 @@ namespace SprUnity {
         [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>();
+            window.titleContent = new GUIContent("ActionStateMachine");
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
             ActionTransitionWindowEditor.Initialize();
             ActionStateWindowEditor.Initialize();

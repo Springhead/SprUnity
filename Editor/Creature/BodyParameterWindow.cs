@@ -26,6 +26,7 @@ namespace SprUnity {
         [MenuItem("Window/Body Parameter Window")]
         static void Open() {
             window = GetWindow<BodyParameterWindow>();
+            window.titleContent = new GUIContent("BodyParameter");
             ActionEditorWindowManager.instance.bodyParameterWindow = window;
             displayBodyGroup = new BoneGroupBoolPair[] {
             new BoneGroupBoolPair("Trunk", true),  // Trunk
