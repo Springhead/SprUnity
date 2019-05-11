@@ -180,6 +180,8 @@ namespace SprUnity {
             if (body != null) {
                 Bone coordinateBaseBone = body[coordinateParent];
                 if (coordinateBaseBone.ikActuator?.phIKActuator != null) {
+                    //coordinateBaseBone.ikEndEffector.phIKEndEffector.GetTargetPosition;
+                    //coordinateBaseBone.ikEndEffector.phIKEndEffector.GetTargetQuaternion;
                     Posed ikSolidPose = coordinateBaseBone.ikActuator.phIKActuator.GetSolidTempPose();
                     return ikSolidPose.Pos().ToVector3() + ikSolidPose.Ori().ToQuaternion() * (normalizedLocalPosition * body.height);
                 } else {

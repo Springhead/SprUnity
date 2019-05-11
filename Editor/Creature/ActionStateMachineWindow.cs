@@ -25,9 +25,12 @@ namespace SprUnity {
         private List<List<ActionTransition>> transitionGraph;
 
         // GUI
+        private GUISkin myskin;
         private Vector2 scrollPos;
         private static List<string> actionNames;
         private int index;
+        private GUIStyle accessorySytle;
+        private string skinpath = "GUISkins/ASMGUISkin.guiskin";
 
         [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
@@ -63,6 +66,15 @@ namespace SprUnity {
             ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("flow node 5") as Texture2D;
             ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
+
+            if (myskin == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("ActionStateMachineWindow.cs", "");
+                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
+                GUI.skin = myskin;
+            }
+
         }
 
         void OnDisable() {
@@ -71,35 +83,26 @@ namespace SprUnity {
         }
 
         void OnGUI() {
+            GUI.skin = myskin;
             if (window == null) Open();
 
             // Actionのセレクト用
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-            //if (window == null) GUILayout.Label("window null");
-            //foreach (var action in ActionEditorWindowManager.instance.actions) {
-            //    GUILayout.BeginHorizontal(GUILayout.Height(20));
-            //action.isSelected = GUILayout.Toggle(action.isSelected, "", GUILayout.Width(15));
-            //if (action.isSelected) {
-            //    foreach(var act in ActionEditorWindowManager.instance.actions) {
-            //        if (act != action) {
-            //            act.isSelected = false;
-            //        }
-            //    }
-            //}
-            //GUILayout.Label(action.action.name);
-            //GUILayout.EndHorizontal();
-            //}
-
-            GUILayout.BeginHorizontal(GUILayout.Height(40));
-            GUILayout.Label("Actions",GUILayout.Width(50));
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(),GUILayout.Width(100));
+            GUILayout.BeginHorizontal(GUILayout.Height(100));
+            GUILayout.Label("Actions", GUILayout.Width(100), GUILayout.Height(100));
+            var style = GUI.skin.GetStyle("popup");
+            style.fontSize = 15;
+            index = EditorGUILayout.Popup(index, actionNames.ToArray(),style);
             foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if(act.name == actionNames[index]) {
+                if (act.name == actionNames[index]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }
             }
+            if (GUILayout.Button("入力ボタン", GUILayout.Width(100f), GUILayout.Height(30f))) {
+            }
+            GUI.skin = null;
             GUILayout.EndHorizontal();
             GUILayout.EndScrollView();
 
@@ -114,13 +117,13 @@ namespace SprUnity {
             // Draw Flags
             GUILayout.BeginVertical();
             if (controller != null) {
-                foreach(var flag in controller.flagList.flags) {
+                foreach (var flag in controller.flagList.flags) {
                     flag.enabled = GUILayout.Toggle(flag.enabled, flag.label);
                 }
             } else {
                 foreach (var flag in action.flags.flags) {
                     GUILayout.BeginHorizontal();
-                    flag.enabled = GUILayout.Toggle(flag.enabled,"", GUILayout.Width(10));
+                    flag.enabled = GUILayout.Toggle(flag.enabled, "", GUILayout.Width(10));
                     flag.label = GUILayout.TextField(flag.label);
                     GUILayout.EndHorizontal();
                 }
@@ -160,7 +163,7 @@ namespace SprUnity {
                     if (state != null) {
                         if (controller == null) {
                             state.Draw(item.Index, false);
-                        }else if(controller.CurrentState == state) {
+                        } else if (controller.CurrentState == state) {
                             state.Draw(item.Index, true);
                         } else {
                             state.Draw(item.Index, false);
