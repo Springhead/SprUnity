@@ -83,7 +83,12 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            GUI.skin = myskin;
+            if (myskin != null) {
+                GUI.skin = myskin;
+            } else {
+                //Debug.Log("GUISkin is null");
+            }
+
             if (window == null) Open();
 
             // Actionのセレクト用

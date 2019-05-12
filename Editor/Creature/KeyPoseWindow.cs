@@ -134,25 +134,14 @@ namespace SprUnity {
             HumanBodyBones.RightLowerLeg,
             HumanBodyBones.RightFoot,
         };
+
         [MenuItem("Window/SprUnity Action/KeyPose Window")]
-        void Open() {
+        static void Open() {
             window = GetWindow<KeyPoseWindow>();
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
             ReloadKeyPoseList();
             window.minSize = new Vector2(250, 300);
             window.titleContent = new GUIContent("KeyPose");
-            // 選択が消えてしまうので残っている情報からフラグを正しくする
-            // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
-            foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
-                foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
-                    if (keyPoseStatus.keyPose == latestEditableKeyPose) {
-                        keyPoseStatus.isEditable = true;
-                    }
-                    if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
-                        keyPoseStatus.isVisible = true;
-                    }
-                }
-            }
         }
 
         public void AddItemsToMenu(GenericMenu menu) {
@@ -242,6 +231,18 @@ namespace SprUnity {
             GUILayout.Label("KeyPoses", GUILayout.Width(windowWidth - scrollwidth));
             if (window == null) {
                 Open(); // なぜかOnEnableに書くと新しくwindowが生成される
+                // 選択が消えてしまうので残っている情報からフラグを正しくする
+                // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
+                foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
+                    foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
+                        if (keyPoseStatus.keyPose == latestEditableKeyPose) {
+                            keyPoseStatus.isEditable = true;
+                        }
+                        if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                            keyPoseStatus.isVisible = true;
+                        }
+                    }
+                }
                 if (window == null) {
                     GUILayout.Label("window null");
                 }
