@@ -185,14 +185,16 @@ namespace SprUnity {
 #if UNITY_EDITOR
         [MenuItem("Action/Create ActionStateMachine")]
         static void CreateStateMachine() {
-            var action = CreateInstance<ActionStateMachine>();
-
-            string currrentDirectory = GetCurrentDirectory();
-            AssetDatabase.CreateAsset(action, currrentDirectory + "/ActionStateMachine.asset");
-            AssetDatabase.Refresh();
+            CreateStateMachine("ActionStateMachine");
         }
 #endif
 
+        public static void CreateStateMachine(string newName) {
+            var action = CreateInstance<ActionStateMachine>();
+            string currrentDirectory = GetCurrentDirectory();
+            AssetDatabase.CreateAsset(action, currrentDirectory + "/" + newName + ".asset");
+            AssetDatabase.Refresh();
+        }
         // ----- ----- ----- ----- ----- -----
         // Create/Delete ActionState
 

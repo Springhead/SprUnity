@@ -74,7 +74,6 @@ namespace SprUnity {
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
                 GUI.skin = myskin;
             }
-
         }
 
         void OnDisable() {
@@ -83,30 +82,45 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            if (myskin != null) {
-                GUI.skin = myskin;
-            } else {
-                //Debug.Log("GUISkin is null");
-            }
+            //if (myskin != null) {
+            //    GUI.skin = myskin;
+            //} else {
+            //    //Debug.Log("GUISkin is null");
+            //}
 
             if (window == null) Open();
 
             // Actionのセレクト用
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-            GUILayout.BeginHorizontal(GUILayout.Height(100));
-            GUILayout.Label("Actions", GUILayout.Width(100), GUILayout.Height(100));
-            var style = GUI.skin.GetStyle("popup");
-            style.fontSize = 15;
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(),style);
+            GUILayout.BeginHorizontal();
+            var label= GUI.skin.GetStyle("label");
+            var backLabel = label.fontSize;
+            label.fontSize = 15;
+            GUILayout.Label("Actions",label, GUILayout.Width(60), GUILayout.Height(100));
+            label.fontSize = backLabel;
+            var popup = GUI.skin.GetStyle("popup");
+            var backPopupfontSize = popup.fontSize;
+            var backPopupfixedHeight = popup.fixedHeight;
+            popup.fontSize = 15;
+
+            popup.fixedHeight = 22;
+            index = EditorGUILayout.Popup(index, actionNames.ToArray(),popup,GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
                 if (act.name == actionNames[index]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }
             }
-            if (GUILayout.Button("入力ボタン", GUILayout.Width(100f), GUILayout.Height(30f))) {
+            popup.fontSize = backPopupfontSize;
+            popup.fixedHeight= backPopupfixedHeight;
+            var button = GUI.skin.GetStyle("button");
+            var backButton = button.fontSize;
+            button.fontSize = 15;
+            if (GUILayout.Button("Create", GUILayout.Width(100), GUILayout.Height(22))) {
+                CreateActionStateMachineWindow.Open(position.center);
             }
+            button.fontSize = backButton;
             GUI.skin = null;
             GUILayout.EndHorizontal();
             GUILayout.EndScrollView();
