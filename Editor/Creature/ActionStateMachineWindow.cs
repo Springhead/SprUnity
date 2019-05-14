@@ -25,13 +25,17 @@ namespace SprUnity {
         private List<List<ActionTransition>> transitionGraph;
 
         // GUI
+        private GUISkin myskin;
         private Vector2 scrollPos;
         private static List<string> actionNames;
         private int index;
+        private GUIStyle accessorySytle;
+        private string skinpath = "GUISkins/ASMGUISkin.guiskin";
 
         [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>();
+            window.titleContent = new GUIContent("ActionStateMachine");
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
             ActionTransitionWindowEditor.Initialize();
             ActionStateWindowEditor.Initialize();
@@ -62,6 +66,14 @@ namespace SprUnity {
             ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("flow node 5") as Texture2D;
             ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
+
+            if (myskin == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("ActionStateMachineWindow.cs", "");
+                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
+                GUI.skin = myskin;
+            }
         }
 
         void OnDisable() {
@@ -70,35 +82,46 @@ namespace SprUnity {
         }
 
         void OnGUI() {
+            //if (myskin != null) {
+            //    GUI.skin = myskin;
+            //} else {
+            //    //Debug.Log("GUISkin is null");
+            //}
+
             if (window == null) Open();
 
             // Actionのセレクト用
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-            //if (window == null) GUILayout.Label("window null");
-            //foreach (var action in ActionEditorWindowManager.instance.actions) {
-            //    GUILayout.BeginHorizontal(GUILayout.Height(20));
-            //action.isSelected = GUILayout.Toggle(action.isSelected, "", GUILayout.Width(15));
-            //if (action.isSelected) {
-            //    foreach(var act in ActionEditorWindowManager.instance.actions) {
-            //        if (act != action) {
-            //            act.isSelected = false;
-            //        }
-            //    }
-            //}
-            //GUILayout.Label(action.action.name);
-            //GUILayout.EndHorizontal();
-            //}
+            GUILayout.BeginHorizontal();
+            var label= GUI.skin.GetStyle("label");
+            var backLabel = label.fontSize;
+            label.fontSize = 15;
+            GUILayout.Label("Actions",label, GUILayout.Width(60), GUILayout.Height(100));
+            label.fontSize = backLabel;
+            var popup = GUI.skin.GetStyle("popup");
+            var backPopupfontSize = popup.fontSize;
+            var backPopupfixedHeight = popup.fixedHeight;
+            popup.fontSize = 15;
 
-            GUILayout.BeginHorizontal(GUILayout.Height(40));
-            GUILayout.Label("Actions",GUILayout.Width(50));
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(),GUILayout.Width(100));
+            popup.fixedHeight = 22;
+            index = EditorGUILayout.Popup(index, actionNames.ToArray(),popup,GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if(act.name == actionNames[index]) {
+                if (act.name == actionNames[index]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }
             }
+            popup.fontSize = backPopupfontSize;
+            popup.fixedHeight= backPopupfixedHeight;
+            var button = GUI.skin.GetStyle("button");
+            var backButton = button.fontSize;
+            button.fontSize = 15;
+            if (GUILayout.Button("Create", GUILayout.Width(100), GUILayout.Height(22))) {
+                CreateActionStateMachineWindow.Open(position.center);
+            }
+            button.fontSize = backButton;
+            GUI.skin = null;
             GUILayout.EndHorizontal();
             GUILayout.EndScrollView();
 
@@ -113,13 +136,13 @@ namespace SprUnity {
             // Draw Flags
             GUILayout.BeginVertical();
             if (controller != null) {
-                foreach(var flag in controller.flagList.flags) {
+                foreach (var flag in controller.flagList.flags) {
                     flag.enabled = GUILayout.Toggle(flag.enabled, flag.label);
                 }
             } else {
                 foreach (var flag in action.flags.flags) {
                     GUILayout.BeginHorizontal();
-                    flag.enabled = GUILayout.Toggle(flag.enabled,"", GUILayout.Width(10));
+                    flag.enabled = GUILayout.Toggle(flag.enabled, "", GUILayout.Width(10));
                     flag.label = GUILayout.TextField(flag.label);
                     GUILayout.EndHorizontal();
                 }
@@ -159,7 +182,7 @@ namespace SprUnity {
                     if (state != null) {
                         if (controller == null) {
                             state.Draw(item.Index, false);
-                        }else if(controller.CurrentState == state) {
+                        } else if (controller.CurrentState == state) {
                             state.Draw(item.Index, true);
                         } else {
                             state.Draw(item.Index, false);

@@ -92,6 +92,10 @@ namespace SprUnity {
 
         private static KeyPoseData recordKeyPose;
         private static BoneKeyPose recordBoneKeyPose;
+        private static KeyPoseData renameKeyPose;
+        private string renaming;
+        private static KeyPoseDataGroup renameKeyPoseGroup;
+        private string grouprenaming;
 
         private Material editableMat, visibleMat;
         private Mesh leftHand;
@@ -130,24 +134,14 @@ namespace SprUnity {
             HumanBodyBones.RightLowerLeg,
             HumanBodyBones.RightFoot,
         };
+
         [MenuItem("Window/SprUnity Action/KeyPose Window")]
-        void Open() {
+        static void Open() {
             window = GetWindow<KeyPoseWindow>();
             ActionEditorWindowManager.instance.keyPoseWindow = KeyPoseWindow.window;
             ReloadKeyPoseList();
             window.minSize = new Vector2(250, 300);
-            // 選択が消えてしまうので残っている情報からフラグを正しくする
-            // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
-            foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
-                foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
-                    if (keyPoseStatus.keyPose == latestEditableKeyPose) {
-                        keyPoseStatus.isEditable = true;
-                    }
-                    if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
-                        keyPoseStatus.isVisible = true;
-                    }
-                }
-            }
+            window.titleContent = new GUIContent("KeyPose");
         }
 
         public void AddItemsToMenu(GenericMenu menu) {
@@ -171,7 +165,6 @@ namespace SprUnity {
                 scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
-
 
             var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
 
@@ -225,9 +218,6 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            //foreach (var sel in Selection.objects) {
-            //    Debug.Log("name = " + sel.name);
-            //}
             if (myskin != null) {
                 GUI.skin = myskin;
             } else {
@@ -241,6 +231,18 @@ namespace SprUnity {
             GUILayout.Label("KeyPoses", GUILayout.Width(windowWidth - scrollwidth));
             if (window == null) {
                 Open(); // なぜかOnEnableに書くと新しくwindowが生成される
+                // 選択が消えてしまうので残っている情報からフラグを正しくする
+                // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
+                foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
+                    foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
+                        if (keyPoseStatus.keyPose == latestEditableKeyPose) {
+                            keyPoseStatus.isEditable = true;
+                        }
+                        if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                            keyPoseStatus.isVisible = true;
+                        }
+                    }
+                }
                 if (window == null) {
                     GUILayout.Label("window null");
                 }
@@ -250,7 +252,20 @@ namespace SprUnity {
             }
             var body = ActionEditorWindowManager.instance.body;
             foreach (var keyPoseGroupStatus in ActionEditorWindowManager.instance.keyPoseGroupStatuses) {
-                GUILayout.Label(keyPoseGroupStatus.keyPoseGroup.name, GUILayout.Width(windowWidth - scrollwidth));
+                if (keyPoseGroupStatus.keyPoseGroup == renameKeyPoseGroup) {
+                    grouprenaming = GUILayout.TextField(grouprenaming, GUILayout.Width(windowWidth - scrollwidth));
+                    if (Event.current.keyCode == KeyCode.Return) {
+                        Undo.RecordObject(keyPoseGroupStatus.keyPoseGroup, "Change KeyPoseGroup Name");
+                        AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(renameKeyPoseGroup), grouprenaming);
+                        grouprenaming = "";
+                        renameKeyPoseGroup = null;
+                        EditorUtility.SetDirty(keyPoseGroupStatus.keyPoseGroup);
+                        Repaint();
+                    }
+                } else {
+                    GUILayout.Label(keyPoseGroupStatus.keyPoseGroup.name, GUILayout.Width(windowWidth - scrollwidth));
+                }
+                RightClickGroupMenu(GUILayoutUtility.GetLastRect(), keyPoseGroupStatus.keyPoseGroup);
                 EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(windowWidth - scrollwidth));
                 foreach (var keyPoseStatus in keyPoseGroupStatus.keyPoseStatuses) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
@@ -285,11 +300,38 @@ namespace SprUnity {
                     if (keyPoseStatus.isEditable) {
                         var defaultback = GUI.skin.label.normal.background;
                         GUI.skin.label.normal.background = GetEditableTexture();
-                        GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                        if (keyPoseStatus.keyPose == renameKeyPose) {
+                            renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
+                            if (Event.current.keyCode == KeyCode.Return) {
+                                Undo.RecordObject(keyPoseStatus.keyPose, "Change KeyPose Name");
+                                renameKeyPose.name = renaming;
+                                renameKeyPose = null;
+                                renaming = "";
+                                EditorUtility.SetDirty(keyPoseStatus.keyPose);
+                                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
+                                Repaint();
+                            }
+                        } else {
+                            GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                        }
                         GUI.skin.label.normal.background = defaultback;
                     } else {
-                        GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                        if (keyPoseStatus.keyPose == renameKeyPose) {
+                            renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
+                            if (Event.current.keyCode == KeyCode.Return) {
+                                Undo.RecordObject(keyPoseStatus.keyPose, "Change KeyPose Name");
+                                renameKeyPose.name = renaming;
+                                renameKeyPose = null;
+                                renaming = "";
+                                EditorUtility.SetDirty(keyPoseStatus.keyPose);
+                                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
+                                Repaint();
+                            }
+                        } else {
+                            GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                        }
                     }
+                    // <!!>毎回呼ぶのか..
                     keyPoseDataRectDict[keyPoseStatus] = GUILayoutUtility.GetLastRect();
                     if (GUILayout.Button("Play", GUILayout.Width(60), GUILayout.Height(buttonheight))) {
                         if (EditorApplication.isPlaying) {
@@ -548,7 +590,7 @@ namespace SprUnity {
         void DrawHuman(KeyPoseData latestEditableKeyPose, KeyPoseData latestVisibleKeyPose) {
             if (latestEditableKeyPose != null) {
                 foreach (var boneKeyPose in latestEditableKeyPose.boneKeyPoses) {
-                    if(!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
+                    if (!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
                         continue;
                     }
                     // 調整用の手などを表示
@@ -568,7 +610,7 @@ namespace SprUnity {
             }
             if (latestVisibleKeyPose != null && latestEditableKeyPose != latestVisibleKeyPose) {
                 foreach (var boneKeyPose in latestVisibleKeyPose.boneKeyPoses) {
-                    if(!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
+                    if (!boneKeyPose.usePosition && !boneKeyPose.useRotation) {
                         continue;
                     }
                     // 調整用の手などを表示
@@ -624,11 +666,15 @@ namespace SprUnity {
             KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
         }
         void AddKeyPose(KeyPoseDataGroup kpg) {
+            //Undo.RecordObject(kpg, "Add KeyPose to " + kpg.name); <!!> Undo出来ない
             kpg.CreateKeyPoseInWin();
         }
 
         void LeftClick(Rect rect, KeyPoseStatus keyPoseStatus) {
-            if (rect.Contains(Event.current.mousePosition + scrollPos) && Event.current.type == EventType.MouseDown && Event.current.button == 0) {
+            if (rect.Contains(Event.current.mousePosition + scrollPos) &&
+                Event.current.mousePosition.y < position.height - parameterWindowHeight &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 0) {
                 keyPoseStatus.isEditable = !keyPoseStatus.isEditable;
                 if (keyPoseStatus.isEditable) {
                     latestEditableKeyPose = keyPoseStatus.keyPose;
@@ -648,7 +694,9 @@ namespace SprUnity {
             }
         }
         void RightClickMenu(Rect rect, KeyPoseData keyPoseData) {
-            if (rect.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDown && Event.current.button == 1) {
+            if (rect.Contains(Event.current.mousePosition) &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 1) {
                 GenericMenu menu = new GenericMenu();
                 foreach (var boneKeyPose in keyPoseData.boneKeyPoses) {
                     menu.AddItem(new GUIContent(boneKeyPose.boneId.ToString()), false,
@@ -695,6 +743,12 @@ namespace SprUnity {
                         SceneView.RepaintAll();
                     });
                 menu.AddSeparator("");
+                menu.AddItem(new GUIContent("Rename"), false,
+                    () => {
+                        renameKeyPose = keyPoseData;
+                        renaming = keyPoseData.name;
+                        Repaint();
+                    });
                 menu.AddItem(new GUIContent("Delete"), false,
                     () => {
                         RemoveKeyPose(keyPoseData);
@@ -705,6 +759,20 @@ namespace SprUnity {
             }
         }
 
+        void RightClickGroupMenu(Rect rect, KeyPoseDataGroup keyPoseDataGroup) {
+            GenericMenu menu = new GenericMenu();
+            if (rect.Contains(Event.current.mousePosition) &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 1) {
+                menu.AddItem(new GUIContent("Rename"), false,
+                    () => {
+                        renameKeyPoseGroup = keyPoseDataGroup;
+                        grouprenaming = keyPoseDataGroup.name;
+                        Repaint();
+                    });
+                menu.ShowAsContext();
+            }
+        }
         void RemoveKeyPose(KeyPoseData keyPoseData) {
             if (keyPoseData == null) {
                 Debug.LogWarning("No sub asset.");

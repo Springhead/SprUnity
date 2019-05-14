@@ -69,6 +69,7 @@ namespace SprUnity {
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
     public class KeyPoseDataGroup : ScriptableObject {
+        public static string path = "Assets/Actions/KeyPoses/";
         public static void CreateKeyPoseDataGroupAsset() {
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
@@ -93,7 +94,7 @@ namespace SprUnity {
                     }
                 }
                 if (!exist) {
-                    AssetDatabase.CreateAsset(newAsset, "Assets/Actions/KeyPoses/" + "KeyPoseGroup" + i + ".asset");
+                    AssetDatabase.CreateAsset(newAsset, path + "KeyPoseGroup" + i + ".asset");
                     AssetDatabase.Refresh();
                     break;
                 }
