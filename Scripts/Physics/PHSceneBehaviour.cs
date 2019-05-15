@@ -185,21 +185,21 @@ public class PHSceneBehaviour : SprBehaviour {
             foreach(var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours){
                 phIKEndEffectorBehaviour.BeforeStep();
             }
-            lock (sprObject) {
+            //lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
-            }
+            //}
         }
     }
 
     void Update() {
         if (enableUpdate) {
-            lock (sprObject) {
+            //lock (sprObject) {
                 foreach (var phSolidBehaviour in phSolidBehaviours) {
                     if (phSolidBehaviour != null) {
                         phSolidBehaviour.UpdatePose();
                     }
                 }
-            }
+            //}
             if (FWAppBehaviour.app != null) {
                 FWAppBehaviour.app.PostRedisplay();
             }
