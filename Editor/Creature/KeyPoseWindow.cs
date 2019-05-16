@@ -446,6 +446,7 @@ namespace SprUnity {
                         if ((Point - preselected.position).magnitude < selectedHandleSize) {
                             selectedboneKeyPose = preselected;
                         } else {
+                            selectedboneKeyPose = null;
                         }
                     }
                 }

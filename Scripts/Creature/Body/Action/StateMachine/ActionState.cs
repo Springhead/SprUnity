@@ -48,6 +48,13 @@ namespace SprUnity {
         public float spring = 1.0f;
         public float damper = 1.0f;
 
+        [HideInInspector]
+        public BlendController blendController;
+        public bool useFace = false;
+        public string blend = "";
+        public float blendv = 1f;
+        public float time = 0.3f;
+        public float interval = 0f;
         public KeyPoseTransformer transformers;
 
         // ----- ----- ----- ----- -----
@@ -133,7 +140,18 @@ namespace SprUnity {
                 foreach (var l in useParams) {
                     parameters.Add(stateMachine.parameters[l]);
                 }
+                if (useFace) {
+                    if (stateMachine.blendController == null) {
+                        stateMachine.blendController = body.GetComponent<BlendController>();
+                        blendController = stateMachine.blendController;
+                    }
+                    if (blendController != null) {
+                        blendController.BlendSet(interval, blend, blendv, time);
+                    }
+                }
+
                 // ターゲット位置による変換後のKeyPose
+
                 return keyframe.Action(body, duration, 0, spring, damper);
             }
             return null;

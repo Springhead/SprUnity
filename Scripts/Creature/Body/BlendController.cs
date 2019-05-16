@@ -39,12 +39,12 @@ public class BlendControllerEditor : Editor {
         if (GUILayout.Button("create blendS Conflict")) {
             bl.createConflict(bl.conflictName);
         }
-        //if (GUILayout.Button("save blendS Conflict")) {
-        //    BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(bl.conflictName);
-        //    if (bsc != null) {
-        //        bsc.Save(bl.conflicts);
-        //    }
-        //}
+        if (GUILayout.Button("save blendS Conflict")) {
+            BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(bl.conflictName);
+            if (bsc != null) {
+                bsc.Save(bl.conflicts);
+            }
+        }
         if (GUILayout.Button("change upper")) {
             BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(bl.conflictName);
             for (int i = 0; i < bsc.blends.Count(); i++) {
@@ -57,20 +57,14 @@ public class BlendControllerEditor : Editor {
                 bl.conflicts = bsc.GetDictionary();
             }
         }
-        if (GUILayout.Button("blendSTest")) {
-            bl.blendSTest();
-        }
-        if (GUILayout.Button("zero")) {
-            bl.blendZero();
-        }
-        if (GUILayout.Button("a")) {
-        }
     }
     public void OnEnable() {
         var bl = (BlendController)target;
-        BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(bl.conflictName);
-        if (bsc != null) {
-            bl.conflicts = bsc.GetDictionary();
+        if (bl.conflicts == null) {
+            BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(bl.conflictName);
+            if (bsc != null) {
+                bl.conflicts = bsc.GetDictionary();
+            }
         }
     }
 }
@@ -81,7 +75,7 @@ public class BlendSMovement {
     public float value;
     public float time;
     public BlendSMovement(string blend, float value, float time = 0.3f) {
-        this.blend = blend;
+        this.blend = blend.ToUpper();
         this.value = value;
         this.time = time;
     }
@@ -109,52 +103,52 @@ public class BlendController : MonoBehaviour {
     void Start() {
         actionManager = FindObjectOfType<ActionManager>();
         BlendShapeConflict bsc = BlendShapeConflict.GetBlendShapeConflict(conflictName);
+        body = FindObjectOfType<Body>();
         if (bsc != null) {
             conflicts = bsc.GetDictionary();
         }
-
         exeList = new List<exeBlendShape>();
     }
 
     void Update() {
         if (blendS != null) {
             currTime += Time.deltaTime;
-            if (blendTrajectory.Count() > 0) {
-                var nextblendOK = true;
+            while (blendTrajectory.Count() > 0) {
                 foreach (var exe in exeList) {
-                    if ((conflicts[exe.bsm.blend] & conflicts[blendTrajectory.First().blend]) != 0) {
-                        nextblendOK = false;
+                    if (conflicts.ContainsKey(exe.bsm.blend.ToUpper()) && conflicts.ContainsKey(blendTrajectory.First().blend.ToUpper()) &&
+                        (conflicts[exe.bsm.blend.ToUpper()] & conflicts[blendTrajectory.First().blend.ToUpper()]) != 0) {
+                        deleteList.Add(exe);
                     }
                 }
-                if (nextblendOK) {
-                    var newexe = new exeBlendShape();
-                    newexe.startTime = currTime;
-                    newexe.bsm = blendTrajectory.Dequeue();
-                    newexe.velocity = Mathf.Abs(newexe.bsm.value - blendS.GetValue(newexe.bsm.blend)) / newexe.bsm.time;
-                    newexe.resetVelocity = 1 / newexe.bsm.time;
-                    exeList.Add(newexe);
-                    //Debug.Log(blendTrajectory.First().blend + oneStep);
+                foreach (var deleteObj in deleteList) {
+                    exeList.Remove(deleteObj);
                 }
+                deleteList.Clear();
+                var newexe = new exeBlendShape();
+                newexe.startTime = currTime;
+                newexe.bsm = blendTrajectory.Dequeue();
+                newexe.velocity = (newexe.bsm.value - blendS.GetValue(newexe.bsm.blend.ToUpper())) / newexe.bsm.time;
+                newexe.resetVelocity = 1 / newexe.bsm.time;
+                exeList.Add(newexe);
+                //Debug.Log(blendTrajectory.First().blend + oneStep);
             }
             foreach (var exe in exeList) {
-                float nowblend = blendS.GetValue(exe.bsm.blend);
+                float nowblend = blendS.GetValue(exe.bsm.blend.ToUpper());
                 foreach (var oneb in blendS.GetValues()) {
-                    if (oneb.Key.ToString() != exe.bsm.blend &&
-                        ((conflicts[exe.bsm.blend.ToUpper()] & conflicts[oneb.Key.Name.ToUpper()]) != 0)) {
+                    if (oneb.Key.ToString().ToUpper() != exe.bsm.blend.ToUpper() &&
+                        (!conflicts.ContainsKey(exe.bsm.blend.ToUpper()) || ((conflicts[exe.bsm.blend.ToUpper()] & conflicts[oneb.Key.Name.ToUpper()]) != 0))) {
+                        //Debug.Log("setvalue: " + oneb.Key.ToString().ToUpper() + " " + exe.bsm.blend.ToUpper() + " " +
+                        //    conflicts[exe.bsm.blend.ToUpper()] + " " + conflicts[oneb.Key.Name.ToUpper()] + " " + (conflicts[exe.bsm.blend.ToUpper()] & conflicts[oneb.Key.Name.ToUpper()]));
                         blendS.ImmediatelySetValue(oneb.Key, Mathf.Clamp01(oneb.Value - exe.resetVelocity * Time.deltaTime));
                     }
                 }
-                if (nowblend >= exe.bsm.value) {
-                    nowblend -= exe.velocity * Time.deltaTime;
-                } else {
-                    nowblend += exe.velocity * Time.deltaTime;
-                }
-                if (exe.bsm.blend != "") {
-                    blendS.ImmediatelySetValue(exe.bsm.blend, Mathf.Clamp01(nowblend));
+                nowblend += exe.velocity * Time.deltaTime;
+                if (exe.bsm.blend.ToUpper() != "") {
+                    blendS.ImmediatelySetValue(exe.bsm.blend.ToUpper(), Mathf.Clamp01(nowblend));
                 }
                 if (currTime - exe.startTime > exe.bsm.time/* ||(Mathf.Abs(blendS.GetValue(blend) - blendv) < oneStep* Time.deltaTime && isAllZero)*/) {
-                    if (exe.bsm.blend != "") {
-                        blendS.ImmediatelySetValue(exe.bsm.blend, Mathf.Clamp01(exe.bsm.value));
+                    if (exe.bsm.blend.ToUpper() != "") {
+                        blendS.ImmediatelySetValue(exe.bsm.blend.ToUpper(), Mathf.Clamp01(exe.bsm.value));
                     }
                     deleteList.Add(exe);
                 }
@@ -163,27 +157,22 @@ public class BlendController : MonoBehaviour {
                 exeList.Remove(deleteObj);
             }
             deleteList.Clear();
-
+        } else {
+            if (body.initialized) {
+                blendS = body.animator.GetComponent<VRMBlendShapeProxy>();
+            }
         }
+
     }
     public void createConflict(string name) {
         BlendShapeConflict.GetBlendShapeConflict(name);
     }
-    public void blendSTest() {
-        //actionManager.Action("blendSTest");
-        BlendSMovement newbsm = new BlendSMovement("A", 1f, 0.3f);
-        BlendSMovement newbsm2 = new BlendSMovement("BLINK", 1f, 0.3f);
-        BlendSMovement newbsm3 = new BlendSMovement("BLINK_L", 1f, 0.1f);
-        BlendSMovement newbsm4 = new BlendSMovement("BLINK_R", 1f, 0.2f);
-        BlendSMovement newbsm5 = new BlendSMovement("JOY", 1f, 0.2f);
-        blendTrajectory.Enqueue(newbsm);
-        blendTrajectory.Enqueue(newbsm2);
-        blendTrajectory.Enqueue(newbsm3);
-        blendTrajectory.Enqueue(newbsm4);
-        blendTrajectory.Enqueue(newbsm5);
+    public void BlendSet(float interval, string blend, float blendv, float time) {
+        StartCoroutine(coBlendSet(interval, blend.ToUpper(), blendv, time));
     }
-    public void blendZero() {
-        BlendSMovement newbsm = new BlendSMovement("", 1f, 0.3f);
+    private IEnumerator coBlendSet(float interval, string blend, float blendv, float time) {
+        yield return new WaitForSeconds(interval);
+        BlendSMovement newbsm = new BlendSMovement(blend.ToUpper(), blendv, time);
         blendTrajectory.Enqueue(newbsm);
     }
 }

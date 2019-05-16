@@ -47,6 +47,9 @@ namespace SprUnity {
         [HideInInspector]
         public Body body;
 
+        [HideInInspector]
+        public BlendController blendController;
+
         //
         ActionLog actionLog;
         public ActionLog ActionLog { get { return actionLog; } }
@@ -173,8 +176,10 @@ namespace SprUnity {
                 float duration = specified.toState.duration;
                 float spring = specified.toState.spring;
                 float damper = specified.toState.damper;
-                foreach(var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
-                    actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
+                if (specified.toState.keyframe != null) {
+                    foreach (var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
+                        actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
+                    }
                 }
             }
 
@@ -196,8 +201,10 @@ namespace SprUnity {
                         float duration = predicted.duration;
                         float spring = predicted.spring;
                         float damper = predicted.damper;
-                        foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
-                            actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
+                        if (predicted.keyframe != null) {
+                            foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
+                                actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
+                            }
                         }
                     }
                 } else {
@@ -213,8 +220,19 @@ namespace SprUnity {
             //Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
+                if (currentState.useFace) {
+                    if (stateMachine.blendController == null) {
+                        stateMachine.blendController = body.GetComponent<BlendController>();
+                        blendController = stateMachine.blendController;
+                    }
+                    if (blendController != null) {
+                        blendController.BlendSet(currentState.interval, currentState.blend, currentState.blendv, currentState.time);
+                    }
+                }
                 // ターゲット位置による変換後のKeyPose
-                return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
+                if (currentState.keyframe != null) {
+                    return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
+                }
             }
             isChanged = true;
             return null;
