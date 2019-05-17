@@ -196,8 +196,7 @@ namespace SprUnity {
 
         public static void CreateStateMachine(string newName) {
             var action = CreateInstance<ActionStateMachine>();
-            string currrentDirectory = GetCurrentDirectory();
-            AssetDatabase.CreateAsset(action, currrentDirectory + "/" + newName + ".asset");
+            AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
             AssetDatabase.Refresh();
         }
         // ----- ----- ----- ----- ----- -----

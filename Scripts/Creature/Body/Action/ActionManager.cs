@@ -28,7 +28,7 @@ namespace SprUnity {
         }
     }
 #endif
-
+    [Serializable]
     public class ActionStateMachineController {
 
         ActionStateMachine stateMachine;
@@ -150,9 +150,13 @@ namespace SprUnity {
             */
             stateMachineTime = 0;
             timeOfLastEnter = 0;
-            specifiedTransitions.Clear();
-            specifiedTransitions.Add(stateMachine.entryTransitions[0]);
-            actionLog.ClearAll();
+            if (stateMachine != null) {
+                specifiedTransitions.Clear();
+                specifiedTransitions.Add(stateMachine.entryTransitions[0]);
+            }
+            if (actionLog != null) {
+                actionLog.ClearAll();
+            }
         }
 
         public void AddLog(List<BoneSubMovementPair> logs, string s) {
@@ -374,7 +378,7 @@ namespace SprUnity {
             }
             print("Action: " + name);
             foreach (var action in controllers) {
-                if (action.Name.Contains(name)) {
+                if (action.Name == name) {
                     inAction = action;
                     inAction.Begin();
                 }
