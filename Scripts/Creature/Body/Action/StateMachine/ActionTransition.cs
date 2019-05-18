@@ -222,6 +222,7 @@ namespace SprUnity {
             stateMachine.isChanged = true;
         }
 
+        // https://qiita.com/boiledorange73/items/bcd4e150e7caa0210ee6
         private bool Contains(Vector2 s, Vector2 f, Vector2 p) {
             // 直線からの距離で当たり判定
             float dist = 0;

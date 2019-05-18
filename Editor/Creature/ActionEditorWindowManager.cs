@@ -121,7 +121,8 @@ namespace SprUnity {
         #region EventDelegates
 
         void OnHierarchyChanged() {
-            ActionStateMachineWindow.ReloadActionList();
+            // <!!> ループしてる？
+            //ActionStateMachineWindow.ReloadActionList();
             if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
                 instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
             }
@@ -144,11 +145,11 @@ namespace SprUnity {
             }
             if (selectedAction) {
                 if (selectedAction.isChanged) {
-                if (lastSelectedActionManager?[selectedAction.name] != null) {
+                    if (lastSelectedActionManager?[selectedAction.name] != null) {
                         instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
                         instance.timelineWindow?.Repaint();
                         instance.lastSelectedActionManager[selectedAction.name].isChanged = false;
-                }
+                    }
                     instance.stateMachineWindow?.Repaint();
                     selectedAction.isChanged = false;
                 }

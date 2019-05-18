@@ -54,12 +54,14 @@ public class Person : MonoBehaviour {
 
         // <!!>
         if (human) {
+            /*
             GameObject prefab = (GameObject)Resources.Load("Prefabs/PersonDebugInfo");
             visualizeObject = Instantiate(prefab, new Vector3(), Quaternion.identity);
             visualizeObject.transform.parent = FindObjectOfType<Camera>().transform;
             visualizeObject.transform.localPosition = new Vector3();
             debugTextMesh = visualizeObject.transform.Find("Text").gameObject.GetComponent<TextMesh>();
             SetVisualize(visualize);
+            */
         }
     }
 

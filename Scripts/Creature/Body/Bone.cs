@@ -200,6 +200,13 @@ namespace SprUnity {
             }
         }
 
+        public void SyncSolidFromAvatarBone() {
+            if (avatarBone != null) {
+                if(joint != null) { 
+                }
+            }
+        }
+
     }
 
 }
