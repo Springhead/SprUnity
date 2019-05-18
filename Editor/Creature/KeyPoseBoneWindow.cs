@@ -96,7 +96,8 @@ namespace SprUnity {
             new BoneBoxPair(HumanBodyBones.RightUpperLeg, new Vector2(0.41f, 0.5f)),
             new BoneBoxPair(HumanBodyBones.RightLowerLeg, new Vector2(0.435f, 0.698f)),
             new BoneBoxPair(HumanBodyBones.RightFoot, new Vector2(0.45f, 0.937f)),
-        };
+            };
+            window.titleContent = new GUIContent("KeyPoseBone");
         }
 
         public void OnEnable() {

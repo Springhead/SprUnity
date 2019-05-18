@@ -53,6 +53,7 @@ public class Person : MonoBehaviour {
         if (head == null) { head = gameObject; }
 
         // <!!>
+        /*
         if (human) {
             /*
             GameObject prefab = (GameObject)Resources.Load("Prefabs/PersonDebugInfo");
@@ -63,6 +64,7 @@ public class Person : MonoBehaviour {
             SetVisualize(visualize);
             */
         }
+        */
     }
 
     void Update() {
