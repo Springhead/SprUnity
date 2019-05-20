@@ -69,7 +69,14 @@ namespace SprUnity {
 
         public bool isChanged = false;
 
-        public string Name { get { return this.stateMachine.name; } }
+        public string Name {
+            get {
+                if(this.stateMachine != null){
+                    return this.stateMachine.name;
+                }
+                return null;
+            }
+        }
 
         public ActionStateMachineController(ActionStateMachine stateMachine, Body body = null) {
             this.stateMachine = stateMachine;
