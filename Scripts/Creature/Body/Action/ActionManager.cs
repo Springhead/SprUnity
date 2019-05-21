@@ -28,7 +28,7 @@ namespace SprUnity {
         }
     }
 #endif
-
+    [Serializable]
     public class ActionStateMachineController {
 
         ActionStateMachine stateMachine;
@@ -46,6 +46,9 @@ namespace SprUnity {
         // 
         [HideInInspector]
         public Body body;
+
+        [HideInInspector]
+        public BlendController blendController;
 
         //
         ActionLog actionLog;
@@ -66,7 +69,14 @@ namespace SprUnity {
 
         public bool isChanged = false;
 
-        public string Name { get { return this.stateMachine.name; } }
+        public string Name {
+            get {
+                if(this.stateMachine != null){
+                    return this.stateMachine.name;
+                }
+                return null;
+            }
+        }
 
         public ActionStateMachineController(ActionStateMachine stateMachine, Body body = null) {
             this.stateMachine = stateMachine;
@@ -147,9 +157,13 @@ namespace SprUnity {
             */
             stateMachineTime = 0;
             timeOfLastEnter = 0;
-            specifiedTransitions.Clear();
-            specifiedTransitions.Add(stateMachine.entryTransitions[0]);
-            actionLog.ClearAll();
+            if (stateMachine != null) {
+                specifiedTransitions.Clear();
+                specifiedTransitions.Add(stateMachine.entryTransitions[0]);
+            }
+            if (actionLog != null) {
+                actionLog.ClearAll();
+            }
         }
 
         public void AddLog(List<BoneSubMovementPair> logs, string s) {
@@ -173,8 +187,10 @@ namespace SprUnity {
                 float duration = specified.toState.duration;
                 float spring = specified.toState.spring;
                 float damper = specified.toState.damper;
-                foreach(var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
-                    actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
+                if (specified.toState.keyframe != null) {
+                    foreach (var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
+                        actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
+                    }
                 }
             }
 
@@ -196,8 +212,10 @@ namespace SprUnity {
                         float duration = predicted.duration;
                         float spring = predicted.spring;
                         float damper = predicted.damper;
-                        foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
-                            actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
+                        if (predicted.keyframe != null) {
+                            foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
+                                actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
+                            }
                         }
                     }
                 } else {
@@ -213,8 +231,19 @@ namespace SprUnity {
             //Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
+                if (currentState.useFace) {
+                    if (stateMachine.blendController == null) {
+                        stateMachine.blendController = body.GetComponent<BlendController>();
+                        blendController = stateMachine.blendController;
+                    }
+                    if (blendController != null) {
+                        blendController.BlendSet(currentState.interval, currentState.blend, currentState.blendv, currentState.time);
+                    }
+                }
                 // ターゲット位置による変換後のKeyPose
-                return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
+                if (currentState.keyframe != null) {
+                    return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
+                }
             }
             isChanged = true;
             return null;
@@ -356,7 +385,7 @@ namespace SprUnity {
             }
             print("Action: " + name);
             foreach (var action in controllers) {
-                if (action.Name.Contains(name)) {
+                if (action.Name == name) {
                     inAction = action;
                     inAction.Begin();
                 }

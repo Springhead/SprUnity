@@ -122,9 +122,14 @@ namespace SprUnity {
 
         // 適用するBody
         // Start時に対応させる
+        // <!!> これ初期化されない
         [HideInInspector]
         public Body body;
 
+        // BlendShapeを変更するためのコントローラ
+        // <!!> これ初期化されない
+        [HideInInspector]
+        public BlendController blendController;
         //
         ActionLog actionLog;
         public ActionLog ActionLog{ get { return actionLog; } }
@@ -147,11 +152,11 @@ namespace SprUnity {
         public bool isChanged = false;
 
         [HideInInspector]
-        public Rect entryRect = new Rect(0, 0, 100, 50);
+        public Rect entryRect = new Rect(100, 100, 100, 50);
         public List<ActionTransition> entryTransitions = new List<ActionTransition>();
 
         [HideInInspector]
-        public Rect exitRect = new Rect(0, 100, 100, 50);
+        public Rect exitRect = new Rect(100, 200, 100, 50);
 
 
         // ----- ----- ----- ----- -----
@@ -191,8 +196,7 @@ namespace SprUnity {
 
         public static void CreateStateMachine(string newName) {
             var action = CreateInstance<ActionStateMachine>();
-            string currrentDirectory = GetCurrentDirectory();
-            AssetDatabase.CreateAsset(action, currrentDirectory + "/" + newName + ".asset");
+            AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
             AssetDatabase.Refresh();
         }
         // ----- ----- ----- ----- ----- -----

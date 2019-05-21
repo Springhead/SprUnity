@@ -121,7 +121,7 @@ namespace SprUnity {
         #region EventDelegates
 
         void OnHierarchyChanged() {
-            ActionStateMachineWindow.ReloadActionList();
+            //ActionStateMachineWindow.ReloadActionList();
             if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
                 instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
             }

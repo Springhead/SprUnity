@@ -25,7 +25,6 @@ namespace SprUnity {
         private List<List<ActionTransition>> transitionGraph;
 
         // GUI
-        private GUISkin myskin;
         private Vector2 scrollPos;
         private static List<string> actionNames;
         private int index;
@@ -66,14 +65,6 @@ namespace SprUnity {
             ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("flow node 5") as Texture2D;
             ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
             //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
-
-            if (myskin == null) {
-                var mono = MonoScript.FromScriptableObject(this);
-                var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("ActionStateMachineWindow.cs", "");
-                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
-                GUI.skin = myskin;
-            }
         }
 
         void OnDisable() {
@@ -82,12 +73,6 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            //if (myskin != null) {
-            //    GUI.skin = myskin;
-            //} else {
-            //    //Debug.Log("GUISkin is null");
-            //}
-
             if (window == null) Open();
 
             // Actionのセレクト用
