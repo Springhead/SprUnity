@@ -10,7 +10,8 @@ using UnityEditor;
 using SprCs;
 
 namespace SprUnity {
-    /*テスト2*/
+    /*テスト4
+     */
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(ActionManager))]
