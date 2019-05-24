@@ -62,9 +62,8 @@ public class Person : MonoBehaviour {
             visualizeObject.transform.localPosition = new Vector3();
             debugTextMesh = visualizeObject.transform.Find("Text").gameObject.GetComponent<TextMesh>();
             SetVisualize(visualize);
-            */
-        }
-        */
+            
+        }*/
     }
 
     void Update() {

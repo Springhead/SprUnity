@@ -68,8 +68,9 @@ namespace SprUnity {
         }
 
         public bool isChanged = false;
+        public bool initialized = false;
 
-        public string Name { get { return this.stateMachine.name; } }
+        public string Name { get { return this.stateMachine?.name; } }
 
         public ActionStateMachineController(ActionStateMachine stateMachine, Body body = null) {
             this.stateMachine = stateMachine;
@@ -80,6 +81,7 @@ namespace SprUnity {
             specifiedTransitions.Add(stateMachine.entryTransitions[0]);
             flagList = stateMachine.flags.Clone();
             parameters = stateMachine.parameters.Clone();
+            initialized = true;
         }
 
         public float GetFinishTime() {
@@ -355,6 +357,7 @@ namespace SprUnity {
                 controllers.Add(new ActionStateMachineController(action, body));
                 controllers.Last().PredictFutureTransition();
             }
+            inAction = null;
         }
 
         void Update() {
@@ -368,6 +371,10 @@ namespace SprUnity {
             foreach(var controller in controllers) {
                 controller.Reflesh(logMaxLength, logMaxKeepTimeLength);
             }
+        }
+
+        void OnDisable() {
+            QuitAction();
         }
 
         // ----- ----- ----- ----- -----
@@ -386,8 +393,10 @@ namespace SprUnity {
         }
 
         public void QuitAction() {
-            inAction.End();
-            inAction = null;
+            if (inAction != null) {
+                inAction.End();
+                inAction = null;
+            }
         }
     }
 
