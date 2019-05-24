@@ -648,6 +648,7 @@ namespace SprUnity {
 
         void OnSceneGUI(SceneView sceneView) {
             if (currentAction != null && controller != null) {
+                if (!controller.initialized) return;
                 for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                     if (!boneStatusForTimelines[j].solo) continue;
                     bool added = false;

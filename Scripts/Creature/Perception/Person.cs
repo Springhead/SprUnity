@@ -75,17 +75,16 @@ namespace SprUnity {
             persons.Add(this);
             if (head == null) { head = gameObject; }
 
-            // <!!>
+        // <!!>
+        /*
+        if (human) {
             /*
-            if (human) {
-                GameObject prefab = (GameObject)Resources.Load("Prefabs/PersonDebugInfo");
-                visualizeObject = Instantiate(prefab, new Vector3(), Quaternion.identity);
-                visualizeObject.transform.parent = FindObjectOfType<Camera>().transform;
-                visualizeObject.transform.localPosition = new Vector3();
-                debugTextMesh = visualizeObject.transform.Find("Text").gameObject.GetComponent<TextMesh>();
-                SetVisualize(visualize);
-            }
-            */
+            GameObject prefab = (GameObject)Resources.Load("Prefabs/PersonDebugInfo");
+            visualizeObject = Instantiate(prefab, new Vector3(), Quaternion.identity);
+            visualizeObject.transform.parent = FindObjectOfType<Camera>().transform;
+            visualizeObject.transform.localPosition = new Vector3();
+            debugTextMesh = visualizeObject.transform.Find("Text").gameObject.GetComponent<TextMesh>();
+            SetVisualize(visualize);
         }
 
         void Update() {
