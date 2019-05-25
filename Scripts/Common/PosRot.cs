@@ -96,6 +96,7 @@ namespace SprUnity {
         public Quaternion rotation = Quaternion.identity;
         public Vector3 scale = new Vector3(1, 1, 1);
 
+        //<!!>
         public void SetTo(GameObject g) { g.transform.position = position; g.transform.rotation = rotation; }
         public void SetTo(Transform t) { t.position = position; t.rotation = rotation; }
 
@@ -164,4 +165,6 @@ namespace SprUnity {
             return px1;
         }
     }
+
+    
 }
