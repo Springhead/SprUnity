@@ -49,7 +49,7 @@ namespace SprUnity {
         public float damper = 1.0f;
 
         [HideInInspector]
-        public BlendController blendController;
+        public BlendShapeController blendController;
         public bool useFace = false;
         public string blend = "";
         public float blendv = 1f;
@@ -142,7 +142,7 @@ namespace SprUnity {
                 }
                 if (useFace) {
                     if (stateMachine.blendController == null) {
-                        stateMachine.blendController = body.GetComponent<BlendController>();
+                        stateMachine.blendController = body.GetComponent<BlendShapeController>();
                         blendController = stateMachine.blendController;
                     }
                     if (blendController != null) {

@@ -129,7 +129,7 @@ namespace SprUnity {
         // BlendShapeを変更するためのコントローラ
         // <!!> これ初期化されない
         [HideInInspector]
-        public BlendController blendController;
+        public BlendShapeController blendController;
         //
         ActionLog actionLog;
         public ActionLog ActionLog{ get { return actionLog; } }

@@ -50,7 +50,7 @@ namespace SprUnity {
         public Body body;
 
         [HideInInspector]
-        public BlendController blendController;
+        public BlendShapeController blendController;
 
         //
         ActionLog actionLog;
@@ -237,7 +237,7 @@ namespace SprUnity {
             if (body != null) {
                 if (currentState.useFace) {
                     if (stateMachine.blendController == null) {
-                        stateMachine.blendController = body.GetComponent<BlendController>();
+                        stateMachine.blendController = body.GetComponent<BlendShapeController>();
                         blendController = stateMachine.blendController;
                     }
                     if (blendController != null) {
