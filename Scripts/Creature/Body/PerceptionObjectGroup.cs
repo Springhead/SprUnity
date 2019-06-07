@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace SprUnity {
     public class PerceptionObject {
-        PosRot posrot;
-        float confidence;
+        public PosRot posrot;
+        public float confidence;
     }
 
     public class PerceptionObjectGroup : MonoBehaviour {
@@ -17,11 +17,11 @@ namespace SprUnity {
             public virtual void OnDrawGizmos(PerceptionObjectGroup perceptionObjectGroup) { }
         }
         // <!!> 後回し
-        public abstract class Container {
+        public abstract class Container : List<PerceptionObject>{
             public abstract void OnDrawGizmos();
         }
         bool isAgent;
-        private Dictionary<Type,Attribute> attributes;
+        private Dictionary<Type, Attribute> attributes = new Dictionary<Type, Attribute>();
         public Type GetAttribute<Type>() where Type : Attribute, new() {
             if (attributes.ContainsKey(typeof(Type))) {
                 return (attributes[typeof(Type)] as Type);
@@ -32,7 +32,7 @@ namespace SprUnity {
                 return newObj;
             }
         }
-        private Dictionary<Type,Container> containers;
+        private Dictionary<Type,Container> containers = new Dictionary<Type, Container>();
         public Type GetContainer<Type>() where Type : Container, new() {
             if (containers.ContainsKey(typeof(Type))) {
                 return (containers[typeof(Type)] as Type);
@@ -55,5 +55,20 @@ namespace SprUnity {
                 container.Value.OnDrawGizmos();
             }
         }
+
+        // Testように
+        public void Start() {
+            PersonPartsContainer ppc = new PersonPartsContainer();
+            foreach(var pp in ppc) {
+                Debug.Log("posrot = "+ pp.posrot);
+            }
+        }
+    }
+    public class PersonPartsContainer : PerceptionObjectGroup.Container {
+        public override void OnDrawGizmos() {
+        }
+        public PerceptionObject Head { get { return this[0]; } set { this[0] = value; } }
+        public PerceptionObject LeftHand;
+        public PerceptionObject RightHand;
     }
 }
