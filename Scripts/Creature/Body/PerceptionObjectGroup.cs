@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
+using System.Linq;
 
 namespace SprUnity {
     public class PerceptionObject {
@@ -32,8 +34,15 @@ namespace SprUnity {
             public virtual void OnDrawGizmos(PerceptionObjectGroup perceptionObjectGroup) { }
         }
         // <!!> 後回し
-        public abstract class Container : List<PerceptionObject>{
+        public abstract class Container : List<PerceptionObject> {
             public abstract void OnDrawGizmos();
+            public PerceptionObject GetPerceptionObject(int i) {
+                if(i < this.Count) {
+                    return this[i];
+                } else {
+                    return null;
+                }
+            }
         }
         private Dictionary<Type, Attribute> attributes = new Dictionary<Type, Attribute>();
         public Type GetAttribute<Type>() where Type : Attribute, new() {
@@ -46,7 +55,7 @@ namespace SprUnity {
                 return newObj;
             }
         }
-        private Dictionary<Type,Container> containers = new Dictionary<Type, Container>();
+        private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
         public Type GetContainer<Type>() where Type : Container, new() {
             if (containers.ContainsKey(typeof(Type))) {
                 return (containers[typeof(Type)] as Type);
@@ -73,9 +82,15 @@ namespace SprUnity {
         // Testように
         public void Start() {
             PersonPartsContainer ppc = new PersonPartsContainer();
-            foreach(var pp in ppc) {
-                Debug.Log("posrot = " + pp.PosRot().position);
+            var ContainerTypes = Assembly.GetAssembly(typeof(Container)).GetTypes().Where(t => {
+                return t.IsSubclassOf(typeof(Container)) && !t.IsAbstract;
+            });
+            foreach(var skillType in ContainerTypes) {
+                Debug.Log(skillType);
             }
+            //foreach (var pp in ppc) {
+            //    Debug.Log("posrot = " + pp.PosRot().position);
+            //}
         }
     }
     public class PersonPartsContainer : PerceptionObjectGroup.Container {
@@ -84,5 +99,6 @@ namespace SprUnity {
         public PerceptionObject Head { get { return this[0]; } set { this[0] = value; } }
         public PerceptionObject LeftHand { get { return this[1]; } set { this[1] = value; } }
         public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
+        public PerceptionObject RightArm => GetPerceptionObject(3);
     }
 }
