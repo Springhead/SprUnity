@@ -16,7 +16,9 @@ namespace SprUnity {
         [SerializeField]
         public GameObject game;
         public override void OnInspectorGUI() {
-            //game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
+            //base.OnInspectorGUI();
+            //game = new List<GameObject>();
+            game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
         }
         //public void OnEnable() {
         //    gameObjects = new List<GameObject>();
@@ -43,6 +45,7 @@ namespace SprUnity {
     }
 
     public class PerceptionObjectGroup : MonoBehaviour {
+        public SampleTable sample;
         // Attributes
         public class Attribute {
             public virtual void StartPerc(PerceptionObjectGroup perceptionObjectGroup) { }
@@ -122,5 +125,25 @@ namespace SprUnity {
         public PerceptionObject LeftHand { get { return this[1]; } set { this[1] = value; } }
         public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
         public PerceptionObject RightArm => GetPerceptionObject(3);
+    }
+    ///// <summary>
+    ///// ジェネリックを隠すために継承してしまう
+    ///// [System.Serializable]を書くのを忘れない
+    ///// </summary>
+    [System.Serializable]
+    public class SampleTable : TableBase<string, Vector3, SamplePair> {
+
+
+    }
+    /// <summary>
+    /// ジェネリックを隠すために継承してしまう
+    /// [System.Serializable]を書くのを忘れない
+    /// </summary>
+    [System.Serializable]
+    public class SamplePair : KeyAndValue<string, Vector3> {
+
+        public SamplePair(string key, Vector3 value) : base(key, value) {
+
+        }
     }
 }
