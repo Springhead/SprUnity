@@ -5,7 +5,24 @@ using System.Reflection;
 using UnityEngine;
 using System.Linq;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace SprUnity {
+#if UNITY_EDITOR
+    [CustomEditor(typeof(PerceptionObjectGroup))]
+    public class PerceptionObjectGroupEditor : Editor {
+        [SerializeField]
+        public GameObject game;
+        public override void OnInspectorGUI() {
+            //game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
+        }
+        //public void OnEnable() {
+        //    gameObjects = new List<GameObject>();
+        //}
+    }
+#endif
     public class PerceptionObject {
         // ここの構造どうしようか..PosRotConfを作るか？
         public List<PosRot> posrots = new List<PosRot>();
@@ -22,7 +39,6 @@ namespace SprUnity {
         }
         // ここで時間の更新する？どうする？VirtualSensorがやる？
         public void UpdatePerception() {
-
         }
     }
 
@@ -37,7 +53,7 @@ namespace SprUnity {
         public abstract class Container : List<PerceptionObject> {
             public abstract void OnDrawGizmos();
             public PerceptionObject GetPerceptionObject(int i) {
-                if(i < this.Count) {
+                if (0 <= i && i < this.Count) {
                     return this[i];
                 } else {
                     return null;
@@ -85,13 +101,19 @@ namespace SprUnity {
             var ContainerTypes = Assembly.GetAssembly(typeof(Container)).GetTypes().Where(t => {
                 return t.IsSubclassOf(typeof(Container)) && !t.IsAbstract;
             });
-            foreach(var skillType in ContainerTypes) {
+            foreach (var skillType in ContainerTypes) {
                 Debug.Log(skillType);
             }
             //foreach (var pp in ppc) {
             //    Debug.Log("posrot = " + pp.PosRot().position);
             //}
         }
+    }
+    public class CupPartsContainer : PerceptionObjectGroup.Container {
+        public override void OnDrawGizmos() {
+        }
+        public PerceptionObject Body => GetPerceptionObject(0);
+        public PerceptionObject Handle => GetPerceptionObject(1);
     }
     public class PersonPartsContainer : PerceptionObjectGroup.Container {
         public override void OnDrawGizmos() {
