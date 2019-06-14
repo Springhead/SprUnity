@@ -16,15 +16,17 @@ namespace SprUnity {
         [SerializeField]
         public GameObject game;
         public override void OnInspectorGUI() {
-            //base.OnInspectorGUI();
+            PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
+            base.OnInspectorGUI();
             //game = new List<GameObject>();
-            game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
+            //game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
         }
         //public void OnEnable() {
         //    gameObjects = new List<GameObject>();
         //}
     }
 #endif
+    [Serializable]
     public class PerceptionObject {
         // ここの構造どうしようか..PosRotConfを作るか？
         public List<PosRot> posrots = new List<PosRot>();
@@ -45,7 +47,6 @@ namespace SprUnity {
     }
 
     public class PerceptionObjectGroup : MonoBehaviour {
-        public SampleTable sample;
         // Attributes
         public class Attribute {
             public virtual void StartPerc(PerceptionObjectGroup perceptionObjectGroup) { }
@@ -63,6 +64,7 @@ namespace SprUnity {
                 }
             }
         }
+
         private Dictionary<Type, Attribute> attributes = new Dictionary<Type, Attribute>();
         public Type GetAttribute<Type>() where Type : Attribute, new() {
             if (attributes.ContainsKey(typeof(Type))) {
@@ -74,16 +76,34 @@ namespace SprUnity {
                 return newObj;
             }
         }
-        private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
-        public Type GetContainer<Type>() where Type : Container, new() {
-            if (containers.ContainsKey(typeof(Type))) {
-                return (containers[typeof(Type)] as Type);
-            } else {
-                Type newObj = new Type();
-                containers[typeof(Type)] = newObj;
-                return newObj;
-            }
+
+        [Serializable]
+        public class PartNamePair {
+            public string TypeName;
+            public List<PerceptionObject> Part; //Containerクラス
         }
+        [SerializeField]
+        private List<PartNamePair> parts = new List<PartNamePair>();
+        //public Type GetPart<Type>() where Type : Container, new() {
+        //    foreach (var part in parts) {
+        //        if (part.TypeName == typeof(Type).ToString()) {
+        //            return (part.Part as Type);
+        //        } else {
+        //            Type newObj = new Type();
+        //            containers[typeof(Type)] = newObj;
+        //            return newObj;
+        //        }
+        //    }
+        //}
+        //public Type GetContainer<Type>() where Type : Container, new() {
+        //    if (containers.ContainsKey(typeof(Type))) {
+        //        return (containers[typeof(Type)] as Type);
+        //    } else {
+        //        Type newObj = new Type();
+        //        containers[typeof(Type)] = newObj;
+        //        return newObj;
+        //    }
+        //}
         public void UpdatePerc() {
             foreach (var attr in attributes) {
                 attr.Value.UpdatePerc(this);
@@ -126,24 +146,24 @@ namespace SprUnity {
         public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
         public PerceptionObject RightArm => GetPerceptionObject(3);
     }
+    
     ///// <summary>
     ///// ジェネリックを隠すために継承してしまう
     ///// [System.Serializable]を書くのを忘れない
     ///// </summary>
     [System.Serializable]
-    public class SampleTable : TableBase<string, Vector3, SamplePair> {
-
-
+    public class SampleTable : TableBase<Type, PerceptionObjectGroup.Container, SamplePair> {
     }
     /// <summary>
     /// ジェネリックを隠すために継承してしまう
     /// [System.Serializable]を書くのを忘れない
     /// </summary>
     [System.Serializable]
-    public class SamplePair : KeyAndValue<string, Vector3> {
+    public class SamplePair : KeyAndValue<Type, PerceptionObjectGroup.Container> {
 
-        public SamplePair(string key, Vector3 value) : base(key, value) {
+        public SamplePair(Type key, PerceptionObjectGroup.Container value) : base(key, value) {
 
         }
     }
+        //private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
 }
