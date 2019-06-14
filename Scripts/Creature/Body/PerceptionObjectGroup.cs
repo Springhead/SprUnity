@@ -113,9 +113,9 @@ namespace SprUnity {
             foreach (var kv in attributes) {
                 kv.Value.OnDrawGizmos(this);
             }
-            foreach (var container in containers) {
-                container.Value.OnDrawGizmos();
-            }
+            //foreach (var container in containers) {
+            //    container.Value.OnDrawGizmos();
+            //}
         }
 
         // Testように
