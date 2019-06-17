@@ -202,12 +202,15 @@ namespace SprUnity {
         }
 
         private void OnContextMenu(Vector2 mousePosition) {
+#if UNITY_EDITOR
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => OnDelete());
             genericMenu.ShowAsContext();
+#endif
         }
 
         private void OnDelete() {
+#if UNITY_EDITOR
             var path = AssetDatabase.GetAssetPath(this.stateMachine);
             if(fromState == null) {
                 stateMachine.entryTransitions.Remove(this);
@@ -216,6 +219,7 @@ namespace SprUnity {
             }
             Object.DestroyImmediate(this, true);
             AssetDatabase.ImportAsset(path);
+#endif
         }
 
         public void OnValidate() {
