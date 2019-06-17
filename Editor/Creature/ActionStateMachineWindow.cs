@@ -27,7 +27,7 @@ namespace SprUnity {
         // GUI
         private Vector2 scrollPos;
         private static List<string> actionNames;
-        private int index;
+        private int actionIndex;
         private GUIStyle accessorySytle;
         private string skinpath = "GUISkins/ASMGUISkin.guiskin";
 
@@ -90,9 +90,9 @@ namespace SprUnity {
             popup.fontSize = 15;
 
             popup.fixedHeight = 22;
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(),popup,GUILayout.Width(120));
+            actionIndex = EditorGUILayout.Popup(actionIndex, actionNames.ToArray(),popup,GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if (act.name == actionNames[index]) {
+                if (act.name == actionNames[actionIndex]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }

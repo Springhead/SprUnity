@@ -13,17 +13,57 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(PerceptionObjectGroup))]
     public class PerceptionObjectGroupEditor : Editor {
-        [SerializeField]
-        public GameObject game;
+        public IEnumerable<Type> ContainerTypes;
         public override void OnInspectorGUI() {
             PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
+            //var iterator = serializedObject.GetIterator();
+            //while (iterator.NextVisible(true)) {
+            //    EditorGUILayout.PropertyField(iterator);
+            //}
+            var partsSerializedObject = serializedObject.FindProperty("parts"); //PartNamePair
+            for (int i = 0; i < partsSerializedObject.arraySize; i++) {
+                EditorGUILayout.BeginHorizontal();
+                var partNamePairSerializeObject = partsSerializedObject.GetArrayElementAtIndex(i);
+                EditorGUILayout.LabelField(partNamePairSerializeObject.
+                    FindPropertyRelative("TypeName").stringValue);
+                var PartSerializeObject = partNamePairSerializeObject.FindPropertyRelative("Part"); //List<PerceptionObject>
+                for (int j = 0; j < PartSerializeObject.arraySize; j++) {
+                    var perceptionObjectSerializedObject = PartSerializeObject.GetArrayElementAtIndex(j);
+                    EditorGUILayout.LabelField(perceptionObjectSerializedObject.
+                        FindPropertyRelative("confidence").floatValue.ToString());
+                }
+                EditorGUILayout.EndHorizontal();
+                //if (GUILayout.Button("Create Part")) {
+                //    partsSerializedObject.InsertArrayElementAtIndex(partsSerializedObject.arraySize);
+                //}
+            }
+            if (GUILayout.Button("Create Parts")) {
+                partsSerializedObject.InsertArrayElementAtIndex(partsSerializedObject.arraySize);
+            }
+            //parts.objectReferenceValue;
+            //foreach(var pair in perceptionObjectGroup.GetParts)
+            //EditorGUILayout.Popup();
+            serializedObject.ApplyModifiedProperties();
+            EditorGUILayout.LabelField(partsSerializedObject.arraySize.ToString());
+            //var parts = (PerceptionObjectGroup.PartNamePair)partsSerializedObject.GetArrayElementAtIndex(1);
             base.OnInspectorGUI();
+
             //game = new List<GameObject>();
             //game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
         }
-        //public void OnEnable() {
-        //    gameObjects = new List<GameObject>();
-        //}
+
+        public void OnEnable() {
+            ContainerTypes = Assembly.GetAssembly(typeof(PerceptionObjectGroup.Container)).GetTypes().Where(t => {
+                return t.IsSubclassOf(typeof(PerceptionObjectGroup.Container)) && !t.IsAbstract;
+            });
+            foreach (var skillType in ContainerTypes) {
+                Debug.Log(skillType.Name);
+            }
+            var iterator = serializedObject.GetIterator();
+            while (iterator.NextVisible(true)) {
+                Debug.Log(iterator.propertyPath);
+            }
+        }
     }
 #endif
     [Serializable]
@@ -53,7 +93,7 @@ namespace SprUnity {
             public virtual void UpdatePerc(PerceptionObjectGroup perceptionObjectGroup) { }
             public virtual void OnDrawGizmos(PerceptionObjectGroup perceptionObjectGroup) { }
         }
-        // <!!> 後回し
+        // <!!> ContainerクラスをSerializeableにしようとしたが継承元のSerializeableが反映されないため無理
         public abstract class Container : List<PerceptionObject> {
             public abstract void OnDrawGizmos();
             public PerceptionObject GetPerceptionObject(int i) {
@@ -80,21 +120,24 @@ namespace SprUnity {
         [Serializable]
         public class PartNamePair {
             public string TypeName;
-            public List<PerceptionObject> Part; //Containerクラス
+            public List<PerceptionObject> Part; //Containerクラスにしたいが無理
         }
+
+        // <!!> 違和感のある実装PartNamePair.PartがList<PerceptionObject>であるためにTypeにキャスとしているのが違和感がある
         [SerializeField]
         private List<PartNamePair> parts = new List<PartNamePair>();
-        //public Type GetPart<Type>() where Type : Container, new() {
-        //    foreach (var part in parts) {
-        //        if (part.TypeName == typeof(Type).ToString()) {
-        //            return (part.Part as Type);
-        //        } else {
-        //            Type newObj = new Type();
-        //            containers[typeof(Type)] = newObj;
-        //            return newObj;
-        //        }
-        //    }
-        //}
+        public Type GetPart<Type>() where Type : Container, new() {
+            foreach (var part in parts) {
+                if (part.TypeName == typeof(Type).Name) {
+                    return (part.Part as Type);
+                }
+            }
+            PartNamePair newPartNamePair = new PartNamePair();
+            newPartNamePair.TypeName = typeof(Type).Name;
+            newPartNamePair.Part = new Type();
+            parts.Add(newPartNamePair);
+            return (newPartNamePair.Part as Type);
+        }
         //public Type GetContainer<Type>() where Type : Container, new() {
         //    if (containers.ContainsKey(typeof(Type))) {
         //        return (containers[typeof(Type)] as Type);
@@ -146,7 +189,7 @@ namespace SprUnity {
         public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
         public PerceptionObject RightArm => GetPerceptionObject(3);
     }
-    
+
     ///// <summary>
     ///// ジェネリックを隠すために継承してしまう
     ///// [System.Serializable]を書くのを忘れない
@@ -160,10 +203,9 @@ namespace SprUnity {
     /// </summary>
     [System.Serializable]
     public class SamplePair : KeyAndValue<Type, PerceptionObjectGroup.Container> {
-
         public SamplePair(Type key, PerceptionObjectGroup.Container value) : base(key, value) {
 
         }
     }
-        //private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
+    //private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
 }
