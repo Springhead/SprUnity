@@ -5,8 +5,23 @@ using UnityEngine;
 
 namespace SprUnity {
     public class PerceptionObject {
-        public PosRot posrot;
+        // ここの構造どうしようか..PosRotConfを作るか？
+        public List<PosRot> posrots = new List<PosRot>();
         public float confidence;
+        public GameObject gameObject;
+        public Vector3 Position(float time = 0) {
+            return gameObject.transform.position;
+        }
+        public Quaternion Rotation(float time = 0) {
+            return gameObject.transform.rotation;
+        }
+        public PosRot PosRot(float time = 0) {
+            return posrots[0];
+        }
+        // ここで時間の更新する？どうする？VirtualSensorがやる？
+        public void UpdatePerception() {
+
+        }
     }
 
     public class PerceptionObjectGroup : MonoBehaviour {
@@ -20,7 +35,6 @@ namespace SprUnity {
         public abstract class Container : List<PerceptionObject>{
             public abstract void OnDrawGizmos();
         }
-        bool isAgent;
         private Dictionary<Type, Attribute> attributes = new Dictionary<Type, Attribute>();
         public Type GetAttribute<Type>() where Type : Attribute, new() {
             if (attributes.ContainsKey(typeof(Type))) {
@@ -60,7 +74,7 @@ namespace SprUnity {
         public void Start() {
             PersonPartsContainer ppc = new PersonPartsContainer();
             foreach(var pp in ppc) {
-                Debug.Log("posrot = "+ pp.posrot);
+                Debug.Log("posrot = " + pp.PosRot().position);
             }
         }
     }
@@ -68,7 +82,7 @@ namespace SprUnity {
         public override void OnDrawGizmos() {
         }
         public PerceptionObject Head { get { return this[0]; } set { this[0] = value; } }
-        public PerceptionObject LeftHand;
-        public PerceptionObject RightHand;
+        public PerceptionObject LeftHand { get { return this[1]; } set { this[1] = value; } }
+        public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
     }
 }
