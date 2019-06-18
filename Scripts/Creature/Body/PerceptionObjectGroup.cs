@@ -24,9 +24,8 @@ namespace SprUnity {
             for (int i = 0; i < partsSerializedObject.arraySize; i++) {
                 EditorGUILayout.BeginHorizontal();
                 var partNamePairSerializeObject = partsSerializedObject.GetArrayElementAtIndex(i);
-                EditorGUILayout.LabelField(partNamePairSerializeObject.
-                    FindPropertyRelative("TypeName").stringValue);
                 var PartSerializeObject = partNamePairSerializeObject.FindPropertyRelative("Part"); //List<PerceptionObject>
+                EditorGUILayout.LabelField(PartSerializeObject.propertyType.ToString());
                 for (int j = 0; j < PartSerializeObject.arraySize; j++) {
                     var perceptionObjectSerializedObject = PartSerializeObject.GetArrayElementAtIndex(j);
                     EditorGUILayout.LabelField(perceptionObjectSerializedObject.
@@ -94,6 +93,8 @@ namespace SprUnity {
             public virtual void OnDrawGizmos(PerceptionObjectGroup perceptionObjectGroup) { }
         }
         // <!!> ContainerクラスをSerializeableにしようとしたが継承元のSerializeableが反映されないため無理
+        // Listが出てこない
+        //[Serializable]
         public abstract class Container : List<PerceptionObject> {
             public abstract void OnDrawGizmos();
             public PerceptionObject GetPerceptionObject(int i) {
@@ -116,10 +117,10 @@ namespace SprUnity {
                 return newObj;
             }
         }
-
+        
+        // これTypeNameがいらないからこれをContainerにならないだろうか？
         [Serializable]
         public class PartNamePair {
-            public string TypeName;
             public List<PerceptionObject> Part; //Containerクラスにしたいが無理
         }
 
@@ -128,12 +129,11 @@ namespace SprUnity {
         private List<PartNamePair> parts = new List<PartNamePair>();
         public Type GetPart<Type>() where Type : Container, new() {
             foreach (var part in parts) {
-                if (part.TypeName == typeof(Type).Name) {
+                if (part.GetType() == typeof(Type)) {
                     return (part.Part as Type);
                 }
             }
             PartNamePair newPartNamePair = new PartNamePair();
-            newPartNamePair.TypeName = typeof(Type).Name;
             newPartNamePair.Part = new Type();
             parts.Add(newPartNamePair);
             return (newPartNamePair.Part as Type);
@@ -162,6 +162,7 @@ namespace SprUnity {
         }
 
         // Testように
+        List<List<PerceptionObject>> test;
         public void Start() {
             PersonPartsContainer ppc = new PersonPartsContainer();
             var ContainerTypes = Assembly.GetAssembly(typeof(Container)).GetTypes().Where(t => {
@@ -169,6 +170,12 @@ namespace SprUnity {
             });
             foreach (var skillType in ContainerTypes) {
                 Debug.Log(skillType);
+            }
+
+            test = new List<List<PerceptionObject>>();
+            test.Add(new CupPartsContainer());
+            foreach(var tes in test) {
+                Debug.Log(tes.GetType());
             }
             //foreach (var pp in ppc) {
             //    Debug.Log("posrot = " + pp.PosRot().position);
