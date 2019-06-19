@@ -13,13 +13,60 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(PerceptionObjectGroup))]
     public class PerceptionObjectGroupEditor : Editor {
-        public IEnumerable<Type> ContainerTypes;
+        public IEnumerable<Type> partsTypes;
+        public List<string> partsTypeStrings;
+        private int partsTypeIndex;
         public override void OnInspectorGUI() {
             PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
+            // これをやってもシリアル化するとCutPartsではなくPartsになる
+            if (GUILayout.Button("Create CupParts")) {
+                var newpair = new PerceptionObjectGroup.PartsNamePair();
+                newpair.parts = new CupParts();
+                newpair.name = newpair.parts.GetType().Name;
+                perceptionObjectGroup.partsList[0] = newpair;
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            partsTypeIndex = EditorGUILayout.Popup(partsTypeIndex, partsTypeStrings.ToArray());
+            if (GUILayout.Button("Create")) {
+                foreach (var partsType in partsTypes) {
+                    if (partsType.Name == partsTypeStrings[partsTypeIndex]) {
+                        // partsTypeは同じ名前を二つ含まない
+                        var isExist = false;
+                        foreach(var parts in perceptionObjectGroup.partsList) {
+                            if(parts.name == partsType.Name) {
+                                isExist = true; 
+                            }
+                        }
+                        if (isExist) {
+                            break;
+                        }
+                        var newpair = new PerceptionObjectGroup.PartsNamePair();
+                        newpair.parts = new PerceptionObjectGroup.Parts();
+                        newpair.name = partsType.Name;
+                        perceptionObjectGroup.partsList.Add(newpair);
+                    }
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+
+            foreach (var parts in perceptionObjectGroup.partsList) {
+                foreach (var partType in partsTypes) {
+                    if (partType.Name == parts.name) {
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.LabelField(partType.ToString());
+                        foreach (var property in partType.GetProperties()) {
+                            Debug.Log(property.ToString());
+                        }
+                        EditorGUILayout.EndHorizontal();
+                    }
+                }
+            }
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
             //    EditorGUILayout.PropertyField(iterator);
             //}
+            /*
             var partsSerializedObject = serializedObject.FindProperty("parts"); //PartNamePair
             for (int i = 0; i < partsSerializedObject.arraySize; i++) {
                 EditorGUILayout.BeginHorizontal();
@@ -45,6 +92,7 @@ namespace SprUnity {
             serializedObject.ApplyModifiedProperties();
             EditorGUILayout.LabelField(partsSerializedObject.arraySize.ToString());
             //var parts = (PerceptionObjectGroup.PartNamePair)partsSerializedObject.GetArrayElementAtIndex(1);
+            */
             base.OnInspectorGUI();
 
             //game = new List<GameObject>();
@@ -52,10 +100,12 @@ namespace SprUnity {
         }
 
         public void OnEnable() {
-            ContainerTypes = Assembly.GetAssembly(typeof(PerceptionObjectGroup.Container)).GetTypes().Where(t => {
-                return t.IsSubclassOf(typeof(PerceptionObjectGroup.Container)) && !t.IsAbstract;
+            partsTypes = Assembly.GetAssembly(typeof(PerceptionObjectGroup.Parts)).GetTypes().Where(t => {
+                return t.IsSubclassOf(typeof(PerceptionObjectGroup.Parts)) && !t.IsAbstract;
             });
-            foreach (var skillType in ContainerTypes) {
+            partsTypeStrings = new List<string>();
+            foreach (var skillType in partsTypes) {
+                partsTypeStrings.Add(skillType.Name);
                 Debug.Log(skillType.Name);
             }
             var iterator = serializedObject.GetIterator();
@@ -117,26 +167,40 @@ namespace SprUnity {
                 return newObj;
             }
         }
-        
+
+        [Serializable]
+        public class PartsNamePair {
+            public string name;
+            public Parts parts;
+        }
         // これTypeNameがいらないからこれをContainerにならないだろうか？
         [Serializable]
-        public class PartNamePair {
-            public List<PerceptionObject> Part; //Containerクラスにしたいが無理
+        public class Parts {
+            public List<PerceptionObject> parts; //Containerクラスにしたいが無理
+            public PerceptionObject GetPerceptionObject(int i) {
+                if (0 <= i && i < parts.Count) {
+                    return parts[i];
+                } else {
+                    return null;
+                }
+            }
         }
 
         // <!!> 違和感のある実装PartNamePair.PartがList<PerceptionObject>であるためにTypeにキャスとしているのが違和感がある
+        // ここをprivateにしているとEditor側でparts.part = new CupPart()観たいのができない
         [SerializeField]
-        private List<PartNamePair> parts = new List<PartNamePair>();
-        public Type GetPart<Type>() where Type : Container, new() {
-            foreach (var part in parts) {
-                if (part.GetType() == typeof(Type)) {
-                    return (part.Part as Type);
+        public List<PartsNamePair> partsList = new List<PartsNamePair>();
+        public Type GetPart<Type>() where Type : Parts, new() {
+            foreach (var part in partsList) {
+                if (part.name == typeof(Type).Name) {
+                    return (part.parts as Type);
                 }
             }
-            PartNamePair newPartNamePair = new PartNamePair();
-            newPartNamePair.Part = new Type();
-            parts.Add(newPartNamePair);
-            return (newPartNamePair.Part as Type);
+            PartsNamePair newPartNamePair = new PartsNamePair();
+            newPartNamePair.parts = new Type();
+            newPartNamePair.name = typeof(Type).Name;
+            partsList.Add(newPartNamePair);
+            return (newPartNamePair.parts as Type);
         }
         //public Type GetContainer<Type>() where Type : Container, new() {
         //    if (containers.ContainsKey(typeof(Type))) {
@@ -162,7 +226,7 @@ namespace SprUnity {
         }
 
         // Testように
-        List<List<PerceptionObject>> test;
+        List<Parts> test;
         public void Start() {
             PersonPartsContainer ppc = new PersonPartsContainer();
             var ContainerTypes = Assembly.GetAssembly(typeof(Container)).GetTypes().Where(t => {
@@ -172,9 +236,9 @@ namespace SprUnity {
                 Debug.Log(skillType);
             }
 
-            test = new List<List<PerceptionObject>>();
-            test.Add(new CupPartsContainer());
-            foreach(var tes in test) {
+            test = new List<Parts>();
+            test.Add(new CupParts());
+            foreach (var tes in test) {
                 Debug.Log(tes.GetType());
             }
             //foreach (var pp in ppc) {
@@ -182,18 +246,16 @@ namespace SprUnity {
             //}
         }
     }
-    public class CupPartsContainer : PerceptionObjectGroup.Container {
-        public override void OnDrawGizmos() {
-        }
+    [Serializable]
+    public class CupParts : PerceptionObjectGroup.Parts {
         public PerceptionObject Body => GetPerceptionObject(0);
         public PerceptionObject Handle => GetPerceptionObject(1);
     }
-    public class PersonPartsContainer : PerceptionObjectGroup.Container {
-        public override void OnDrawGizmos() {
-        }
-        public PerceptionObject Head { get { return this[0]; } set { this[0] = value; } }
-        public PerceptionObject LeftHand { get { return this[1]; } set { this[1] = value; } }
-        public PerceptionObject RightHand { get { return this[2]; } set { this[2] = value; } }
+    [Serializable]
+    public class PersonPartsContainer : PerceptionObjectGroup.Parts {
+        public PerceptionObject Head => GetPerceptionObject(0);
+        public PerceptionObject LeftHand => GetPerceptionObject(1);
+        public PerceptionObject RightHand => GetPerceptionObject(2);
         public PerceptionObject RightArm => GetPerceptionObject(3);
     }
 
