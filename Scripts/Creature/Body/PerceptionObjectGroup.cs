@@ -23,13 +23,6 @@ namespace SprUnity {
         private GameObject aaa;
         public override void OnInspectorGUI() {
             PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
-            // これをやってもシリアル化するとCutPartsではなくPartsになる
-            if (GUILayout.Button("Create CupParts")) {
-                var newPartsNamePair = new PerceptionObjectGroup.PartsNamePair();
-                newPartsNamePair.parts = new CupParts();
-                newPartsNamePair.name = newPartsNamePair.parts.GetType().Name;
-                perceptionObjectGroup.partsNamePairs[0] = newPartsNamePair;
-            }
 
             foreach (var pair in perceptionObjectGroup.partsNamePairs) {
                 showPartsTypeStrings[pair.name] =
@@ -39,7 +32,7 @@ namespace SprUnity {
                     foreach (var partType in partsTypes) {
                         if (partType.Name == pair.name) {
                             foreach (var property in partType.GetProperties()) {
-                                if (property.GetType() == typeof(PerceptionObject)){
+                                if (property.PropertyType == typeof(PerceptionObject)){
                                     EditorGUILayout.BeginHorizontal();
                                     EditorGUILayout.LabelField(property.Name);
                                     EditorGUILayout.ObjectField(aaa, typeof(GameObject), true);
@@ -67,6 +60,8 @@ namespace SprUnity {
                         if (isExist) {
                             break;
                         }
+                        Debug.Log("aaa");
+                        Undo.RecordObject(perceptionObjectGroup, "Change PerceptionObjectGroup");
                         var newPartsNamePair = new PerceptionObjectGroup.PartsNamePair();
                         newPartsNamePair.parts = new PerceptionObjectGroup.Parts();
                         newPartsNamePair.name = partsType.Name;
