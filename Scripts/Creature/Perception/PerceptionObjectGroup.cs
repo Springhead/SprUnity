@@ -70,7 +70,6 @@ namespace SprUnity {
                 }
             }
             EditorGUILayout.EndHorizontal();
-
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
             //    EditorGUILayout.PropertyField(iterator);
