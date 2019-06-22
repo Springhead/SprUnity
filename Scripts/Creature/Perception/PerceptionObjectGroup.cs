@@ -170,19 +170,6 @@ namespace SprUnity {
             public virtual void UpdatePerc(PerceptionObjectGroup perceptionObjectGroup) { }
             public virtual void OnDrawGizmos(PerceptionObjectGroup perceptionObjectGroup) { }
         }
-        // <!!> ContainerクラスをSerializeableにしようとしたが継承元のSerializeableが反映されないため無理
-        // Listが出てこない
-        //[Serializable]
-        public abstract class Container : List<PerceptionObject> {
-            public abstract void OnDrawGizmos();
-            public PerceptionObject GetPerceptionObject(int i) {
-                if (0 <= i && i < this.Count) {
-                    return this[i];
-                } else {
-                    return null;
-                }
-            }
-        }
 
         private Dictionary<Type, Attribute> attributes = new Dictionary<Type, Attribute>();
         public Type GetAttribute<Type>() where Type : Attribute, new() {
@@ -245,12 +232,6 @@ namespace SprUnity {
         List<Parts> test;
         public void Start() {
             PersonPartsContainer ppc = new PersonPartsContainer();
-            var ContainerTypes = Assembly.GetAssembly(typeof(Container)).GetTypes().Where(t => {
-                return t.IsSubclassOf(typeof(Container)) && !t.IsAbstract;
-            });
-            foreach (var skillType in ContainerTypes) {
-                Debug.Log(skillType);
-            }
 
             test = new List<Parts>();
             test.Add(new CupParts());
@@ -262,30 +243,4 @@ namespace SprUnity {
             //}
         }
     }
-    [Serializable]
-    public class PersonPartsContainer : Parts {
-        public PerceptionObject Head => GetPerceptionObject(0);
-        public PerceptionObject LeftHand => GetPerceptionObject(1);
-        public PerceptionObject RightHand => GetPerceptionObject(2);
-        public PerceptionObject RightArm => GetPerceptionObject(3);
-    }
-
-    ///// <summary>
-    ///// ジェネリックを隠すために継承してしまう
-    ///// [System.Serializable]を書くのを忘れない
-    ///// </summary>
-    [System.Serializable]
-    public class SampleTable : TableBase<Type, PerceptionObjectGroup.Container, SamplePair> {
-    }
-    /// <summary>
-    /// ジェネリックを隠すために継承してしまう
-    /// [System.Serializable]を書くのを忘れない
-    /// </summary>
-    [System.Serializable]
-    public class SamplePair : KeyAndValue<Type, PerceptionObjectGroup.Container> {
-        public SamplePair(Type key, PerceptionObjectGroup.Container value) : base(key, value) {
-
-        }
-    }
-    //private Dictionary<Type, Container> containers = new Dictionary<Type, Container>();
 }

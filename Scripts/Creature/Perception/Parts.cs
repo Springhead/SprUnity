@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
 #if UNITY_EDITOR
-    [CustomEditor(typeof(Parts),true)]
+    [CustomEditor(typeof(Parts), true)]
     public class PartsEditor : Editor {
         private GameObject aaa;
         public override void OnInspectorGUI() {
@@ -24,25 +24,25 @@ namespace SprUnity {
     }
 #endif
     public class Parts : MonoBehaviour {
-    public List<PerceptionObject> parts;
-    public int partsSize; //これを毎回走らせる
-    public PerceptionObject GetPerceptionObject(int i) {
-        if (0 <= i && i < parts.Count) {
-            return parts[i];
-        } else {
-            return null;
-        }
-    }
-
-    // staticだと自分のクラスの型がわからないため,これ外部ではPartsにキャストされてしまうから使えない
-    public int GetPartsCount() {
-        int count = 0;
-        foreach (var property in this.GetType().GetProperties()) {
-            if (property.GetType() == typeof(PerceptionObject)) {
-                count++;
+        public List<PerceptionObject> parts;
+        public int partsSize; //これを毎回走らせる
+        public PerceptionObject GetPerceptionObject(int i) {
+            if (0 <= i && i < parts.Count) {
+                return parts[i];
+            } else {
+                return null;
             }
         }
-        return count;
+
+        // staticだと自分のクラスの型がわからないため,これ外部ではPartsにキャストされてしまうから使えない
+        public int GetPartsCount() {
+            int count = 0;
+            foreach (var property in this.GetType().GetProperties()) {
+                if (property.GetType() == typeof(PerceptionObject)) {
+                    count++;
+                }
+            }
+            return count;
+        }
     }
-}
 }
