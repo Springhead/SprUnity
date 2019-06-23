@@ -22,15 +22,18 @@ namespace SprUnity {
         private GameObject aaa;
         public override void OnInspectorGUI() {
             PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
-            foreach(var parts in perceptionObjectGroup.partsList) {
+            foreach (var parts in perceptionObjectGroup.partsList) {
                 EditorGUILayout.LabelField(parts.GetType().ToString());
                 EditorGUI.indentLevel++;
-                foreach (var property in parts.GetType().GetProperties()) {
-                    if (property.PropertyType == typeof(PerceptionObject)) {
-                        EditorGUILayout.LabelField(property.ToString());
+                foreach (var field in target.GetType().GetFields()) {
+                    if (field.FieldType == typeof(PerceptionObject)) {
+                        EditorGUILayout.LabelField(field.ToString());
                     }
                 }
                 EditorGUI.indentLevel--;
+            }
+            if (GUILayout.Button("Test")) {
+                perceptionObjectGroup.Test();
             }
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
@@ -128,7 +131,7 @@ namespace SprUnity {
         }
 
         // <!!> 違和感のある実装PartNamePair.PartがList<PerceptionObject>であるためにTypeにキャスとしているのが違和感がある
-        // ここをprivateにしているとEditor側でparts.part = new CupPart()観たいのができない
+        // ここをprivateにしているとEditor側でparts.part = new CupPart()観たいのができない←SerializedProperty.objectReferenceValueを使えばできるかも
         // Dictionaryだとinspectorに表示が確実にできないpublicにまずしてはならない
         // inspectorに表示が絶対にあった穂がようい
         [NonSerialized]
@@ -166,6 +169,15 @@ namespace SprUnity {
             //}
         }
 
+        public void Test() {
+            foreach(var parts in partsList) {
+                foreach(var part in parts) {
+                    if (part.gameObject != null) {
+                        Debug.Log(part.gameObject.name);
+                    }
+                }
+            }
+        }
         //// Testように
         //List<Parts> test;
         //public void Start() {
