@@ -22,54 +22,16 @@ namespace SprUnity {
         private GameObject aaa;
         public override void OnInspectorGUI() {
             PerceptionObjectGroup perceptionObjectGroup = (PerceptionObjectGroup)target;
-
-            foreach (var pair in perceptionObjectGroup.partsNamePairs) {
-                showPartsTypeStrings[pair.name] =
-                    EditorGUILayout.Foldout(showPartsTypeStrings[pair.name], pair.name);
-                if (showPartsTypeStrings[pair.name]) {
-                    EditorGUI.indentLevel++;
-                    foreach (var partType in partsTypes) {
-                        if (partType.Name == pair.name) {
-                            foreach (var property in partType.GetProperties()) {
-                                if (property.PropertyType == typeof(PerceptionObject)) {
-                                    EditorGUILayout.BeginHorizontal();
-                                    EditorGUILayout.LabelField(property.Name);
-                                    EditorGUILayout.ObjectField(aaa, typeof(GameObject), true);
-                                    EditorGUILayout.EndHorizontal();
-                                }
-                            }
-                        }
-                    }
-                    EditorGUI.indentLevel--;
-                }
-            }
-
-            EditorGUILayout.BeginHorizontal();
-            partsTypeIndex = EditorGUILayout.Popup(partsTypeIndex, partsTypeStrings.ToArray());
-            if (GUILayout.Button("Create")) {
-                foreach (var partsType in partsTypes) {
-                    if (partsType.Name == partsTypeStrings[partsTypeIndex]) {
-                        // partsTypeは同じ名前を二つ含まない
-                        var isExist = false;
-                        foreach (var pair in perceptionObjectGroup.partsNamePairs) {
-                            if (pair.name == partsType.Name) {
-                                isExist = true;
-                            }
-                        }
-                        if (isExist) {
-                            break;
-                        }
-                        Debug.Log("aaa");
-                        Undo.RecordObject(perceptionObjectGroup, "Change PerceptionObjectGroup");
-                        var newPartsNamePair = new PerceptionObjectGroup.PartsNamePair();
-                        newPartsNamePair.parts = new Parts();
-                        newPartsNamePair.name = partsType.Name;
-                        perceptionObjectGroup.partsNamePairs.Add(newPartsNamePair);
-                        showPartsTypeStrings.Add(newPartsNamePair.name, true);
+            foreach(var parts in perceptionObjectGroup.partsList) {
+                EditorGUILayout.LabelField(parts.GetType().ToString());
+                EditorGUI.indentLevel++;
+                foreach (var property in parts.GetType().GetProperties()) {
+                    if (property.PropertyType == typeof(PerceptionObject)) {
+                        EditorGUILayout.LabelField(property.ToString());
                     }
                 }
+                EditorGUI.indentLevel--;
             }
-            EditorGUILayout.EndHorizontal();
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
             //    EditorGUILayout.PropertyField(iterator);
@@ -115,7 +77,6 @@ namespace SprUnity {
             partsTypeStrings = new List<string>();
             foreach (var skillType in partsTypes) {
                 partsTypeStrings.Add(skillType.Name);
-                Debug.Log(skillType.Name);
             }
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
@@ -123,23 +84,6 @@ namespace SprUnity {
             //}
             showPartsTypeStrings = new Dictionary<string, bool>();
 
-            foreach (var pair in perceptionObjectGroup.partsNamePairs) {
-                showPartsTypeStrings.Add(pair.name, true);
-            }
-            foreach (var pair in perceptionObjectGroup.partsNamePairs) {
-                foreach (var partsType in partsTypes) {
-                    if (pair.name == partsType.Name) {
-                        int count = 0;
-                        foreach (var property in partsType.GetProperties()) {
-                            // propertyのTypeはGetTypeではなくPropertyType
-                            if (property.PropertyType == typeof(PerceptionObject)) {
-                                count++;
-                            }
-                        }
-                        //pair.parts.parts = new List<PerceptionObject>
-                    }
-                }
-            }
         }
     }
 #endif
@@ -183,38 +127,32 @@ namespace SprUnity {
             }
         }
 
-        [Serializable]
-        public class PartsNamePair {
-            public string name;
-            public Parts parts;
-        }
-
         // <!!> 違和感のある実装PartNamePair.PartがList<PerceptionObject>であるためにTypeにキャスとしているのが違和感がある
         // ここをprivateにしているとEditor側でparts.part = new CupPart()観たいのができない
-        [SerializeField]
-        public List<PartsNamePair> partsNamePairs = new List<PartsNamePair>();
-        public Type GetPart<Type>() where Type : Parts, new() {
-            foreach (var pair in partsNamePairs) {
-                if (pair.name == typeof(Type).Name) {
-                    return (pair.parts as Type);
+        // Dictionaryだとinspectorに表示が確実にできないpublicにまずしてはならない
+        // inspectorに表示が絶対にあった穂がようい
+        [NonSerialized]
+        public List<Parts> partsList = new List<Parts>();
+        public Type GetParts<Type>() where Type : Parts, new() {
+            foreach (var part in partsList) {
+                if (part.GetType() == typeof(Type)) {
+                    return (part as Type);
                 }
             }
-            PartsNamePair newPartsNamePair = new PartsNamePair();
-            newPartsNamePair.parts = new Type();
-            newPartsNamePair.name = typeof(Type).Name;
-            partsNamePairs.Add(newPartsNamePair);
-            return (newPartsNamePair.parts as Type);
+            // ここで作成したところでperceptionObjectとGameObjectの対応関係を決めれない
+            return null;
         }
-        //public Type GetContainer<Type>() where Type : Container, new() {
-        //    if (containers.ContainsKey(typeof(Type))) {
-        //        return (containers[typeof(Type)] as Type);
-        //    } else {
-        //        Type newObj = new Type();
-        //        containers[typeof(Type)] = newObj;
-        //        return newObj;
-        //    }
-        //}
-        public void UpdatePerc() {
+
+        // <Type>は引数を制限するため
+        public void SetParts<Type>(Type parts) where Type : Parts, new() {
+            foreach (var part in partsList) {
+                if (part.GetType() == typeof(Type)) {
+                    return;
+                }
+            }
+            partsList.Add(parts);
+        }
+        public void UpdatePerception() {
             foreach (var attr in attributes) {
                 attr.Value.UpdatePerc(this);
             }
@@ -228,19 +166,19 @@ namespace SprUnity {
             //}
         }
 
-        // Testように
-        List<Parts> test;
-        public void Start() {
-            PersonPartsContainer ppc = new PersonPartsContainer();
+        //// Testように
+        //List<Parts> test;
+        //public void Start() {
+        //    PersonParts ppc = new PersonParts();
 
-            test = new List<Parts>();
-            test.Add(new CupParts());
-            foreach (var tes in test) {
-                Debug.Log(tes.GetType());
-            }
-            //foreach (var pp in ppc) {
-            //    Debug.Log("posrot = " + pp.PosRot().position);
-            //}
-        }
+        //    test = new List<Parts>();
+        //    test.Add(new CupParts());
+        //    foreach (var tes in test) {
+        //        Debug.Log(tes.GetType());
+        //    }
+        //    //foreach (var pp in ppc) {
+        //    //    Debug.Log("posrot = " + pp.PosRot().position);
+        //    //}
+        //}
     }
 }
