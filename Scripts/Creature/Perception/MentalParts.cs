@@ -9,48 +9,48 @@ using UnityEditor;
 
 namespace SprUnity {
 #if UNITY_EDITOR
-    [CustomEditor(typeof(Parts), true)]
-    public class PartsEditor : Editor {
+    [CustomEditor(typeof(MentalParts), true)]
+    public class MentalPartsEditor : Editor {
         public override void OnInspectorGUI() {
-            Parts parts = (Parts)target;
+            MentalParts mentalParts = (MentalParts)target;
             foreach (var field in target.GetType().GetFields()) {
-                if (field.FieldType == typeof(PerceptionObject)) {
+                if (field.FieldType == typeof(MentalObject)) {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField(field.Name);
                     EditorGUI.BeginChangeCheck();
-                    var gameObject =
-                        (GameObject)EditorGUILayout.ObjectField(((PerceptionObject)field.GetValue(parts)).gameObject, typeof(GameObject), true);
+                    var mentalObject =
+                        (MentalObject)EditorGUILayout.ObjectField(((MentalObject)field.GetValue(mentalParts)), typeof(MentalObject), true);
                     if (EditorGUI.EndChangeCheck()) {
-                        Undo.RecordObject(parts, "PerceptionObject's gameObject set");
-                        ((PerceptionObject)field.GetValue(parts)).gameObject = gameObject;
+                        Undo.RecordObject(mentalParts, "PerceptionObject's gameObject set");
+                        field.SetValue(mentalParts,mentalObject);
                     }
                     EditorGUILayout.EndHorizontal();
                 }
             }
             if (GUILayout.Button("Set Same Name GameObjects")) {
-                Undo.RecordObject(parts, "PerceptionObject's gameObject set");
-                parts.SetSameNameGameObject();
+                Undo.RecordObject(mentalParts, "PerceptionObject's gameObject set");
+                mentalParts.SetSameNameGameObject();
             }
         }
     }
 #endif
-    public class Parts : MonoBehaviour, IEnumerable<PerceptionObject> {
+    public class MentalParts : MonoBehaviour, IEnumerable<MentalObject> {
 
         // PerceptionObjectGroupが初期化されてからでないといけない
         public void Start() {
-            var perceptionObjectGroup = GetComponentInParent<PerceptionObjectGroup>();
-            if (perceptionObjectGroup == null) {
+            var mentalGroup = GetComponentInParent<MentalGroup>();
+            if (mentalGroup == null) {
                 Debug.LogError("There is no perceptionObjectGroup in the parents");
             } else {
                 // 省略できるらしい
-                perceptionObjectGroup.SetParts(this);
+                mentalGroup.SetParts(this);
             }
         }
 
-        public IEnumerator<PerceptionObject> GetEnumerator() {
+        public IEnumerator<MentalObject> GetEnumerator() {
             foreach (var field in this.GetType().GetFields()) {
-                if (field.FieldType == typeof(PerceptionObject)) {
-                    yield return (PerceptionObject)field.GetValue(this);
+                if (field.FieldType == typeof(MentalObject)) {
+                    yield return (MentalObject)field.GetValue(this);
                 }
             }
         }
@@ -60,12 +60,12 @@ namespace SprUnity {
         }
 
         public void SetSameNameGameObject() {
-            var children = this.GetComponentsInChildren<Transform>();
+            var children = this.GetComponentsInChildren<MentalObject>();
             foreach (var field in this.GetType().GetFields()) {
-                if (field.FieldType == typeof(PerceptionObject)) {
+                if (field.FieldType == typeof(MentalObject)) {
                     foreach(var child in children) {
                         if(child.name == field.Name) {
-                            ((PerceptionObject)field.GetValue(this)).gameObject = child.gameObject;
+                            field.SetValue(this,child);
                         }
                     }
                 }
