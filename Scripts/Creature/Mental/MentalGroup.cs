@@ -119,9 +119,6 @@ namespace SprUnity {
             return null;
         }
 
-        public class test {
-
-        }
         // <Type>は引数を制限するため
         public void SetParts<Type>(Type parts) where Type : MentalParts, new() {
             foreach (var part in partsList) {
