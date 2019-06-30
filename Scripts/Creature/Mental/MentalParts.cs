@@ -36,17 +36,6 @@ namespace SprUnity {
 #endif
     public class MentalParts : MonoBehaviour, IEnumerable<MentalObject> {
 
-        // PerceptionObjectGroupが初期化されてからでないといけない
-        public void Start() {
-            var mentalGroup = GetComponentInParent<MentalGroup>();
-            if (mentalGroup == null) {
-                Debug.LogError("There is no perceptionObjectGroup in the parents");
-            } else {
-                // 省略できるらしい
-                mentalGroup.SetParts(this);
-            }
-        }
-
         public IEnumerator<MentalObject> GetEnumerator() {
             foreach (var field in this.GetType().GetFields()) {
                 if (field.FieldType == typeof(MentalObject)) {

@@ -21,8 +21,8 @@ namespace SprUnity {
         private int partsTypeIndex;
         private GameObject aaa;
         public override void OnInspectorGUI() {
-            MentalGroup MentalGroup = (MentalGroup)target;
-            foreach (var parts in MentalGroup.partsList) {
+            MentalGroup mentalGroup = (MentalGroup)target;
+            foreach (var parts in mentalGroup.GetAllParts()) {
                 EditorGUILayout.LabelField(parts.GetType().ToString());
                 EditorGUI.indentLevel++;
                 foreach (var field in target.GetType().GetFields()) {
@@ -32,8 +32,19 @@ namespace SprUnity {
                 }
                 EditorGUI.indentLevel--;
             }
+            EditorGUILayout.LabelField("");
+            foreach (var attribute in mentalGroup.GetAllAttribute()) {
+                EditorGUILayout.LabelField(attribute.GetType().ToString());
+                EditorGUI.indentLevel++;
+                foreach (var field in target.GetType().GetFields()) {
+                    if (field.FieldType == typeof(MentalObject)) {
+                        EditorGUILayout.LabelField(field.ToString());
+                    }
+                }
+                EditorGUI.indentLevel--;
+            }
             if (GUILayout.Button("Test")) {
-                MentalGroup.Test();
+                mentalGroup.Test();
             }
             //var iterator = serializedObject.GetIterator();
             //while (iterator.NextVisible(true)) {
@@ -102,37 +113,50 @@ namespace SprUnity {
             //    attributes[typeof(Type)] = newObj;
             //    return newObj;
             //}
+            var mentalAttribute = GetComponentInChildren<Type>();
+            if (mentalAttribute.GetComponentInParent<MentalGroup>() == this) {
+                return mentalAttribute;
+            }
+            // ここで作成したところでperceptionObjectとGameObjectの対応関係を決めれない
             return null;
+        }
+        public List<MentalAttribute> GetAllAttribute() {
+            var mentalAttributeList = GetComponentsInChildren<MentalAttribute>();
+            List<MentalAttribute> newMentalAttributeList = new List<MentalAttribute>();
+            foreach (var mentalParts in mentalAttributeList) {
+                if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+                    newMentalAttributeList.Add(mentalParts);
+                }
+            }
+            return newMentalAttributeList;
         }
 
         // Dictionaryだとinspectorに表示が確実にできないpublicにまずしてはならない
         // inspectorに表示が絶対にあった穂がようい
-        [NonSerialized]
-        public List<MentalParts> partsList = new List<MentalParts>();
         public Type GetParts<Type>() where Type : MentalParts, new() {
-            foreach (var parts in partsList) {
-                if (parts.GetType() == typeof(Type)) {
-                    return (parts as Type);
-                }
+            // 子供の中を探し見つかったpartsがこのMentalGroupのものであれば返す
+            var mentalParts = GetComponentInChildren<Type>();
+            if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+                return mentalParts;
             }
             // ここで作成したところでperceptionObjectとGameObjectの対応関係を決めれない
             return null;
         }
 
-        // <Type>は引数を制限するため
-        public void SetParts<Type>(Type parts) where Type : MentalParts, new() {
-            foreach (var part in partsList) {
-                if (part.GetType() == typeof(Type)) {
-                    return;
+        public List<MentalParts> GetAllParts() {
+            var mentalPartsList = GetComponentsInChildren<MentalParts>();
+            List<MentalParts> newMentalPartsList = new List<MentalParts>();
+            foreach (var mentalParts in mentalPartsList) {
+                if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+                    newMentalPartsList.Add(mentalParts);
                 }
             }
-
-            partsList.Add(parts);
+            return newMentalPartsList;
         }
 
         public void Test() {
-            foreach(var parts in partsList) {
-                foreach(var part in parts) {
+            foreach (var parts in GetAllParts()) {
+                foreach (var part in parts) {
                     if (part != null) {
                         if (part.gameObject != null) {
                             Debug.Log(part.gameObject.name);
