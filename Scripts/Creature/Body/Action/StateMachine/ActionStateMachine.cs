@@ -196,8 +196,10 @@ namespace SprUnity {
 
         public static void CreateStateMachine(string newName) {
             var action = CreateInstance<ActionStateMachine>();
+#if UNITY_EDITOR
             AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
             AssetDatabase.Refresh();
+# endif
         }
         // ----- ----- ----- ----- ----- -----
         // Create/Delete ActionState
