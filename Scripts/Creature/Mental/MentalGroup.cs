@@ -106,19 +106,11 @@ namespace SprUnity {
         //private List<MentalAttribute> attributes = new List<MentalAttribute>();
         //実態はGameObjectに格納されている
         public override Type GetAttribute<Type>() {
-            //if (attributes.ContainsKey(typeof(Type))) {
-            //    return (attributes[typeof(Type)] as Type);
-            //} else {
-            //    Type newObj = new Type();
-            //    attributes[typeof(Type)] = newObj;
-            //    return newObj;
-            //}
             var mentalAttribute = GetComponentInChildren<Type>();
-            if (mentalAttribute.GetComponentInParent<MentalGroup>() == this) {
+            if (mentalAttribute?.GetComponentInParent<MentalGroup>() == this) {
                 return mentalAttribute;
             }
-            // ここで作成したところでperceptionObjectとGameObjectの対応関係を決めれない
-            return null;
+            return this.gameObject.AddComponent<Type>();
         }
         public List<MentalAttribute> GetAllAttribute() {
             var mentalAttributeList = GetComponentsInChildren<MentalAttribute>();
@@ -139,7 +131,7 @@ namespace SprUnity {
             if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
                 return mentalParts;
             }
-            // ここで作成したところでperceptionObjectとGameObjectの対応関係を決めれない
+            // ここで作成したところでMentalObjectとGameObjectの対応関係を決めれない
             return null;
         }
 

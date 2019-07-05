@@ -28,8 +28,12 @@ namespace SprUnity {
                 }
             }
             if (GUILayout.Button("Set Same Name GameObjects")) {
-                Undo.RecordObject(mentalParts, "PerceptionObject's gameObject set");
+                Undo.RecordObject(mentalParts, "MentalObject's gameObject set");
                 mentalParts.SetSameNameGameObject();
+            }
+            if (GUILayout.Button("Remove all MentalObjects")) {
+                Undo.RecordObject(mentalParts, "MentalnObject's gameObject set");
+                mentalParts.DeleteMental();
             }
         }
     }
@@ -49,15 +53,31 @@ namespace SprUnity {
         }
 
         public void SetSameNameGameObject() {
-            var children = this.GetComponentsInChildren<MentalObject>();
+            var children = this.GetComponentsInChildren<Transform>();
             foreach (var field in this.GetType().GetFields()) {
                 if (field.FieldType == typeof(MentalObject)) {
                     foreach(var child in children) {
                         if(child.name == field.Name) {
-                            field.SetValue(this,child);
+                            var mentalObject = child.GetComponent<MentalObject>();
+                            if( mentalObject == null) {
+                                Undo.AddComponent(child.gameObject, typeof(MentalObject));
+                                mentalObject = child.gameObject.GetComponent<MentalObject>();
+                            }
+                            field.SetValue(this,mentalObject);
                         }
                     }
                 }
+            }
+        }
+        public void DeleteMental() {
+            var children = this.GetComponentsInChildren<MentalObject>();
+            foreach (var field in this.GetType().GetFields()) {
+                if (field.FieldType == typeof(MentalObject)) {
+                    field.SetValue(this,null);
+                }
+            }
+            foreach(var child in children) {
+                Undo.DestroyObjectImmediate(child);
             }
         }
     }
