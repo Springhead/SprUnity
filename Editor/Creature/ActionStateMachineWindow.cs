@@ -25,7 +25,7 @@ namespace SprUnity {
         // GUI
         //private Vector2 scrollPos;
         private static List<string> actionNames;
-        private int index;
+        private int actionIndex;
 
         private float zoom = 1.0f;
         private Vector2 panOffset;

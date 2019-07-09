@@ -14,6 +14,7 @@ namespace SprUnity {
 #endif
     public class KeyPoseDataGroup : ScriptableObject {
         public static string path = "Assets/Actions/KeyPoses/";
+#if UNITY_EDITOR
         public static void CreateKeyPoseDataGroupAsset() {
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
@@ -47,7 +48,6 @@ namespace SprUnity {
                 Debug.LogError("KeyPoseGroup's name is covered");
             }
         }
-#if UNITY_EDITOR
         [MenuItem("Assets/Create/Action/Add New KeyPose")]
         static void CreateKeyPose() {
             var selected = Selection.activeObject as KeyPoseDataGroup;

@@ -27,7 +27,7 @@ namespace SprUnity {
         Neck = HumanBodyBones.Neck,
 
         Chest = HumanBodyBones.Chest,
-        Sphin = HumanBodyBones.Spine,
+        Spine = HumanBodyBones.Spine,
         Hips = HumanBodyBones.Hips,
 
         LeftShoulder = HumanBodyBones.LeftShoulder,
