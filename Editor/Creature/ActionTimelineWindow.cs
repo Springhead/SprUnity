@@ -181,8 +181,6 @@ namespace SprUnity {
         // 値が大きいと重いので、だれかいい方法教えてください
         int segments = 10;
 
-        private ScriptableAction action;
-
         [MenuItem("Window/SprUnity Action/Action Timeline Window")]
         static void Open() {
             window = GetWindow<ActionTimelineWindow>();
@@ -236,7 +234,7 @@ namespace SprUnity {
             float controllerStartTime = 0.0f;
             float controllerFinishTime = 0.0f;
             if (currentAction) {
-                controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[ActionEditorWindowManager.instance.selectedAction.name];
+                controller = null;//ActionEditorWindowManager.instance.lastSelectedActionManager?[ActionEditorWindowManager.instance.selectedAction.name];
             } else {
                 controller = null;
             }

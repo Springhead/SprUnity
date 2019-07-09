@@ -11,73 +11,33 @@ using UnityEditor;
 
 namespace SprUnity {
 
-#if UNITY_EDITOR
-    [CustomEditor(typeof(KeyPoseData))]
-    public class KeyPoseDataEditor : Editor {
-
-        void OnEnable() {
-            SceneView.onSceneGUIDelegate += OnSceneGUI;
-        }
-
-        void OnDisable() {
-            SceneView.onSceneGUIDelegate -= OnSceneGUI;
-        }
-
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
-        public override void OnInspectorGUI() {
-            bool textChangeComp = false;
-            EditorGUI.BeginChangeCheck();
-            Event e = Event.current;
-            if (e.keyCode == KeyCode.Return && Input.eatKeyPressOnTextFieldFocus) {
-                textChangeComp = true;
-                Event.current.Use();
-            }
-            target.name = EditorGUILayout.TextField("Name", target.name);
-            if (EditorGUI.EndChangeCheck()) {
-                EditorUtility.SetDirty(target);
-            }
-            if (textChangeComp) {
-                string mainPath = AssetDatabase.GetAssetPath(this);
-                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((KeyPoseData)target));
-            }
-            DrawDefaultInspector();
-            KeyPoseData keyPose = (KeyPoseData)target;
-
-            if (GUILayout.Button("Test")) {
-                keyPose.Action();
-            }
-
-            EditorGUILayout.Space();
-
-            if (GUILayout.Button("Use Current Pose")) {
-                keyPose.InitializeByCurrentPose();
-            }
-        }
-
-        public void OnSceneGUI(SceneView sceneView) {
-        }
-    }
-    /*
-    [CustomPropertyDrawer(typeof(BoneKeyPose))]
-    public class BoneKeyPosePropertyDrawer : PropertyDrawer {
-        public bool showBoneKeyPose;
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            base.OnGUI(position, property, label);
-            EditorGUI.BeginProperty(position, label, property);
-            showBoneKeyPose = EditorGUILayout.Foldout(showBoneKeyPose, ((HumanBodyBones)property.FindPropertyRelative("boneId").enumValueIndex).ToString());
-            if (showBoneKeyPose) {
-
-            }
-            EditorGUI.EndProperty();
-        }
-    }
-    */
-#endif
-
     [Serializable]
     public class BoneKeyPose {
         public HumanBodyBones boneId = HumanBodyBones.Hips;
+        public Vector3 localPosition = new Vector3();
+        public Quaternion localRotation = new Quaternion();
+        public bool usePosition = true;
+        public bool useRotation = true;
+        public Vector3 position {
+            get { return localPosition; }
+            set { localPosition = value; }
+        }
+        public Quaternion rotation {
+            get { return localRotation; }
+            set { localRotation = value; }
+        }
+
+        public void Enable(bool e) {
+            usePosition = useRotation = e;
+        }
+        public bool Enabled() {
+            return usePosition || useRotation;
+        }
+    }
+
+    [Serializable]
+    public class StaticBoneKeyPose : BoneKeyPose{
+        //public HumanBodyBones boneId = HumanBodyBones.Hips;
         public string boneIdString = "";
         public enum CoordinateMode {
             World, // World
@@ -133,12 +93,12 @@ namespace SprUnity {
         // Local Info
         public Body body;
         public HumanBodyBones coordinateParent;
-        public Vector3 localPosition = new Vector3();
+        //public Vector3 localPosition = new Vector3();
         public Vector3 normalizedLocalPosition = new Vector3();
-        public Quaternion localRotation = Quaternion.identity;
+        //public Quaternion localRotation = Quaternion.identity;
         // Control Flags
-        public bool usePosition = true;
-        public bool useRotation = true;
+        //public bool usePosition = true;
+        //public bool useRotation = true;
         // 
         public float lookAtRatio = 0;
         // 
@@ -152,8 +112,8 @@ namespace SprUnity {
             set { boneKeyPoseTiming.y = value; }
         }
 
-        public BoneKeyPose Clone() {
-            BoneKeyPose k = new BoneKeyPose();
+        public StaticBoneKeyPose Clone() {
+            StaticBoneKeyPose k = new StaticBoneKeyPose();
             k.boneId = this.boneId;
             k.boneIdString = this.boneIdString;
             k.coordinateMode = this.coordinateMode;
@@ -168,10 +128,6 @@ namespace SprUnity {
             k.lookAtRatio = this.lookAtRatio;
             k.boneKeyPoseTiming = this.boneKeyPoseTiming;
             return k;
-        }
-
-        public void Enable(bool e) {
-            usePosition = useRotation = e;
         }
 
         // 頭がGetやSetの関数はpositionとrotationのGetterとSetterのための関数
@@ -331,6 +287,7 @@ namespace SprUnity {
     }
 
     // 実行時に使用されるKeyPose
+    [Serializable]
     public class KeyPose {
         public List<BoneKeyPose> boneKeyPoses = new List<BoneKeyPose>();
 
@@ -353,23 +310,6 @@ namespace SprUnity {
             get { return this[key.ToString()]; }
         }
 
-        public void ParserSpecifiedParts(KeyPoseData data, HumanBodyBones[] boneIds = null) {
-            boneKeyPoses.Clear();
-            foreach (var boneKeyPose in data.boneKeyPoses) {
-                foreach (var boneId in boneIds) {
-                    if (boneId == boneKeyPose.boneId) {
-                        boneKeyPoses.Add(boneKeyPose.Clone());
-                    }
-                }
-            }
-        }
-        public void Parser(KeyPoseData data) {
-            boneKeyPoses.Clear();
-            foreach (var boneKeyPose in data.boneKeyPoses) {
-                boneKeyPoses.Add(boneKeyPose.Clone());
-            }
-        }
-
         public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
             if (!rotate.HasValue) { rotate = Quaternion.identity; }
 
@@ -383,18 +323,8 @@ namespace SprUnity {
             if (body != null) {
                 foreach (var boneKeyPose in boneKeyPoses) {
                     if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
-                        Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
-                        Quaternion ratioRotate = Quaternion.Slerp(Quaternion.identity, (Quaternion)rotate, boneKeyPose.lookAtRatio);
-                        var pose = new Pose(ratioRotate * boneKeyPose.position, ratioRotate * boneKeyPose.rotation);
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
-                            Bone baseBone = body[boneKeyPose.coordinateParent];
-                            pose.position = baseBone.transform.position + baseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
-                            pose.rotation = boneKeyPose.localRotation * baseBone.transform.rotation;
-                        }
-                        if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
-                            pose.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
-                            pose.rotation = boneKeyPose.localRotation * body.transform.rotation;
-                        }
+                        Bone bone = body[boneKeyPose.boneId];
+                        var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
                         var springDamper = new Vector2(spring, damper);
                         var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
                         BoneSubMovementPair log = new BoneSubMovementPair(bone, sub.Clone());
@@ -405,18 +335,18 @@ namespace SprUnity {
             return logs;
         }
     }
-
+    /*
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPose")]
 #endif
-    public class KeyPoseData : ScriptableObject {
-        public List<BoneKeyPose> boneKeyPoses = new List<BoneKeyPose>();
+    public class KeyPoseNodeGraph : ScriptableObject {
+        public List<StaticBoneKeyPose> boneKeyPoses = new List<StaticBoneKeyPose>();
 
         public float testDuration = 1.0f;
         public float testSpring = 1.0f;
         public float testDamper = 1.0f;
 
-        public BoneKeyPose this[string key] {
+        public StaticBoneKeyPose this[string key] {
             get {
                 foreach (var boneKeyPose in boneKeyPoses) {
                     if (boneKeyPose.boneId.ToString() == key) {
@@ -428,7 +358,7 @@ namespace SprUnity {
             }
         }
         // <!!> Is it better ?
-        public BoneKeyPose this[HumanBodyBones key] {
+        public StaticBoneKeyPose this[HumanBodyBones key] {
             get { return this[key.ToString()]; }
         }
 
@@ -438,7 +368,7 @@ namespace SprUnity {
                 boneKeyPoses.Clear();
                 foreach (var bone in body.bones) {
                     if (bone.ikEndEffector != null && bone.controller != null && bone.controller.enabled) {
-                        BoneKeyPose boneKeyPose = new BoneKeyPose();
+                        StaticBoneKeyPose boneKeyPose = new StaticBoneKeyPose();
                         boneKeyPose.position = bone.transform.position;
                         boneKeyPose.rotation = bone.transform.rotation;
 
@@ -529,28 +459,28 @@ namespace SprUnity {
             return logs;
         }
 
-        public List<BoneKeyPose> GetBoneKeyPoses(Body body) {
+        public List<StaticBoneKeyPose> GetBoneKeyPoses(Body body) {
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body == null) { return null; }
-            List<BoneKeyPose> appliedBoneKeyPoses = new List<BoneKeyPose>();
+            List<StaticBoneKeyPose> appliedBoneKeyPoses = new List<StaticBoneKeyPose>();
             foreach (var boneKeyPose in boneKeyPoses) {
-                BoneKeyPose keyPoseApplied = new BoneKeyPose();
+                StaticBoneKeyPose keyPoseApplied = new StaticBoneKeyPose();
                 Bone coordinateBaseBone = body[boneKeyPose.coordinateParent];
                 Bone controlBone = body[boneKeyPose.boneId];
                 //Vector3 targetDir = target ? target.transform.position - coordinateBaseBone.transform.position : coordinateBaseBone.transform.rotation * Vector3.forward;
 
                 keyPoseApplied.boneId = boneKeyPose.boneId;
-                if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BoneLocal) {
+                if (boneKeyPose.coordinateMode == StaticBoneKeyPose.CoordinateMode.BoneLocal) {
                     // 位置の補正
                     //Vector3 pos = coordinateBaseBone.transform.position + Quaternion.LookRotation(targetDir, coordinateBaseBone.transform.rotation * Vector3.up) * boneKeyPose.localPosition;
                     keyPoseApplied.position = coordinateBaseBone.transform.position + coordinateBaseBone.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
                     // 姿勢の補正
                     //Quaternion rot = boneKeyPose.localRotation * Quaternion.LookRotation(targetDir, coordinateBaseBone.transform.rotation * Vector3.up);
                     keyPoseApplied.rotation = boneKeyPose.localRotation * coordinateBaseBone.transform.rotation;
-                } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.World) {
+                } else if (boneKeyPose.coordinateMode == StaticBoneKeyPose.CoordinateMode.World) {
                     keyPoseApplied.position = boneKeyPose.position;
                     keyPoseApplied.rotation = boneKeyPose.rotation;
-                } else if (boneKeyPose.coordinateMode == BoneKeyPose.CoordinateMode.BodyLocal) {
+                } else if (boneKeyPose.coordinateMode == StaticBoneKeyPose.CoordinateMode.BodyLocal) {
                     // 位置の補正
                     keyPoseApplied.position = body.transform.position + body.transform.rotation * (boneKeyPose.normalizedLocalPosition * body.height);
                     // 姿勢の補正
@@ -564,5 +494,5 @@ namespace SprUnity {
             return appliedBoneKeyPoses;
         }
     }
-
+    */
 }

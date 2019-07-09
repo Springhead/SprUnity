@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -13,8 +13,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   editorStates:
   - {fileID: 11482305}
-  saveName: Assets\Plugins\Node_Editor\Resources\Saves\Calculation Canvas
-  savePath: Assets\Plugins\Node_Editor\Resources\Saves\Calculation Canvas.asset
+  saveName: Assets\Libraries\SprUnity\ExternalDependency\Node_Editor_Framework-develop\Node_Editor\Resources\Saves\Calculation
+    Canvas
+  savePath: Assets\Libraries\SprUnity\ExternalDependency\Node_Editor_Framework-develop\Node_Editor\Resources\Saves\Calculation
+    Canvas.asset
   livesInScene: 0
   nodes:
   - {fileID: 11496963}
@@ -27,8 +29,8 @@ MonoBehaviour:
   groups: []
 --- !u!114 &11403174
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -48,8 +50,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11403266
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -57,6 +59,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3dd50b389073b148b5ec10e419dc073, type: 3}
   m_Name: Input Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: -50, y: 50}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
@@ -64,8 +67,8 @@ MonoBehaviour:
   value: 5
 --- !u!114 &11406980
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -84,8 +87,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11408467
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -104,8 +107,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11409214
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -124,8 +127,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11411421
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -133,14 +136,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39f5df92d12f07d45a4fcfb96e1b36d8, type: 3}
   m_Name: Display Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: 550, y: -50}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
   inputKnob: {fileID: 11419545}
 --- !u!114 &11411772
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -159,8 +163,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11411914
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -179,8 +183,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11417989
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -188,14 +192,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39f5df92d12f07d45a4fcfb96e1b36d8, type: 3}
   m_Name: Display Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: 250, y: -150}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
   inputKnob: {fileID: 11439100}
 --- !u!114 &11419545
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -214,8 +219,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11419872
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -234,8 +239,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11433881
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -243,6 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3dd50b389073b148b5ec10e419dc073, type: 3}
   m_Name: Input Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: -350, y: -50}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
@@ -250,8 +256,8 @@ MonoBehaviour:
   value: 3
 --- !u!114 &11439100
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -270,8 +276,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11462145
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -279,6 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27a65ad2b155f0d40838ed81292e4df7, type: 3}
   m_Name: Calc Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: -50, y: -100}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
@@ -290,8 +297,8 @@ MonoBehaviour:
   Input2Val: 3
 --- !u!114 &11462421
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -299,6 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27a65ad2b155f0d40838ed81292e4df7, type: 3}
   m_Name: Calc Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: 250, y: -50}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
@@ -310,8 +318,8 @@ MonoBehaviour:
   Input2Val: 5
 --- !u!114 &11470550
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -330,8 +338,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11482305
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -346,8 +354,8 @@ MonoBehaviour:
   zoom: 1
 --- !u!114 &11495465
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -366,8 +374,8 @@ MonoBehaviour:
   sideOffset: 0
 --- !u!114 &11496963
 MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -375,6 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3dd50b389073b148b5ec10e419dc073, type: 3}
   m_Name: Input Node
   m_EditorClassIdentifier: 
+  canvas: {fileID: 11400000}
   position: {x: -350, y: -150}
   dynamicConnectionPorts: []
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}

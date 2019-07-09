@@ -10,62 +10,6 @@ using UnityEditor;
 namespace SprUnity {
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(KeyPoseDataGroup))]
-    public class KeyPoseDataGroupEditor : Editor {
-        public override void OnInspectorGUI() {
-            base.OnInspectorGUI();
-            KeyPoseDataGroup keyPoseGroup = (KeyPoseDataGroup)target;
-            Rect DDBox = EditorGUILayout.GetControlRect(GUILayout.Width(200), GUILayout.Height(50));
-            List<Object> droppedObjects = CreateDragAndDropGUI(DDBox);
-            if (droppedObjects.Count > 0) {
-                Debug.Log("D&D!");
-                string keyPoseGroupPath = AssetDatabase.GetAssetPath(keyPoseGroup);
-                foreach (var obj in droppedObjects) {
-                    KeyPoseInterpolationGroup keyPoseInterpolation = obj as KeyPoseInterpolationGroup;
-                    if (keyPoseInterpolation != null) {
-                        foreach (var keyposeInGroup in keyPoseInterpolation.keyposes) {
-                            var clone = Instantiate(keyposeInGroup);
-                            clone.name = clone.name.Split('(')[0];
-                            AssetDatabase.AddObjectToAsset(clone, keyPoseGroupPath);
-                        }
-                        continue;
-                    }
-                    KeyPoseData keypose = obj as KeyPoseData;
-                    if (keypose != null) {
-                        var clone = Instantiate(keypose);
-                        clone.name = clone.name.Split('(')[0];
-                        AssetDatabase.AddObjectToAsset(clone, keyPoseGroupPath);
-                    }
-                }
-                AssetDatabase.ImportAsset(keyPoseGroupPath);
-            }
-        }
-
-        private List<Object> CreateDragAndDropGUI(Rect rect) {
-            List<Object> list = new List<Object>();
-            GUI.Box(rect, "D&D KeyPose");
-
-            if (!rect.Contains(Event.current.mousePosition)) {
-                return list;
-            }
-
-            EventType e = Event.current.type;
-
-            if (e == EventType.DragUpdated || e == EventType.DragPerform) {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-
-                if (e == EventType.DragPerform) {
-                    list = new List<Object>(DragAndDrop.objectReferences);
-                    DragAndDrop.AcceptDrag();
-                }
-                Event.current.Use();
-            }
-            return list;
-        }
-    }
-#endif
-
-#if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
 #endif
     public class KeyPoseDataGroup : ScriptableObject {
@@ -113,9 +57,9 @@ namespace SprUnity {
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPoseData>();
+            var keypose = ScriptableObject.CreateInstance<KeyPoseNodeGraph>();
             keypose.name = "keypose";
-            keypose.InitializeByCurrentPose();
+            //keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, selected);
 
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));
@@ -131,9 +75,9 @@ namespace SprUnity {
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPoseData>();
+            var keypose = ScriptableObject.CreateInstance<KeyPoseNodeGraph>();
             keypose.name = name;
-            keypose.InitializeByCurrentPose();
+            //keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, this);
 
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keypose));

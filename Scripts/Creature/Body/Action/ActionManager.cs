@@ -10,8 +10,6 @@ using UnityEditor;
 using SprCs;
 
 namespace SprUnity {
-    /*テスト5
-     */
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(ActionManager))]
@@ -33,13 +31,16 @@ namespace SprUnity {
     [Serializable]
     public class ActionStateMachineController {
 
+        // Original state machine
         ActionStateMachine stateMachine;
         public ActionStateMachine StateMachine { get { return stateMachine; } }
+        // Time spent from this controller enebled 
         private float stateMachineTime = 0;
+        // Time spent from last transition(enter) event
         private float timeOfLastEnter = 0.0f;
         //
-        public TransitionFlagList flagList;
-        public StateMachineParameters parameters;
+        //public TransitionFlagList flagList;
+        //public StateMachineParameters parameters;
         // 
         private ActionState currentState;
         public ActionState CurrentState { get { return currentState; } }
@@ -88,8 +89,8 @@ namespace SprUnity {
             actionLog = new ActionLog(body);
             specifiedTransitions = new List<ActionTransition>();
             specifiedTransitions.Add(stateMachine.entryTransitions[0]);
-            flagList = stateMachine.flags.Clone();
-            parameters = stateMachine.parameters.Clone();
+            //flagList = stateMachine.flags.Clone();
+            //parameters = stateMachine.parameters.Clone();
             initialized = true;
         }
 
@@ -143,8 +144,8 @@ namespace SprUnity {
             stateMachineTime = 0;
             timeOfLastEnter = 0;
 
-            flagList = stateMachine.flags.Clone();
-            parameters = stateMachine.parameters.Clone();
+            //flagList = stateMachine.flags.Clone();
+            //parameters = stateMachine.parameters.Clone();
 
             actionLog = new ActionLog(body);
             futureTransitions = new List<ActionTransition>();
@@ -191,8 +192,8 @@ namespace SprUnity {
                 float duration = specified.toState.duration;
                 float spring = specified.toState.spring;
                 float damper = specified.toState.damper;
-                if (specified.toState.keyframe != null) {
-                    foreach (var boneKeyPose in specified.toState.keyframe.boneKeyPoses) {
+                if (specified.toState.keyPose != null) {
+                    foreach (var boneKeyPose in specified.toState.keyPose.boneKeyPoses) {
                         actionLog.AddFuture(boneKeyPose, specified.toState.name, startTime, duration, spring, damper, body);
                     }
                 }
@@ -216,8 +217,8 @@ namespace SprUnity {
                         float duration = predicted.duration;
                         float spring = predicted.spring;
                         float damper = predicted.damper;
-                        if (predicted.keyframe != null) {
-                            foreach (var boneKeyPose in predicted.keyframe.boneKeyPoses) {
+                        if (predicted.keyPose != null) {
+                            foreach (var boneKeyPose in predicted.keyPose.boneKeyPoses) {
                                 actionLog.AddFuture(boneKeyPose, predicted.name, startTime, duration, spring, damper, body);
                             }
                         }
@@ -235,18 +236,20 @@ namespace SprUnity {
             //Debug.Log("Enter state:" + currentState.name + " at time:" + Time.time);
             if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
             if (body != null) {
+                /*
                 if (currentState.useFace) {
                     if (stateMachine.blendController == null) {
-                        stateMachine.blendController = body.GetComponent<BlendShapeController>();
+                        stateMachine.blendController = body.GetComponent<BlendController>();
                         blendController = stateMachine.blendController;
                     }
                     if (blendController != null) {
                         blendController.BlendSet(currentState.interval, currentState.blend, currentState.blendv, currentState.time);
                     }
                 }
+                */
                 // ターゲット位置による変換後のKeyPose
-                if (currentState.keyframe != null) {
-                    return currentState.keyframe.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
+                if (currentState.keyPose != null) {
+                    return currentState.keyPose.Action(body, currentState.duration, 0, currentState.spring, currentState.damper);
                 }
             }
             isChanged = true;
@@ -309,9 +312,11 @@ namespace SprUnity {
         public bool IsTransitable(ActionTransition transition) {
             if (timeInCurrentStateFromEnter < transition.time) return false;
             foreach (var flag in transition.flags) {
+                /*
                 if (!flagList[flag]) {
                     return false;
                 }
+                */
             }
             return true;
         }
@@ -330,55 +335,40 @@ namespace SprUnity {
 
         public Body body = null;
 
+        public List<KeyPoseNodeGraph> keyPoseGraphs = new List<KeyPoseNodeGraph>();
         public List<ActionStateMachine> actions = new List<ActionStateMachine>();
-        private List<ActionStateMachineController> controllers = new List<ActionStateMachineController>();
 
-        [HideInInspector]
-        public ActionStateMachineController inAction = null;
+        //[HideInInspector]
+        public ActionStateMachine inAction = null;
 
-        public int logMaxLength = 10;
-        public float logMaxKeepTimeLength = 10.0f;
+        public GameObject Target;
 
         // ----- ----- ----- ----- -----
 
         private float time = 0.0f;
-        private int index = 0;
-
-        public bool useClone = true;
 
         // ----- ----- ----- ----- -----
 
-        public ActionStateMachineController this[string key] {
+        public ActionStateMachine this[string key] {
             get {
-                foreach (var action in controllers) { if (action.Name.Contains(key)) return action; }
+                foreach (var action in actions) { if (action.name == key) return action.GetInstance(this); }
                 return null;
             }
         }
 
         void Start() {
-            if (useClone) {
-                for (int i = 0; i < actions.Count; i++) {
-                    actions[i] = ScriptableObject.Instantiate<ActionStateMachine>(actions[i]);
-                }
+            for (int i = 0; i < keyPoseGraphs.Count; i++) {
+                keyPoseGraphs[i].GetInstance(this);
             }
-            controllers = new List<ActionStateMachineController>();
-            foreach(var action in actions) {
-                controllers.Add(new ActionStateMachineController(action, body));
-                controllers.Last().PredictFutureTransition();
+            for (int i = 0; i < actions.Count; i++) {
+                actions[i].instances.Add(this, actions[i].Instantiate(this));
             }
             inAction = null;
-        }
-
-        void Update() {
-
         }
 
         private void FixedUpdate() {
             if(body != null && inAction != null) {
                 inAction.UpdateStateMachine();
-            }
-            foreach(var controller in controllers) {
-                controller.Reflesh(logMaxLength, logMaxKeepTimeLength);
             }
         }
 
@@ -388,14 +378,30 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
+        public void SetInput<T>(string graphName, string nodeName, object value) {
+            foreach(var keyPoseGraph in keyPoseGraphs) {
+                if(keyPoseGraph.name == graphName) {
+                    var graph = keyPoseGraph.GetInstance(this);
+                    foreach(var inputNode in graph.inputNodes) {
+                        if (inputNode.name.Contains(nodeName)) {
+                            (inputNode as VGentNodeBase).SetInput<T>((T)value);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // ----- ----- ----- ----- -----
+
         public void Action(string name) {
             if (inAction != null) {
                 inAction.End();
             }
             print("Action: " + name);
-            foreach (var action in controllers) {
-                if (action.Name == name) {
-                    inAction = action;
+            foreach (var action in actions) {
+                if (action.name == name) {
+                    inAction = action.instances[this];
                     inAction.Begin();
                 }
             }
