@@ -17,9 +17,12 @@ public class BlendShapeConflict : ScriptableObject {
     
     public static BlendShapeConflict GetBlendShapeConflict(string name) {
         var blendpath = "Assets/Actions/BlendShapeConflict/";
+#if UNITY_EDITOR
         // Asset全検索
         var guids = AssetDatabase.FindAssets("*").Distinct();
+#endif
         BlendShapeConflict bsc = null;
+#if UNITY_EDITOR
         foreach (var guid in guids) {
             var path = AssetDatabase.GUIDToAssetPath(guid);
             var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
@@ -35,6 +38,7 @@ public class BlendShapeConflict : ScriptableObject {
             AssetDatabase.CreateAsset(bsc, blendpath + name + ".asset");
             AssetDatabase.Refresh();
         }
+#endif
         return bsc;
     }
 
@@ -51,8 +55,9 @@ public class BlendShapeConflict : ScriptableObject {
         dic.Keys.CopyTo(blendShapeNames, 0);
         faceParts = new FacePart[dic.Values.Count];
         dic.Values.CopyTo(faceParts, 0);
-
+#if UNITY_EDITOR
         EditorUtility.SetDirty(this);
         AssetDatabase.SaveAssets();
+#endif
     }
 }
