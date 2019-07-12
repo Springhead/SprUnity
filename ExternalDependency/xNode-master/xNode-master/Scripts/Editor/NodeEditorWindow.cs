@@ -167,7 +167,7 @@ namespace XNodeEditor {
             Selection.objects = selection.ToArray();
         }
 
-        [OnOpenAsset(0)]
+        [OnOpenAsset(1)]
         public static bool OnOpen(int instanceID, int line) {
             XNode.NodeGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as XNode.NodeGraph;
             if (nodeGraph != null) {
