@@ -182,10 +182,14 @@ namespace SprUnity {
             foreach(var bodyInScene in bodiesInScene) {
                 bool enable = !(bodyInScene == body);
                 if (bodyInScene) {
+                    GUILayout.BeginHorizontal();
                     if (GUILayout.Button(bodyInScene.gameObject.name, GUILayout.Width(100))) {
                         body = bodyInScene;
                     }
+                    GUILayout.Label(bodyInScene.height.ToString());
+                    GUILayout.EndHorizontal();
                 }
+
             }
             GUILayout.EndVertical();
             Handles.EndGUI();

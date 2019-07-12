@@ -322,6 +322,14 @@ namespace SprUnity {
                 return null;
             }
         }
+        public BlendShapeController blendController {
+            get {
+                if (original != null && manager != null) {
+                    return manager.blendController;
+                }
+                return null;
+            }
+        }
         // instance群
         [System.NonSerialized]
         public Dictionary<ActionManager, ActionStateMachine> instances = new Dictionary<ActionManager, ActionStateMachine>();

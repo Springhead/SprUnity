@@ -39,7 +39,6 @@ namespace SprUnity {
 
         [HideInInspector]
         public ActionStateMachine stateMachine;
-        public KeyPose keyPose;
         public BoneKeyPoseNode[] nodes;
         [HideInInspector]
         public List<ActionTransition> transitions = new List<ActionTransition>();
@@ -59,6 +58,13 @@ namespace SprUnity {
         public float spring = 1.0f;
         public float damper = 1.0f;
         public bool durationNoise;
+
+
+        public bool useFace = false;
+        public string blend = "";
+        public float blendv = 1f;
+        public float time = 0.3f;
+        public float interval = 0f;
 
         // ----- ----- ----- ----- -----
         // 実行時
@@ -171,6 +177,11 @@ namespace SprUnity {
             Debug.Log("OnEnter");
             if (body != null && kp != null) {
                 return kp.Action(body, duration, 0, spring, damper);
+            }
+            if (useFace) {
+                if (stateMachine.blendController != null) {
+                    stateMachine.blendController.BlendSet(interval, blend, blendv, time);
+                }
             }
             return null;
         }

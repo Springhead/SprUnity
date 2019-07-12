@@ -174,9 +174,9 @@ namespace SprUnity {
             GUILayout.Label("Current Action", toolbarLabel, GUILayout.Width(100));
             var currentActionName = ActionEditorWindowManager.instance.selectedAction.name;
 
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
+            actionIndex = EditorGUILayout.Popup(actionIndex, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if (act.name == actionNames[index]) {
+                if (act.name == actionNames[actionIndex]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }
