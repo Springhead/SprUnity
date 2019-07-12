@@ -48,6 +48,15 @@ namespace SprUnity {
         */
         public float time = 1.0f;
         public List<string> flags = new List<string>();
+        public enum IntervalMode {
+            StaticTimeFromPreviousKeyPoseStart,
+            StaticTimeFromPreviousKeyPoseEnd,
+            RelativeTimeFromPreviousKeyPoseStart,
+            OuterTrigger,
+        };
+        public IntervalMode intervalMode;
+        public float timeCoefficient = 1.0f;
+        public bool intervalNoise;
 
         // ----- ----- ----- ----- -----
         // Editor関係
@@ -100,17 +109,38 @@ namespace SprUnity {
 
         }
 
-        public bool IsTransitable(float t) {
-            if (stateMachine.CurrentState.TimeFromEnter < time) return false;
+        public bool IsTransitable(float t, float duration, ActionStateMachine aStateMachine) {
+            float intervalTime;
+            switch (intervalMode) {
+                case IntervalMode.StaticTimeFromPreviousKeyPoseStart:
+                    intervalTime = time;
+                    break;
+                case IntervalMode.StaticTimeFromPreviousKeyPoseEnd:
+                    intervalTime = time + duration;
+                    break;
+                case IntervalMode.RelativeTimeFromPreviousKeyPoseStart:
+                    intervalTime = timeCoefficient * duration;
+                    break;
+                case IntervalMode.OuterTrigger:
+                    intervalTime = time;
+                    break;
+                default:
+                    intervalTime = time;
+                    break;
+            }
+            if (intervalNoise) {
+                intervalTime *= 1.05f * GaussianRandom.random();
+            }
+            if (t < intervalTime) return false;
             foreach (var flag in flags) {
-                if (!stateMachine.flags[flag]) return false;
+                if (!((bool)aStateMachine.parameter(flag)?.value)) return false;
             }
             return true;
         }
 
         public bool IsTransitableOnlyFlag() {
             foreach (var flag in flags) {
-                if (!stateMachine.flags[flag]) return false;
+                //if (!stateMachine.flags[flag]) return false;
             }
             return true;
         }

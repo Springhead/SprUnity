@@ -290,7 +290,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 } else {
                     foreach (var solid1 in solid1s) {
                         foreach (var solid2 in solid2s) {
-                            if (solid1.sprObject != null && solid2.sprObject != null) {
+                            if (solid1?.sprObject != null && solid2?.sprObject != null) {
                                 phScene.SetContactMode(solid1.phSolid, solid2.phSolid, c.mode);
                             }
                         }

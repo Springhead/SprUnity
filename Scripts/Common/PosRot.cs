@@ -84,6 +84,7 @@ namespace SprUnity {
         }
     }
 
+    [System.Serializable]
     public class PosRotScale {
         public PosRotScale() { }
         public PosRotScale(GameObject g) { position = g.transform.position; rotation = g.transform.rotation; scale = g.transform.lossyScale; }
@@ -95,6 +96,9 @@ namespace SprUnity {
         public Vector3 position = new Vector3();
         public Quaternion rotation = Quaternion.identity;
         public Vector3 scale = new Vector3(1, 1, 1);
+        public Vector3 scaleInv {
+            get { return new Vector3(1 / scale.x, 1 / scale.y, 1 / scale.z); }
+        }
 
         //<!!>
         public void SetTo(GameObject g) { g.transform.position = position; g.transform.rotation = rotation; }
@@ -102,27 +106,29 @@ namespace SprUnity {
 
         public Vector3 InverseTransformPoint(Vector3 point) {
             point -= position;
-            point = Quaternion.Inverse(rotation) * point;
+            point = Quaternion.Inverse(rotation) * Vector3.Scale(scaleInv, point);
             return point;
         }
 
         public Vector3 TransformPoint(Vector3 point) {
-            point = rotation * point;
+            point = rotation * Vector3.Scale(scale, point);
             point += position;
             return point;
         }
 
-        public PosRot TransformPosRot(PosRot posrot) {
-            PosRot result = new PosRot();
-            result.position = position + rotation * posrot.position;
-            result.rotation = rotation * posrot.rotation;
+        public PosRotScale TransformPosRotScale(PosRotScale posrotscale) {
+            PosRotScale result = new PosRotScale();
+            result.position = position + rotation * Vector3.Scale(scale, posrotscale.position);
+            result.rotation = (rotation * posrotscale.rotation).normalized;
+            result.scale = Vector3.Scale(scale, posrotscale.scale);
             return result;
         }
 
-        public PosRot Inverse() {
-            PosRot result = new PosRot();
+        public PosRotScale Inverse() {
+            PosRotScale result = new PosRotScale();
             result.rotation = Quaternion.Inverse(rotation);
             result.position = -(result.rotation * position);
+            result.scale = scaleInv;
             return result;
         }
 
@@ -131,38 +137,28 @@ namespace SprUnity {
         public override string ToString() {
             string str = "";
             str += (position.x + "," + position.y + "," + position.z + ",");
-            str += (rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w);
+            str += (rotation.x + "," + rotation.y + "," + rotation.z + "," + rotation.w + ",");
+            str += (scale.x + "," + scale.y + "," + scale.z);
             return str;
         }
 
-        public static PosRot Parse(string line) {
+        public static PosRotScale Parse(string line) {
             var data = line.Split(',').Select(s => float.Parse(s));
-            PosRot pose = new PosRot();
+            PosRotScale pose = new PosRotScale();
             pose.position = new Vector3(data.ElementAt(0), data.ElementAt(1), data.ElementAt(2));
             pose.rotation = new Quaternion(data.ElementAt(3), data.ElementAt(4), data.ElementAt(5), data.ElementAt(6));
+            pose.scale = new Vector3(data.ElementAt(7), data.ElementAt(8), data.ElementAt(9));
             return pose;
         }
 
         // ----- ----- ----- ----- -----
 
-        public static PosRot Interpolate(PosRot px0, PosRot px1, float x) {
-            return new PosRot(
+        public static PosRotScale Interpolate(PosRotScale px0, PosRotScale px1, float x) {
+            return new PosRotScale(
                     px1.position * x + px0.position * (1 - x),
-                    Quaternion.Slerp(px0.rotation, px1.rotation, x)
+                    Quaternion.Slerp(px0.rotation, px1.rotation, x),
+                    px1.scale * x + px0.scale * (1 - x)
                 );
-        }
-
-        public static PosRot Interpolate(PosRot px0y0, PosRot px1y0, PosRot px0y1, PosRot px1y1, float x, float y) {
-            PosRot py0 = Interpolate(px0y0, px1y0, x);
-            PosRot py1 = Interpolate(px0y1, px1y1, x);
-            return Interpolate(py0, py1, y);
-        }
-
-        public static PosRot Rotate(PosRot px0, Quaternion rotation, Vector3 center) {
-            PosRot px1 = new PosRot();
-            px1.position = rotation * (px0.position - center) + center;
-            px1.rotation = rotation * px0.rotation;
-            return px1;
         }
     }
 

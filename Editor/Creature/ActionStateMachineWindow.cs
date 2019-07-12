@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Callbacks;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
@@ -13,23 +14,35 @@ namespace SprUnity {
         //
         public static ActionStateMachineWindow window;
 
-        // Graph backgroundの設定
-        const bool graphBackground = false;
-        Graph actionGraph;
-        GraphGUI actionGraphGUI;
+        public enum EditStatus { Idle, StateDrag, TransitionDrag, GridDrag }
+        private EditStatus currentEditStatus = EditStatus.Idle;
 
         private bool initialized = false;
-        private ActionStateMachine lastEditedStateMachine;
         private List<List<int>> graphConnectionMatrix;
         // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
         private List<List<ActionTransition>> transitionGraph;
 
         // GUI
-        private Vector2 scrollPos;
+        //private Vector2 scrollPos;
         private static List<string> actionNames;
-        private int index;
-        private GUIStyle accessorySytle;
-        private string skinpath = "GUISkins/ASMGUISkin.guiskin";
+        private int actionIndex;
+
+        private float zoom = 1.0f;
+        private Vector2 panOffset;
+
+        private Texture2D gridTexture;
+        public Texture2D GridTexture {
+            get {
+                if (gridTexture == null) gridTexture = GenerateGridTexture();
+                return gridTexture;
+            }
+        }
+
+        public static GUIStyle toolbarBase;
+        public static GUIStyle toolbarButton;
+        public static GUIStyle toolbarLabel;
+        public static GUIStyle toolbarDropdown;
+        public static GUIStyle toolbarPopup;
 
         [MenuItem("Window/SprUnity Action/Action State Machine Window")]
         static void Open() {
@@ -39,32 +52,22 @@ namespace SprUnity {
             ActionTransitionWindowEditor.Initialize();
             ActionStateWindowEditor.Initialize();
             ReloadActionList();
+            Init();
+        }
+
+        [OnOpenAsset(0)]
+        public static bool OnOpen(int instanceID, int line) {
+            ActionStateMachine nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionStateMachine;
+            if (nodeGraph != null) {
+                Open();
+                ActionEditorWindowManager.instance.selectedAction = nodeGraph;
+                return true;
+            }
+            return false;
         }
 
         void OnEnable() {
-            if (graphBackground) {
-                if (actionGraph == null) {
-                    actionGraph = ScriptableObject.CreateInstance<Graph>();
-                    actionGraph.hideFlags = HideFlags.HideAndDontSave;
-                }
-                if (actionGraphGUI == null) {
-                    actionGraphGUI = (GetEditor(actionGraph));
-                }
-            }
-            ActionState.defaultStyle = new GUIStyle();
-            //ActionState.defaultStyle.normal.background = EditorGUIUtility.Load("flow node 0") as Texture2D;
-            ActionState.defaultStyle.alignment = TextAnchor.MiddleCenter;
-            //ActionState.defaultStyle.border = new RectOffset(12, 12, 12, 12);
-
-            ActionState.selectedStyle = new GUIStyle();
-            ActionState.selectedStyle.normal.background = EditorGUIUtility.Load("flow node 2 on") as Texture2D;
-            ActionState.selectedStyle.alignment = TextAnchor.MiddleCenter;
-            //ActionState.selectedStyle.border = new RectOffset(12, 12, 12, 12);
-
-            ActionState.currentStateStyle = new GUIStyle();
-            ActionState.currentStateStyle.normal.background = EditorGUIUtility.Load("flow node 5") as Texture2D;
-            ActionState.currentStateStyle.alignment = TextAnchor.MiddleCenter;
-            //ActionState.currentStateStyle.border = new RectOffset(12, 12, 12, 12);
+            Init();
         }
 
         void OnDisable() {
@@ -72,85 +75,24 @@ namespace SprUnity {
             ActionEditorWindowManager.instance.stateMachineWindow = null;
         }
 
+        static void Init() {
+            toolbarBase = GUI.skin.FindStyle("toolbar");
+            toolbarButton = GUI.skin.FindStyle("toolbarButton");
+            toolbarLabel = GUI.skin.FindStyle("toolbarButton");
+            toolbarDropdown = GUI.skin.FindStyle("toolbarDropdown");
+            toolbarPopup = GUI.skin.FindStyle("toolbarPopup");
+        }
+
         void OnGUI() {
             if (window == null) Open();
 
-            // Actionのセレクト用
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            DrawBackGround();
 
-            GUILayout.BeginHorizontal();
-            var label= GUI.skin.GetStyle("label");
-            var backLabel = label.fontSize;
-            label.fontSize = 15;
-            GUILayout.Label("Actions",label, GUILayout.Width(60), GUILayout.Height(100));
-            label.fontSize = backLabel;
-            var popup = GUI.skin.GetStyle("popup");
-            var backPopupfontSize = popup.fontSize;
-            var backPopupfixedHeight = popup.fixedHeight;
-            popup.fontSize = 15;
-
-            popup.fixedHeight = 22;
-            index = EditorGUILayout.Popup(index, actionNames.ToArray(),popup,GUILayout.Width(120));
-            foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if (act.name == actionNames[index]) {
-                    if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
-                    ActionEditorWindowManager.instance.selectedAction = act;
-                }
-            }
-            popup.fontSize = backPopupfontSize;
-            popup.fixedHeight= backPopupfixedHeight;
-            var button = GUI.skin.GetStyle("button");
-            var backButton = button.fontSize;
-            button.fontSize = 15;
-            if (GUILayout.Button("Create", GUILayout.Width(100), GUILayout.Height(22))) {
-                CreateActionStateMachineWindow.Open(position.center);
-            }
-            button.fontSize = backButton;
-            GUI.skin = null;
-            GUILayout.EndHorizontal();
-            GUILayout.EndScrollView();
-
-            var action = ActionEditorWindowManager.instance.selectedAction;
-            var controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[action.name];
-            if (controller == null) {
-                // normal
-            } else {
-                // controller depend
-            }
-
-            // Draw Flags
-            GUILayout.BeginVertical();
-            if (controller != null) {
-                foreach (var flag in controller.flagList.flags) {
-                    flag.enabled = GUILayout.Toggle(flag.enabled, flag.label);
-                }
-            } else {
-                foreach (var flag in action.flags.flags) {
-                    GUILayout.BeginHorizontal();
-                    flag.enabled = GUILayout.Toggle(flag.enabled, "", GUILayout.Width(10));
-                    flag.label = GUILayout.TextField(flag.label);
-                    GUILayout.EndHorizontal();
-                }
-            }
-            GUILayout.EndVertical();
-            //
-
-            if (graphBackground) {
-                if (window && actionGraphGUI != null) {
-                    actionGraphGUI.BeginGraphGUI(window, new Rect(0, 0, window.position.width, window.position.height));
-                    Debug.Log("called");
-                    actionGraphGUI.EndGraphGUI();
-                }
-            }
-
-            ProcessNodeEvents();
-            //ProcessEntryNodeEvents();
             ProcessEvents();
 
-
+            var action = ActionEditorWindowManager.instance.selectedAction;
             BeginWindows();
             if (action) {
-                if (lastEditedStateMachine != action) { initialized = false; }
                 if (!initialized) {
                     InitializeGraphMatrix();
                     initialized = true;
@@ -159,19 +101,15 @@ namespace SprUnity {
                 Object[] subObjects = action.GetSubAssets();
                 action.entryRect = GUI.Window(subObjects.Length, action.entryRect, (i) => GUI.DragWindow(), "Entry", "flow node 5");
                 action.exitRect = GUI.Window(subObjects.Length + 1, action.exitRect, (i) => GUI.DragWindow(), "Exit", "flow node 1");
+                var states = action.states;
+                var transitions = action.transitions;
                 foreach (var item in subObjects.Select((v, i) => new { Index = i, Value = v })) {
                     // EntryNode
                     // ExitNode
                     // ステートの表示
                     ActionState state = item.Value as ActionState;
                     if (state != null) {
-                        if (controller == null) {
-                            state.Draw(item.Index, false);
-                        } else if (controller.CurrentState == state) {
-                            state.Draw(item.Index, true);
-                        } else {
-                            state.Draw(item.Index, false);
-                        }
+                        state.Draw(item.Index, false, position, zoom, panOffset);
                         bool changed = state.ProcessEvents();
                         if (changed) { GUI.changed = true; initialized = false; }
                         continue;
@@ -185,12 +123,89 @@ namespace SprUnity {
                         continue;
                     }
                 }
+                DrawStates();
+                DrawTransitions();
             }
             if (GUI.changed) {
                 Repaint();
             }
             EndWindows();
+            
+            DrawToolBar();
+            DrawLeftWindow();
         }
+
+        void DrawStates() {
+
+        }
+
+        void DrawTransitions() {
+
+        }
+
+        void DrawBackGround() {
+            Rect rect = position;
+            rect.position = Vector2.zero;
+            Vector2 center = position.size / 2f;
+
+            // Offset from origin in tile units
+            float xOffset = -(center.x * zoom + panOffset.x) / GridTexture.width;
+            float yOffset = ((center.y - rect.size.y) * zoom + panOffset.y) / GridTexture.height;
+
+            Vector2 tileOffset = new Vector2(xOffset, yOffset);
+
+            // Amount of tiles
+            float tileAmountX = Mathf.Round(rect.size.x * zoom) / GridTexture.width;
+            float tileAmountY = Mathf.Round(rect.size.y * zoom) / GridTexture.height;
+
+            Vector2 tileAmount = new Vector2(tileAmountX, tileAmountY);
+
+            // Draw tiled background
+            GUI.DrawTextureWithTexCoords(rect, GridTexture, new Rect(tileOffset, tileAmount));
+        }
+
+        void DrawToolBar() {
+            int toolBarHeight = 17;
+            Rect rect = new Rect(0, 0, this.position.width, toolBarHeight);
+
+            GUILayout.BeginArea(rect, toolbarBase);
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Current Action", toolbarLabel, GUILayout.Width(100));
+            var currentActionName = ActionEditorWindowManager.instance.selectedAction.name;
+
+            actionIndex = EditorGUILayout.Popup(actionIndex, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
+            foreach (var act in ActionEditorWindowManager.instance.actions) {
+                if (act.name == actionNames[actionIndex]) {
+                    if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
+                    ActionEditorWindowManager.instance.selectedAction = act;
+                }
+            }
+
+            if(GUILayout.Button("Create", toolbarButton, GUILayout.Width(70))) {
+                CreateActionStateMachineWindow.Open(position.center);
+            }
+
+            GUILayout.Space(10);
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Menu", toolbarButton, GUILayout.Width(50))) {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Create"), false, null);
+                menu.AddItem(new GUIContent("Home"), true, () => { this.zoom = 1.0f; this.panOffset = Vector2.zero; });
+
+                menu.DropDown(new Rect(0, -20, 50, 40));
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
+
+        void DrawLeftWindow() {
+
+        }
+
+        
 
         public void InitializeGraphMatrix() {
             var action = ActionEditorWindowManager.instance.selectedAction;
@@ -227,15 +242,27 @@ namespace SprUnity {
                     transitions[i].transitionCountSamePairs = graphConnectionMatrix[to][from];
                 }
             }
-            /*
-            transitionGraph = new List<List<ActionTransition>>();
-            for(int i = 0; i < nStates; i++) {
-                List<ActionTransition> list = new List<ActionTransition>();
-                for(int j = 0; j < (i + 2); j++) {
+        }
 
+        Texture2D GenerateGridTexture() {
+            Texture2D tex = new Texture2D(64, 64);
+            Color[] cols = new Color[64 * 64];
+            Color back = Color.black;
+            Color line = Color.gray;
+            for (int y = 0; y < 64; y++) {
+                for (int x = 0; x < 64; x++) {
+                    Color col = back;
+                    if (y % 16 == 0 || x % 16 == 0) col = Color.Lerp(line, back, 0.65f);
+                    if (y == 63 || x == 63) col = Color.Lerp(line, back, 0.35f);
+                    cols[(y * 64) + x] = col;
                 }
             }
-            */
+            tex.SetPixels(cols);
+            tex.wrapMode = TextureWrapMode.Repeat;
+            tex.filterMode = FilterMode.Bilinear;
+            tex.name = "Grid";
+            tex.Apply();
+            return tex;
         }
 
         // ----- ----- ----- ----- ----- -----
@@ -251,38 +278,26 @@ namespace SprUnity {
                         OnContextMenu(e.mousePosition);
                     }
                     break;
+                case EventType.MouseUp:
+                    break;
                 case EventType.DragUpdated:
                     break;
                 case EventType.MouseDrag:
-                    if (e.button == 2) {
-                        Drag(e.delta);
-                        e.Use();
+                    if (e.button == 0) {
+                        //e.Use();
+                    } else {
+                        panOffset += e.delta;
+                        Repaint();
                     }
                     break;
                 case EventType.DragExited:
                     break;
+                case EventType.ScrollWheel:
+                    break;
+                case EventType.KeyDown:
+                    break;
             }
         }
-
-        // Stateのノード各々のもの
-        private void ProcessNodeEvents() {
-
-        }
-
-        void Drag(Vector2 delta) {
-            ;
-        }
-
-        // ----- ----- ----- ----- ----- -----
-
-
-        GraphGUI GetEditor(Graph graph) {
-            GraphGUI graphGUI = CreateInstance("GraphGUI") as GraphGUI;
-            graphGUI.graph = graph;
-            graphGUI.hideFlags = HideFlags.HideAndDontSave;
-            return graphGUI;
-        }
-
 
         // ----- ----- ----- ----- ----- -----
         // Context Menu
@@ -291,12 +306,11 @@ namespace SprUnity {
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Add State"), false, () => OnClickAddState(mousePosition));
             genericMenu.ShowAsContext();
-
         }
 
         private void OnClickAddState(Vector2 mousePosition) {
             if (ActionEditorWindowManager.instance.selectedAction == null) return;
-            ActionEditorWindowManager.instance.selectedAction.CreateState();
+            ActionEditorWindowManager.instance.selectedAction.CreateState(mousePosition);
         }
 
         public static void ReloadActionList() {
@@ -308,8 +322,6 @@ namespace SprUnity {
 
             ActionEditorWindowManager.instance.actions.Clear();
             actionNames.Clear();
-            //string selectedActionName = ActionEditorWindowManager.instance.selectedAction.name;
-            //ActionEditorWindowManager.instance.actions = new List<ActionStateMachineStatus>();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -318,12 +330,6 @@ namespace SprUnity {
                 if (action != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actions.Add(action);
                     actionNames.Add(action.name);
-                    Debug.Log("Add " + action.name);
-                    /*
-                    if(action.name == selectedActionName) {
-                        ActionEditorWindowManager.instance.selectedAction = action;
-                    }
-                    */
                 }
             }
         }

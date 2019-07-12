@@ -16,8 +16,10 @@ public class MeshRoundCone : MonoBehaviour {
 
     public bool usePositionR1 = false;
     public Vector3 positionR1 = new Vector3();
+    public GameObject R1Object;
     public bool usePositionR2 = false;
     public Vector3 positionR2 = new Vector3();
+    public GameObject L1Object;
 
     public void UpdateR1R2HandlePosition() {
         if (pivot == Pivot.Center) {

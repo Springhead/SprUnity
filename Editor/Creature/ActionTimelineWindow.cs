@@ -142,7 +142,6 @@ namespace SprUnity {
 
         // 表示用に一旦ActionStateMachineをとってくる
         private ActionStateMachine currentAction;
-        private ActionStateMachineController controller;
 
         //float timeAxisLength = 5.0f;
 
@@ -180,8 +179,6 @@ namespace SprUnity {
         // グラフ描画に使うセグメント分割数
         // 値が大きいと重いので、だれかいい方法教えてください
         int segments = 10;
-
-        private ScriptableAction action;
 
         [MenuItem("Window/SprUnity Action/Action Timeline Window")]
         static void Open() {
@@ -235,15 +232,6 @@ namespace SprUnity {
             currentAction = ActionEditorWindowManager.instance.selectedAction;
             float controllerStartTime = 0.0f;
             float controllerFinishTime = 0.0f;
-            if (currentAction) {
-                controller = ActionEditorWindowManager.instance.lastSelectedActionManager?[ActionEditorWindowManager.instance.selectedAction.name];
-            } else {
-                controller = null;
-            }
-            if (controller != null) {
-                controllerStartTime = controller.GetOldestStartTime();
-                controllerFinishTime = controller.GetFinishTime();
-            }
             startTime = controllerStartTime > controllerFinishTime ? 0.0f : controllerStartTime;
             totalTime = Mathf.Max(controllerFinishTime - controllerStartTime, 5.0f);
             finishTime = startTime + totalTime;
@@ -274,6 +262,7 @@ namespace SprUnity {
 
             // <!!> 1本ずつでよかった!
             if (EditorApplication.isPlaying) {
+                /*
                 if (currentAction != null && controller != null) {
                     for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                         List<SubMovementLog> logs = null;
@@ -350,6 +339,7 @@ namespace SprUnity {
                         }
                     }
                 }
+                */
             }
             GUILayout.EndArea();
         }
@@ -371,6 +361,7 @@ namespace SprUnity {
             DrawGraphBase(new Rect(graphLeft, graphTop, graphWidth, graphHeight), xAxis, yAxis, 1.0f, 0.2f, "", "");
 
             if (EditorApplication.isPlaying) {
+                /*
                 if (currentAction != null && controller != null) {
                     for (int j = 0; j < boneStatusForTimelines.Count; j++) {
                         List<SubMovementLog> logs = null;
@@ -427,6 +418,7 @@ namespace SprUnity {
                         }
                     }
                 }
+                */
             }
             GUILayout.EndArea();
         }
@@ -436,6 +428,7 @@ namespace SprUnity {
             GUILayout.Label("Transition");
             if (currentAction) {
                 if (EditorApplication.isPlaying) {
+                    /*
                     // 各種設定
                     if (controller == null) {
                         GUILayout.Label("Please select gameobject ActionManager attatched once");
@@ -547,26 +540,8 @@ namespace SprUnity {
                                 nTransitionsFromCurrernt = 0;
                             }
                         }
-                        // Last
-                        //GUILayout.Space(boxWidth);
-                        /*
-                        GUILayout.BeginVertical();
-                        boxPositionBase.x += boxWidth * 1.5f;
-                        for (int j = 0; j < nTransitionsFromCurrernt; j++) {
-                            string stateName = transitionsFromCurrent[j].toState == null ?
-                                    "Exit" :
-                                    transitionsFromCurrent[j].toState.name;
-                            Rect boxPosition = new Rect(new Vector2(boxPositionBase.x, boxPositionBase.y + j * 30), boxSize);
-                            GUI.Box(boxPosition, stateName);
-                            Rect buttonRect = new Rect(boxPosition.x - 10, boxPosition.y, 20, 20);
-                            if (GUI.Button(buttonRect, "")) {
-                                stream.specifiedTransition.Add(transitionsFromCurrent[j]);
-                                ReloadHandles();
-                                ReloadSubmovements();
-                            }
-                        }
-                        */
                     }
+                    */
                 } else {
                     GUILayout.BeginVertical();
                     GUILayout.Label("This window only works in play mode");
@@ -647,6 +622,7 @@ namespace SprUnity {
         }
 
         void OnSceneGUI(SceneView sceneView) {
+            /*
             if (currentAction != null && controller != null) {
                 if (!controller.initialized) return;
                 for (int j = 0; j < boneStatusForTimelines.Count; j++) {
@@ -705,6 +681,7 @@ namespace SprUnity {
                     // <!!> future未対応!!
                 }
             }
+            */
         }
 
         // SpringDamperやVelocityの変更用のハンドルをリロードする

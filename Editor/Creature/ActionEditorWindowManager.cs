@@ -12,6 +12,7 @@ namespace SprUnity {
         //ActionEditorWindowManager instance;
 
         // 
+        public Body[] bodiesInScene; 
         public Body body;
 
         //
@@ -20,26 +21,17 @@ namespace SprUnity {
         //
         public ActionStateMachineWindow stateMachineWindow;
         public KeyPoseWindow keyPoseWindow;
-        public KeyPoseInterpolationWindow interpolationWindow;
         public ActionTimelineWindow timelineWindow;
-
-        // 
-        public PullbackPoseWindow pullbackPoseWindow;
-        public PullbackPoseGroupWindow pullbackPoseGroupWindow;
 
         //
         public KeyPoseBoneWindow keyPoseBoneWindow;
-        public PullbackPoseBoneWindow pullbackPoseBoneWindow;
 
         //
         public BodyParameterWindow bodyParameterWindow;
-
-        //
-        public KeyPoseNodeGraphEditorWindow keyPoseNodeGraphWindow;
         
         
         // KeyPoseWindow関係
-        public List<KeyPoseGroupStatus> keyPoseGroupStatuses;
+        public List<KeyPoseStatus> keyPoseStatuses;
 
         // public ActionSelectWindow関係
         public List<ActionStateMachine> actions;
@@ -48,18 +40,8 @@ namespace SprUnity {
         public ActionStateMachine lastSelectedStateMachine;
         public ActionManager lastSelectedActionManager;
 
-        // PullbackPoseWindow関係
-        // public PullbackPoseGroupWindow関係
-
         // KeyPoseBoneWindow関係
         public bool showKeyPoseBoneWindow;
-        // PullbackPoseBoneWindow関係
-        public bool showPullbackPoseBoneWindow;
-
-
-        //
-        public string actionSaveFolder;
-        public string KeyPoseSaveFolder;
 
         // Management flags
         public bool actionSelectChanged = false;
@@ -69,7 +51,7 @@ namespace SprUnity {
 
 
         ActionEditorWindowManager() {
-            keyPoseGroupStatuses = new List<KeyPoseGroupStatus>();
+            keyPoseStatuses = new List<KeyPoseStatus>();
             actions = new List<ActionStateMachine>();
 
             EditorApplication.hierarchyChanged -= OnHierarchyChanged;
@@ -88,6 +70,9 @@ namespace SprUnity {
             Selection.selectionChanged += OnSelectionChanged;
 
             Debug.Log("Manager constructed");
+
+            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+            SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
 
         ~ActionEditorWindowManager() {
@@ -98,8 +83,6 @@ namespace SprUnity {
             if (body == null) {
                 body = GameObject.FindObjectOfType<Body>();
             }
-            actionSaveFolder = Application.dataPath + "/Actions/Actions";
-            KeyPoseSaveFolder = Application.dataPath + "/Actions/KeyPoses";
             Debug.Log("Manager OnEnable");
         }
 
@@ -116,6 +99,7 @@ namespace SprUnity {
 
         public void SearchBody() {
             body = GameObject.FindObjectOfType<Body>();
+            bodiesInScene = GameObject.FindObjectsOfType<Body>();
         }
 
         #region EventDelegates
@@ -126,6 +110,7 @@ namespace SprUnity {
             if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
                 instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
             }
+            SearchBody();
         }
 
         void OnProjectChanged() {
@@ -137,7 +122,7 @@ namespace SprUnity {
             if (actionSelectChanged) {
                 Debug.LogWarning(lastSelectedActionManager?[selectedAction.name]);
                 if (lastSelectedActionManager?[selectedAction.name] != null) {
-                    instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
+                    //instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
                 }
                 if (instance.timelineWindow != null) instance.timelineWindow.Repaint();
                 if (instance.stateMachineWindow != null) instance.stateMachineWindow.Repaint();
@@ -146,7 +131,7 @@ namespace SprUnity {
             if (selectedAction) {
                 if (selectedAction.isChanged) {
                     if (lastSelectedActionManager?[selectedAction.name] != null) {
-                        instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
+                        //instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
                         instance.timelineWindow?.Repaint();
                         instance.lastSelectedActionManager[selectedAction.name].isChanged = false;
                     }
@@ -155,6 +140,7 @@ namespace SprUnity {
                 }
             }
             if(instance.body == null) {
+                bodiesInScene = GameObject.FindObjectsOfType<Body>();
                 body = GameObject.FindObjectOfType<Body>();
             }
         }
@@ -183,6 +169,30 @@ namespace SprUnity {
             if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
                 instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
             }
+        }
+
+        void OnSceneGUI(SceneView sceneView) {
+            if (bodiesInScene == null) bodiesInScene = GameObject.FindObjectsOfType<Body>();
+
+            var sceneCamera = sceneView.camera;
+
+            Handles.BeginGUI();
+            GUILayout.BeginVertical();
+            GUILayout.Label("Bodies:" + bodiesInScene.Length);
+            foreach(var bodyInScene in bodiesInScene) {
+                bool enable = !(bodyInScene == body);
+                if (bodyInScene) {
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button(bodyInScene.gameObject.name, GUILayout.Width(100))) {
+                        body = bodyInScene;
+                    }
+                    GUILayout.Label(bodyInScene.height.ToString());
+                    GUILayout.EndHorizontal();
+                }
+
+            }
+            GUILayout.EndVertical();
+            Handles.EndGUI();
         }
 
         #endregion // EventDelegates

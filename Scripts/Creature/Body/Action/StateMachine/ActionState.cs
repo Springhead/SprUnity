@@ -39,23 +39,32 @@ namespace SprUnity {
 
         [HideInInspector]
         public ActionStateMachine stateMachine;
-        public KeyPoseData keyframe;
+        public BoneKeyPoseNode[] nodes;
         [HideInInspector]
         public List<ActionTransition> transitions = new List<ActionTransition>();
         public List<string> useParams;
 
+        public enum DurationMode {
+            Static,
+            Proportional,
+            Fitts,
+        };
+        public DurationMode durationMode;
         public float duration = 0.5f;
+        public float fittsA = 0.5f;
+        public float fittsB;
+        public float distance;
+        public float accuracy = 0.01f;
         public float spring = 1.0f;
         public float damper = 1.0f;
+        public bool durationNoise;
 
-        [HideInInspector]
-        public BlendController blendController;
+
         public bool useFace = false;
         public string blend = "";
         public float blendv = 1f;
         public float time = 0.3f;
         public float interval = 0f;
-        public KeyPoseTransformer transformers;
 
         // ----- ----- ----- ----- -----
         // 実行時
@@ -128,31 +137,51 @@ namespace SprUnity {
         // State Machine Events
 
         // Enter event of the state
-        public List<BoneSubMovementPair> OnEnter() {
+        public List<BoneSubMovementPair> OnEnter(ActionStateMachine aStateMachine, out float d) {
             isCurrent = true;
             timeFromEnter = 0.0f;
-            Debug.Log("Enter state:" + name + " at time:" + Time.time);
-            appliedStyle = currentStateStyle;
-            Body body = stateMachine.body;
-            if (body == null) { body = GameObject.FindObjectOfType<Body>(); }
-            if (body != null) {
-                List<float> parameters = new List<float>();
-                foreach (var l in useParams) {
-                    parameters.Add(stateMachine.parameters[l]);
-                }
-                if (useFace) {
-                    if (stateMachine.blendController == null) {
-                        stateMachine.blendController = body.GetComponent<BlendController>();
-                        blendController = stateMachine.blendController;
-                    }
-                    if (blendController != null) {
-                        blendController.BlendSet(interval, blend, blendv, time);
+            Body body = aStateMachine.Body;
+            KeyPose kp = new KeyPose();
+            var manager = aStateMachine.manager;
+            if (nodes != null) {
+                aStateMachine.ApplyParameters();
+                foreach (var boneKeyPose in nodes) {
+                    int index = boneKeyPose.graph.nodes.IndexOf(boneKeyPose);
+                    if (index >= 0) {
+                        var nodeInstance = (boneKeyPose.graph as KeyPoseNodeGraph).GetInstance(manager).nodes[index] as BoneKeyPoseNode;
+                        kp.boneKeyPoses.Add(nodeInstance?.GetBoneKeyPose());
                     }
                 }
-
-                // ターゲット位置による変換後のKeyPose
-
-                return keyframe.Action(body, duration, 0, spring, damper);
+            } 
+            switch (durationMode) {
+                case DurationMode.Static:
+                    d = duration;
+                    break;
+                case DurationMode.Proportional:
+                    d = duration * accuracy;
+                    break;
+                case DurationMode.Fitts:
+                    float dis = distance;
+                    if (kp.boneKeyPoses.Count == 1) {
+                        dis = Vector3.Magnitude(body[kp.boneKeyPoses[0].boneId].transform.position - kp.boneKeyPoses[0].position);
+                    }
+                    d = fittsA + fittsB * Mathf.Log((1 + (dis /Mathf.Max(accuracy, 0.00001f))), 2);
+                    break;
+                default:
+                    d = duration;
+                    break;
+            }
+            if (durationNoise) {
+                d *= 1.05f * GaussianRandom.random();
+            }
+            Debug.Log("OnEnter");
+            if (body != null && kp != null) {
+                return kp.Action(body, duration, 0, spring, damper);
+            }
+            if (useFace) {
+                if (stateMachine.blendController != null) {
+                    stateMachine.blendController.BlendSet(interval, blend, blendv, time);
+                }
             }
             return null;
         }
@@ -163,7 +192,7 @@ namespace SprUnity {
 
         // Exit event of the state
         public void OnExit() {
-            appliedStyle = defaultStyle;
+            
         }
 
 
@@ -187,18 +216,23 @@ namespace SprUnity {
             stateNodeRect.position += delta;
         }
 
-        public void Draw(int id, bool isCurrent) {
+        public void Draw(int id, bool isCurrent, Rect position, float zoom, Vector2 panOffset) {
             //GUI.Box(stateNodeRect, name, GUI.skin.box);
+            Vector2 center = position.size * 0.5f;
+            float xOffset = Mathf.Round(center.x * zoom + (panOffset.x + stateNodeRect.x));
+            float yOffset = Mathf.Round(center.y * zoom + (panOffset.y + stateNodeRect.y));
+            Rect pos = stateNodeRect;//new Rect(new Vector2(xOffset, yOffset), stateNodeRect.size);
+
             if (isCurrent) {
                 if (isSelected || isDragged) {
-                    GUI.Window(id, stateNodeRect, DrawStateNode, name, "flow node 6 on");
+                    GUI.Window(id, pos, DrawStateNode, name, "flow node 6 on");
                 } else {
-                    GUI.Window(id, stateNodeRect, DrawStateNode, name, "flow node 6");
+                    GUI.Window(id, pos, DrawStateNode, name, "flow node 6");
                 }
             }else if (isSelected || isDragged) {
-                GUI.Window(id, stateNodeRect, DrawStateNode, name, "flow node 0 on");
+                GUI.Window(id, pos, DrawStateNode, name, "flow node 0 on");
             } else {
-                GUI.Window(id, stateNodeRect, DrawStateNode, name, "flow node 0");
+                GUI.Window(id, pos, DrawStateNode, name, "flow node 0");
             }
         }
 
@@ -212,12 +246,10 @@ namespace SprUnity {
                             isDragged = true;
                             isSelected = true;
                             Selection.activeObject = this;
-                            appliedStyle = selectedStyle;
                             GUI.changed = true;
                         } else {
                             GUI.changed = true;
                             isSelected = false;
-                            appliedStyle = defaultStyle;
                         }
                     }
                     if (e.button == 1) {

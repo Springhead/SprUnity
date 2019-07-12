@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -9,91 +10,284 @@ using System.Reflection;
 #endif
 
 namespace SprUnity {
+    /*
+    [CustomPropertyDrawer(typeof(ActionParameter))]
+    public class ActionParameterPropertyDrawer : PropertyDrawer {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+            var labelProp = property.FindPropertyRelative("label");
+            var valueProp = property.FindPropertyRelative("v");
+            var typeProp = property.FindPropertyRelative("type");
+            Rect labelRect = position;
+            EditorGUI.TextField(labelRect,labelProp.stringValue);
+        }
 
-    [System.Serializable]
-    public class TransitionFlag {
-        public string label;
-        public bool enabled;
-        public TransitionFlag(string label, bool e = false) {
-            this.label = label;
-            this.enabled = e;
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+            return EditorGUIUtility.singleLineHeight;
         }
     }
+    */
+#if UNITY_EDITOR
+    [CustomEditor(typeof(ActionStateMachine))]
+    public class ActionStateMachineEditor : Editor {
+        bool showParameterList;
+        ActionParameter.ParameterType addType;
+        public override void OnInspectorGUI() {
+            EditorGUI.BeginChangeCheck();
+            ActionStateMachine stateMachine = (ActionStateMachine)target;
+            GUILayout.BeginVertical();
+            int deleteNum = -1;
+            for(int i = 0; i < stateMachine.parameters.Count(); i++) {
+                /*
+                ActionBoolParameter boolParam = stateMachine.parameters[i] as ActionBoolParameter;
+                if(boolParam != null) {
+                    GUILayout.BeginHorizontal();
+                    boolParam.label = GUILayout.TextArea(boolParam.label);
+                    boolParam.value = GUILayout.Toggle(boolParam.value, "");
+                    if (GUILayout.Button("x")) {
+                        deleteNum = i;
+                    }
+                    GUILayout.EndHorizontal();
+                    DrawReferenceNodes(boolParam);
+                    continue;
+                }
+                ActionIntParameter intParam = stateMachine.parameters[i] as ActionIntParameter;
+                if (intParam != null) {
+                    GUILayout.BeginHorizontal();
+                    intParam.label = GUILayout.TextArea(intParam.label);
+                    intParam.value = EditorGUILayout.IntField(intParam.value);
+                    if (GUILayout.Button("x")) {
+                        deleteNum = i;
+                    }
+                    GUILayout.EndHorizontal();
+                    DrawReferenceNodes(intParam);
+                    continue;
+                }
+                ActionFloatParameter floatParam = stateMachine.parameters[i] as ActionFloatParameter;
+                if (floatParam != null) {
+                    GUILayout.BeginHorizontal();
+                    floatParam.label = GUILayout.TextArea(floatParam.label);
+                    floatParam.value = EditorGUILayout.FloatField(floatParam.value);
+                    if (GUILayout.Button("x")) {
+                        deleteNum = i;
+                    }
+                    GUILayout.EndHorizontal();
+                    DrawReferenceNodes(floatParam);
+                    continue;
+                }
+                ActionGameObjectParameter objectParam = stateMachine.parameters[i] as ActionGameObjectParameter;
+                if (objectParam != null) {
+                    GUILayout.BeginHorizontal();
+                    objectParam.label = GUILayout.TextArea(objectParam.label);
+                    if (GUILayout.Button("x")) {
+                        deleteNum = i;
+                    }
+                    GUILayout.EndHorizontal();
+                    DrawReferenceNodes(objectParam);
+                    continue;
+                }
+                */
+                ActionParameter actionParameter = stateMachine.parameters[i];
+                GUILayout.BeginHorizontal();
+                actionParameter.label = GUILayout.TextArea(actionParameter.label);
+                switch (actionParameter.type) {
+                    case ActionParameter.ParameterType.Bool:
+                        actionParameter.value = GUILayout.Toggle((bool)actionParameter.value, "");
+                        break;
+                    case ActionParameter.ParameterType.Int:
+                        actionParameter.value = EditorGUILayout.IntField((int)actionParameter.value);
+                        break;
+                    case ActionParameter.ParameterType.Float:
+                        actionParameter.value = EditorGUILayout.FloatField(actionParameter.value != null ? (float)actionParameter.value : 0.0f);
+                        break;
+                    case ActionParameter.ParameterType.GameObject:
+                        /*
+                        if(actionParameter.value != null) {
+                            GUILayout.Label(((GameObject)actionParameter.value).name);
+                        } else {
+                            GUILayout.Label("Object null");
+                        }
+                        */
+                        actionParameter.value = EditorGUILayout.ObjectField((GameObject)actionParameter.value, typeof(GameObject));
+                        break;
+                    default:
+                        break;
+                }
+                if (GUILayout.Button("x")) {
+                    deleteNum = i;
+                }
+                GUILayout.EndHorizontal();
+                DrawReferenceNodes(actionParameter);
+            }
+            if(deleteNum >= 0) {
+                stateMachine.parameters.RemoveAt(deleteNum);
+            }
+            GUILayout.BeginHorizontal();
+            addType = (ActionParameter.ParameterType)EditorGUILayout.EnumPopup(addType);
+            if(GUILayout.Button("Add Parameter")) {
+                ActionParameter actionParameter = new ActionParameter();
+                switch (addType) {
+                    case ActionParameter.ParameterType.Bool:
+                        actionParameter.label = "new Bool";
+                        actionParameter.type = ActionParameter.ParameterType.Bool;
+                        actionParameter.value = false;
+                        break;
+                    case ActionParameter.ParameterType.Int:
+                        actionParameter.label = "new Int";
+                        actionParameter.type = ActionParameter.ParameterType.Int;
+                        actionParameter.value = 0;
+                        break;
+                    case ActionParameter.ParameterType.Float:
+                        actionParameter.label = "new Float";
+                        actionParameter.type = ActionParameter.ParameterType.Float;
+                        actionParameter.value = 0.0f;
+                        break;
+                    case ActionParameter.ParameterType.GameObject:
+                        actionParameter.label = "new GameObject";
+                        actionParameter.type = ActionParameter.ParameterType.GameObject;
+                        actionParameter.value = null;
+                        break;
+                }
+                stateMachine.parameters.Add(actionParameter);
 
-    [System.Serializable]
-    public class TransitionFlagList {
-        public List<TransitionFlag> flags = new List<TransitionFlag>();
-        public bool this[string key] {
-            set {
-                bool found = false;
-                int l = flags.Count;
-                foreach (var flag in flags) {
-                    if (flag.label == key) {
-                        flag.enabled = value;
-                        found = true;
-                    }
-                }
-                if (!found) flags.Add(new TransitionFlag(key, value));
             }
-            get {
-                foreach (var flag in flags) {
-                    if (flag.label == key) {
-                        return flag.enabled;
-                    }
-                }
-                return false;
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+            if (EditorGUI.EndChangeCheck()) {
+                EditorUtility.SetDirty(stateMachine);
             }
+            
         }
-        public TransitionFlagList Clone() {
-            TransitionFlagList clone = new TransitionFlagList();
-            foreach(var flag in this.flags) {
-                clone.flags.Add(new TransitionFlag(flag.label, flag.enabled));
+
+        public void DrawReferenceNodes(ActionParameter param) {
+            var backupIndent = EditorGUI.indentLevel;
+            //EditorGUI.indentLevel++;
+            int deleteNode = -1;
+            for (int i = 0; i < param.referenceNodes.Count(); i++) {
+                GUILayout.BeginHorizontal();
+                param.referenceNodes[i] = (VGentNodeBase)EditorGUILayout.ObjectField(param.referenceNodes[i], typeof(VGentNodeBase));
+                if (GUILayout.Button("x")) {
+                    deleteNode = i;
+                }
+                GUILayout.EndHorizontal();
             }
-            return clone;
+            if (deleteNode >= 0) {
+                param.referenceNodes.RemoveAt(deleteNode);
+            }
+            if(GUILayout.Button("Add Ref Node")) {
+                param.referenceNodes.Add(null);
+            }
+            EditorGUI.indentLevel = backupIndent;
         }
     }
-
-
+#endif
     [System.Serializable]
-    public class StateMachineParameter {
+    public class ActionParameter : ISerializationCallbackReceiver{
         public string label;
-        public float param;
-        public StateMachineParameter() {
+        public enum ParameterType {
+            Bool,
+            Int,
+            Float,
+            GameObject,
+        }
+        public static Type[] types= new Type[]{
+            typeof(bool),
+            typeof(int),
+            typeof(float),
+            typeof(GameObject),
+        };
+        public ParameterType type;
+        public object value;
+        [SerializeField]
+        private string valueData;
+        public List<VGentNodeBase> referenceNodes = new List<VGentNodeBase>();
+        public ActionParameter() {
             label = "";
-            param = 0.0f;
         }
-        public StateMachineParameter(string label, float initValue) {
-            this.label = label;
-            param = initValue;
+        public ActionParameter(string l) {
+            this.label = l;
         }
-    }
-    [System.Serializable]
-    public class StateMachineParameters {
-        public List<StateMachineParameter> parameters = new List<StateMachineParameter>();
-        public float this[string key] {
-            set {
-                int l = parameters.Count;
-                foreach (var p in parameters) {
-                    if (p.label == key) {
-                        p.param = value;
-                    }
+        public virtual void SetInput() {
+            foreach (var node in referenceNodes) {
+                switch (type) {
+                    case ParameterType.Bool:
+                        node.SetInput<bool>((bool)value);
+                        break;
+                    case ParameterType.Int:
+                        node.SetInput<int>((int)value);
+                        break;
+                    case ParameterType.Float:
+                        node.SetInput<float>((float)value);
+                        break;
+                    case ParameterType.GameObject:
+                        node.SetInput<GameObject>((GameObject)value);
+                        break;
+                    default:
+                        break;
                 }
             }
-            get {
-                foreach (var p in parameters) {
-                    if (p.label == key) {
-                        return p.param;
+        }
+        public bool SetValue<T>(T v) {
+            switch (type) {
+                case ParameterType.Bool:
+                    if(typeof(T) == typeof(bool)) {
+                        value = v;
+                        return true;
                     }
-                }
-                return 0.0f;
+                    break;
+                case ParameterType.Int:
+                    if(v is int) {
+                        value = v;
+                        return true;
+                    }
+                    break;
+                case ParameterType.Float:
+                    if(v is float) {
+                        value = v;
+                        return true;
+                    }
+                    break;
+                case ParameterType.GameObject:
+                    if(v is GameObject) {
+                        value = v;
+                        return true;
+                    }
+                    break;
+            }
+            return false;
+        }
+
+        public void OnBeforeSerialize() {
+            switch (type) {
+                case ParameterType.Bool:
+                    valueData = ((bool)value).ToString();
+                    break;
+                case ParameterType.Int:
+                    valueData = ((int)value).ToString();
+                    break;
+                case ParameterType.Float:
+                    valueData = ((float)value).ToString();
+                    break;
+                case ParameterType.GameObject:  // シリアライズしない
+                default:
+                    break;
             }
         }
-        public StateMachineParameters Clone() {
-            StateMachineParameters clone = new StateMachineParameters();
-            foreach (var param in this.parameters) {
-                clone.parameters.Add(new StateMachineParameter(param.label, param.param));
+
+        public void OnAfterDeserialize() {
+            switch (type) {
+                case ParameterType.Bool:
+                    value = valueData == "True" ? true : false;
+                    break;
+                case ParameterType.Int:
+                    value = int.Parse(valueData);
+                    break;
+                case ParameterType.Float:
+                    value = float.Parse(valueData);
+                    break;
+                case ParameterType.GameObject:
+                defalut:
+                    break;
             }
-            return clone;
         }
     }
 
@@ -103,46 +297,69 @@ namespace SprUnity {
     public class ActionStateMachine : ScriptableObject {
 
         [SerializeField]
-        //public List<ActionState> states;
-
-        // ----- ----- ----- ----- -----
- 
-        // Bool型のフラグリスト
-        public TransitionFlagList flags;
-
-        public StateMachineParameters parameters;
+        public List<ActionParameter> parameters;
+        public ActionParameter parameter(string name) {
+            foreach (var param in parameters) {
+                if (param.label == name) return param;
+            }
+            return null;
+        }
 
         // ----- ----- ----- ----- -----
         // 実行用
 
+        [System.NonSerialized]
+        public ActionStateMachine original = null;
+
+        // 適用するBody
+        [System.NonSerialized]
+        public ActionManager manager;
+        public Body Body {
+            get {
+                if (original != null && manager != null) {
+                    return manager.body;
+                }
+                return null;
+            }
+        }
+        public BlendShapeController blendController {
+            get {
+                if (original != null && manager != null) {
+                    return manager.blendController;
+                }
+                return null;
+            }
+        }
+        // instance群
+        [System.NonSerialized]
+        public Dictionary<ActionManager, ActionStateMachine> instances = new Dictionary<ActionManager, ActionStateMachine>();
+        public ActionStateMachine GetInstance(ActionManager manager) {
+            if (instances.ContainsKey(manager)) return instances[manager];
+            else {
+                ActionStateMachine instance = this.Clone();
+                instances.Add(manager, instance);
+                return instance;
+            }
+        }
+
         private ActionState currentState;
         public ActionState CurrentState { get { return currentState; } }
+        private float currentDuration;
+        private float currentStateTime;
 
         private float stateMachineTime = 0;
 
-        // 適用するBody
-        // Start時に対応させる
-        // <!!> これ初期化されない
-        [HideInInspector]
-        public Body body;
-
-        // BlendShapeを変更するためのコントローラ
-        // <!!> これ初期化されない
-        [HideInInspector]
-        public BlendController blendController;
-        //
-        ActionLog actionLog;
-        public ActionLog ActionLog{ get { return actionLog; } }
-        private List<ActionTransition> futureTransitions = new List<ActionTransition>();
-        static private int maxPredictLength = 5;
-
         private bool enabled = false;
-        public bool Enabled {
+
+        public List<HumanBodyBones> resource {
             get {
-                return enabled;
-            }
-            set {
-                enabled = value;
+                List<HumanBodyBones> bones = new List<HumanBodyBones>();
+                foreach(var state in states) {
+                    foreach(var node in state.nodes) {
+                        if (!bones.Contains(node.boneId)) bones.Add(node.boneId);
+                    }
+                }
+                return bones;
             }
         }
 
@@ -150,13 +367,10 @@ namespace SprUnity {
         // Editor関係
 
         public bool isChanged = false;
-
-        [HideInInspector]
-        public Rect entryRect = new Rect(100, 100, 100, 50);
-        public List<ActionTransition> entryTransitions = new List<ActionTransition>();
-
-        [HideInInspector]
-        public Rect exitRect = new Rect(100, 200, 100, 50);
+        
+        [HideInInspector] public Rect entryRect = new Rect(100, 100, 100, 50);
+        [HideInInspector ]public List<ActionTransition> entryTransitions = new List<ActionTransition>();
+        [HideInInspector] public Rect exitRect = new Rect(100, 200, 100, 50);
 
 
         // ----- ----- ----- ----- -----
@@ -196,32 +410,14 @@ namespace SprUnity {
 #if UNITY_EDITOR
         public static void CreateStateMachine(string newName) {
             var action = CreateInstance<ActionStateMachine>();
+#if UNITY_EDITOR
             AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
             AssetDatabase.Refresh();
+# endif
         }
 #endif
         // ----- ----- ----- ----- ----- -----
         // Create/Delete ActionState
-
-#if UNITY_EDITOR
-        [MenuItem("CONTEXT/ActionStateMachine/New State")]
-        static void CreateState() {
-            var parentStateMachine = Selection.activeObject as ActionStateMachine;
-
-            if (parentStateMachine == null) {
-                Debug.LogWarning("No ActionStateMachine object selected");
-                return;
-            }
-
-            var state = ScriptableObject.CreateInstance<ActionState>();
-            state.name = "state";
-            state.stateMachine = parentStateMachine;
-
-            AssetDatabase.AddObjectToAsset(state, parentStateMachine);
-
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(parentStateMachine));
-        }
-#endif
 
         public void CreateState(Vector2 pos = default(Vector2)) {
 #if UNITY_EDITOR
@@ -241,27 +437,22 @@ namespace SprUnity {
         }
 
         // ----- ----- ----- ----- ----- -----
-        // 
-
-        // 
-        void Awake() {
-
+        // Clone
+        public ActionStateMachine Clone() {
+            ActionStateMachine clone = ScriptableObject.Instantiate<ActionStateMachine>(this);
+            clone.original = this;
+            return clone;
         }
 
-        void OnDestroy() {
-
-        }
-
-        void OnEnable() {
-
-        }
-
-        void OnDisable() {
-
+        public ActionStateMachine Instantiate(ActionManager actionManager = null) {
+            ActionStateMachine instance = ScriptableObject.Instantiate<ActionStateMachine>(this);
+            instance.original = this;
+            instance.manager = actionManager;
+            return instance;
         }
 
         // ----- ----- ----- ----- ----- -----
-        // ステートマシン関係のイベント
+        // Execution events
 
         // 
         public void Begin(Body body = null, GameObject targets = null) {
@@ -269,16 +460,12 @@ namespace SprUnity {
             if (entryTransitions.Count == 0) return;
             
             enabled = true;
-
-            actionLog = new ActionLog();
-
             stateMachineTime = 0;
-            this.body = body;
-            futureTransitions = new List<ActionTransition>();
-            if (body == null) this.body = GameObject.FindObjectOfType<Body>();// <!!> 遷移が1パターン!!
+            currentStateTime = 0.0f;
+
             currentState = entryTransitions[0].toState;
-            var logs = currentState.OnEnter();
-            if (logs != null) AddLog(logs, currentState.name);
+            var logs = currentState.OnEnter(this, out currentDuration);
+            Debug.Log("Begin:" + currentState.name);
             isChanged = true;
         }
 
@@ -287,22 +474,20 @@ namespace SprUnity {
             if (!enabled) return;
             // Update timer
             stateMachineTime += Time.fixedDeltaTime;
+            currentStateTime += Time.fixedDeltaTime;
             currentState.OnUpdate();
 
             int nTransition = currentState.transitions.Count;
             // 遷移の判定
-            // リストで番号が若いものが優先される
-            // なお、1回のUpdateでは1回しか遷移しない
             for (int i = 0; i < nTransition; i++) {
-                if (currentState.transitions[i].IsTransitable(0)) {
+                if (currentState.transitions[i].IsTransitable(currentStateTime, currentDuration, this)) {
                     currentState.OnExit();
                     currentState = currentState.transitions[i].toState;
+                    currentStateTime = 0.0f;
                     if (currentState == null) {
                         End();
                     } else {
-                        var logs = currentState.OnEnter();
-                        if (logs != null) AddLog(logs, currentState.name);
-                        PredictFutureTransition();
+                        var logs = currentState.OnEnter(this, out currentDuration);
                     }
                     isChanged = true;
                     break;
@@ -322,63 +507,31 @@ namespace SprUnity {
         }
 
         void ResetStateMachine() {
-            for (int i = 0; i < flags.flags.Count; i++) {
-                flags.flags[i].enabled = false;
-            }
             for(int i = 0; i < states.Count; i++) {
                 states[i].IsCurrent = false;
             }
         }
 
-        public void AddLog(List<BoneSubMovementPair> logs, string s) {
-            foreach (var log in logs) {
-                float duration = log.subMovement.t1 - log.subMovement.t0;
-                log.subMovement.t0 += stateMachineTime;
-                log.subMovement.t1 += stateMachineTime;
-                actionLog.AddLog(log, s);
-            }
-        }
-
-        public void PredictFutureTransition() {
-            futureTransitions.Clear();
-            actionLog.ClearFuture();
-            
-            ActionState predicted = currentState;
-            if (currentState == null) predicted = entryTransitions[0].toState;
-            for(int i = 0; i < maxPredictLength; i++) {
-                if (predicted) {
-                    if (predicted.transitions.Count == 0) break;
-                    var transitables = predicted.transitions.Where(value => value.IsTransitableOnlyFlag());
-                    if (transitables.Count() == 0) break;
-                    ActionTransition temp = transitables.Min(); ;
-                    futureTransitions.Add(temp);
-                    predicted = temp.toState;
-                    if(predicted != null) {
-                        var boneKeyPoses = predicted.keyframe.boneKeyPoses;
-                    }
-                } else {
-                    break;
-                }
+        public void ApplyParameters() {
+            foreach(var param in parameters) {
+                param.SetInput();
             }
         }
 
         // ----- ----- ----- ----- -----
-        // その他
 
-        static string GetCurrentDirectory() {
-#if UNITY_EDITOR
-            // source : https://qiita.com/r-ngtm/items/13d609cbd6a30e39f83a
-            var flag = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
-            var asm = Assembly.Load("UnityEditor.dll");
-            var typeProjectBrowser = asm.GetType("UnityEditor.ProjectBrowser");
-            var projectBrowserWindow = EditorWindow.GetWindow(typeProjectBrowser);
-            return (string)typeProjectBrowser.GetMethod("GetActiveFolderPath", flag).Invoke(projectBrowserWindow, null);
-#else
-        return ""; // <!!> Need Future Implementation
-#endif
+        void ApplyFromInstance() {
+            // 
+
         }
 
-        public Object[] GetSubAssets() {
+        void ApplyToAllInstance() {
+            // インスタンスの消去だけ
+        }
+
+        // ----- ----- ----- ----- -----
+
+        public UnityEngine.Object[] GetSubAssets() {
 #if UNITY_EDITOR
             string path = AssetDatabase.GetAssetPath(this);
             return AssetDatabase.LoadAllAssetsAtPath(path);
