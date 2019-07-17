@@ -407,7 +407,7 @@ namespace SprUnity {
             CreateStateMachine("ActionStateMachine");
         }
 #endif
-
+#if UNITY_EDITOR
         public static void CreateStateMachine(string newName) {
             var action = CreateInstance<ActionStateMachine>();
 #if UNITY_EDITOR
@@ -415,6 +415,7 @@ namespace SprUnity {
             AssetDatabase.Refresh();
 # endif
         }
+#endif
         // ----- ----- ----- ----- ----- -----
         // Create/Delete ActionState
 
