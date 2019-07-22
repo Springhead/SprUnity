@@ -21,6 +21,16 @@ namespace SprUnity {
 
         }
 
+        public override void SetInput<T>(T value) {
+            if (value is Quaternion) {
+                this.output = (Quaternion)(object)value;
+                this.x = output.x;
+                this.y = output.y;
+                this.z = output.z;
+                this.w = output.w;
+            }
+        }
+
         // Return the correct value of an output port when requested
         public override object GetValue(NodePort port) {
             if (port.fieldName == "output") {

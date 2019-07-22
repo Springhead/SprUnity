@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
+[CreateNodeMenu("Value/Int")]
 public class IntNode : Node {
     [Output] public int output;
     public int value;

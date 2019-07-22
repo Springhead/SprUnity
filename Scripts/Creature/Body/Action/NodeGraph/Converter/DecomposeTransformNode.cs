@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-public class DecomposeTransformNod : Node {
+[CreateNodeMenu("Converter/DecomposeTransform")]
+public class DecomposeTransformNode : Node {
 
 	// Use this for initialization
 	protected override void Init() {
