@@ -13,11 +13,8 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(MentalGroup))]
     public class MentalGroupEditor : Editor {
-        private IEnumerable<Type> partsTypes;
-        private List<string> partsTypeStrings;
         // perceptionObjectGroup.partsListが外部のメンバでboolを持ったクラスにすべきでない
         // partsの型情報は保存されないのでstringを使用
-        private Dictionary<string, bool> showPartsTypeStrings;
         private int partsTypeIndex;
         private GameObject aaa;
         public override void OnInspectorGUI() {
@@ -46,57 +43,7 @@ namespace SprUnity {
             if (GUILayout.Button("Test")) {
                 mentalGroup.Test();
             }
-            //var iterator = serializedObject.GetIterator();
-            //while (iterator.NextVisible(true)) {
-            //    EditorGUILayout.PropertyField(iterator);
-            //}
-            /*
-            var partsSerializedObject = serializedObject.FindProperty("parts"); //PartNamePair
-            for (int i = 0; i < partsSerializedObject.arraySize; i++) {
-                EditorGUILayout.BeginHorizontal();
-                var partNamePairSerializeObject = partsSerializedObject.GetArrayElementAtIndex(i);
-                var PartSerializeObject = partNamePairSerializeObject.FindPropertyRelative("Part"); //List<PerceptionObject>
-                EditorGUILayout.LabelField(PartSerializeObject.propertyType.ToString());
-                for (int j = 0; j < PartSerializeObject.arraySize; j++) {
-                    var perceptionObjectSerializedObject = PartSerializeObject.GetArrayElementAtIndex(j);
-                    EditorGUILayout.LabelField(perceptionObjectSerializedObject.
-                        FindPropertyRelative("confidence").floatValue.ToString());
-                }
-                EditorGUILayout.EndHorizontal();
-                //if (GUILayout.Button("Create Part")) {
-                //    partsSerializedObject.InsertArrayElementAtIndex(partsSerializedObject.arraySize);
-                //}
-            }
-            if (GUILayout.Button("Create Parts")) {
-                partsSerializedObject.InsertArrayElementAtIndex(partsSerializedObject.arraySize);
-            }
-            //parts.objectReferenceValue;
-            //foreach(var pair in perceptionObjectGroup.GetParts)
-            //EditorGUILayout.Popup();
-            serializedObject.ApplyModifiedProperties();
-            EditorGUILayout.LabelField(partsSerializedObject.arraySize.ToString());
-            //var parts = (PerceptionObjectGroup.PartNamePair)partsSerializedObject.GetArrayElementAtIndex(1);
-            */
             base.OnInspectorGUI();
-
-            //game = new List<GameObject>();
-            //game = (GameObject)EditorGUILayout.ObjectField(game, typeof(GameObject), true);
-        }
-
-        public void OnEnable() {
-            MentalGroup perceptionObjectGroup = (MentalGroup)target;
-            partsTypes = Assembly.GetAssembly(typeof(MentalParts)).GetTypes().Where(t => {
-                return t.IsSubclassOf(typeof(MentalParts)) && !t.IsAbstract;
-            });
-            partsTypeStrings = new List<string>();
-            foreach (var skillType in partsTypes) {
-                partsTypeStrings.Add(skillType.Name);
-            }
-            //var iterator = serializedObject.GetIterator();
-            //while (iterator.NextVisible(true)) {
-            //    Debug.Log(iterator.propertyPath);
-            //}
-            showPartsTypeStrings = new Dictionary<string, bool>();
         }
     }
 #endif
