@@ -17,13 +17,13 @@ namespace SprUnity {
         public ActionManager manager;
         public Body body {
             get {
-                if (original != null && manager != null) {
+                if (/*original != null && */manager != null) {
                     return manager.body;
                 }
                 return null;
             }
         }
-
+        /*
         [System.NonSerialized]
         public Dictionary<ActionManager, KeyPoseNodeGraph> instances = new Dictionary<ActionManager, KeyPoseNodeGraph>();
         public KeyPoseNodeGraph GetInstance(ActionManager manager) {
@@ -37,7 +37,7 @@ namespace SprUnity {
                     return instance;
                 } else return manager == this.manager ? this : null;
             }
-        }
+        }*/
         public override NodeGraph Copy() {
             KeyPoseNodeGraph graph = base.Copy() as KeyPoseNodeGraph;
             graph.isKeyPoseData = this.isKeyPoseData;
