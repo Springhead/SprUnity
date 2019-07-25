@@ -50,17 +50,25 @@ namespace SprUnity {
 
         public ActionStateMachine this[string key] {
             get {
-                foreach (var action in actions) { if (action.name == key) return action.GetInstance(this); }
+                foreach (var action in actions) { if (action.name == key) return action; }//.GetInstance(this); }
                 return null;
             }
         }
 
         void Start() {
+            /*
             for (int i = 0; i < keyPoseGraphs.Count; i++) {
                 keyPoseGraphs[i].GetInstance(this);
             }
             for (int i = 0; i < actions.Count; i++) {
                 actions[i].instances.Add(this, actions[i].Instantiate(this));
+            }
+            */
+            for (int i = 0; i < keyPoseGraphs.Count; i++) {
+                keyPoseGraphs[i].manager = this;
+            }
+            for (int i = 0; i < actions.Count; i++) {
+                actions[i].manager = this;
             }
             inAction = null;
         }
@@ -80,7 +88,7 @@ namespace SprUnity {
         public void SetInput<T>(string graphName, string nodeName, object value) {
             foreach(var keyPoseGraph in keyPoseGraphs) {
                 if(keyPoseGraph.name == graphName) {
-                    var graph = keyPoseGraph.GetInstance(this);
+                    var graph = keyPoseGraph;//.GetInstance(this);
                     foreach(var inputNode in graph.inputNodes) {
                         if (inputNode.name.Contains(nodeName)) {
                             (inputNode as VGentNodeBase).SetInput<T>((T)value);
@@ -100,7 +108,7 @@ namespace SprUnity {
             print("Action: " + name);
             foreach (var action in actions) {
                 if (action.name == name) {
-                    inAction = action.instances[this];
+                    inAction = action;//.instances[this];
                     inAction.Begin();
                 }
             }

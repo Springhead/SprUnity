@@ -212,7 +212,7 @@ namespace SprUnity {
 
         public void InitializeGraphMatrix() {
             var action = ActionEditorWindowManager.instance.selectedAction;
-            int nStates = action.nStates;
+            int nStates = action.states.Count;
             graphConnectionMatrix = new List<List<int>>();
             for (int i = 0; i < nStates; i++) {
                 action.states[i].serialCount = i;

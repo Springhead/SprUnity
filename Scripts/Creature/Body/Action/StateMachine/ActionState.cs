@@ -59,7 +59,6 @@ namespace SprUnity {
         public float damper = 1.0f;
         public bool durationNoise;
 
-
         public bool useFace = false;
         public string blend = "";
         public float blendv = 1f;
@@ -148,8 +147,8 @@ namespace SprUnity {
                 foreach (var boneKeyPose in nodes) {
                     int index = boneKeyPose.graph.nodes.IndexOf(boneKeyPose);
                     if (index >= 0) {
-                        var nodeInstance = (boneKeyPose.graph as KeyPoseNodeGraph).GetInstance(manager).nodes[index] as BoneKeyPoseNode;
-                        kp.boneKeyPoses.Add(nodeInstance?.GetBoneKeyPose());
+                        //var nodeInstance = (boneKeyPose.graph as KeyPoseNodeGraph).GetInstance(manager).nodes[index] as BoneKeyPoseNode;
+                        kp.boneKeyPoses.Add(boneKeyPose.GetBoneKeyPose());
                     }
                 }
             } 
