@@ -74,7 +74,6 @@ namespace SprUnity {
         "mass",
     };
         public void OnEnable() {
-            Open();
             // <!!> これ、ここか？
             for (int i = 0; i < displayBodyGroup.Length; i++) {
                 displayBodyGroup[i].disp = SessionState.GetBool("BodyParamGroup" + displayBodyGroup[i].groupName, false);
@@ -90,6 +89,8 @@ namespace SprUnity {
         }
 
         public void OnGUI() {
+            if (window == null) Open();
+
             GUIStyle style = GUI.skin.GetStyle("label");
             int backFontSize = style.fontSize; // 他のウィンドウに影響しないように
             TextAnchor backAlignment = style.alignment;

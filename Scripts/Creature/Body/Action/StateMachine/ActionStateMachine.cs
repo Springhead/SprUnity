@@ -337,8 +337,17 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
 
-        public List<ActionState> states = new List<ActionState>();
+        public List<ActionState> states {
+            get {
+                return this.GetSubAssets().OfType<ActionState>().ToList();
+            }
+        }
 
+        public int nStates {
+            get {
+                return this.GetSubAssets().Where(value => value as ActionState != null).Count();
+            }
+        }
         public List<ActionTransition> transitions {
             get {
                 return this.GetSubAssets().OfType<ActionTransition>().ToList();
