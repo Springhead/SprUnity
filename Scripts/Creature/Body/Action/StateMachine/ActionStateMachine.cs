@@ -37,55 +37,6 @@ namespace SprUnity {
             GUILayout.BeginVertical();
             int deleteNum = -1;
             for(int i = 0; i < stateMachine.parameters.Count(); i++) {
-                /*
-                ActionBoolParameter boolParam = stateMachine.parameters[i] as ActionBoolParameter;
-                if(boolParam != null) {
-                    GUILayout.BeginHorizontal();
-                    boolParam.label = GUILayout.TextArea(boolParam.label);
-                    boolParam.value = GUILayout.Toggle(boolParam.value, "");
-                    if (GUILayout.Button("x")) {
-                        deleteNum = i;
-                    }
-                    GUILayout.EndHorizontal();
-                    DrawReferenceNodes(boolParam);
-                    continue;
-                }
-                ActionIntParameter intParam = stateMachine.parameters[i] as ActionIntParameter;
-                if (intParam != null) {
-                    GUILayout.BeginHorizontal();
-                    intParam.label = GUILayout.TextArea(intParam.label);
-                    intParam.value = EditorGUILayout.IntField(intParam.value);
-                    if (GUILayout.Button("x")) {
-                        deleteNum = i;
-                    }
-                    GUILayout.EndHorizontal();
-                    DrawReferenceNodes(intParam);
-                    continue;
-                }
-                ActionFloatParameter floatParam = stateMachine.parameters[i] as ActionFloatParameter;
-                if (floatParam != null) {
-                    GUILayout.BeginHorizontal();
-                    floatParam.label = GUILayout.TextArea(floatParam.label);
-                    floatParam.value = EditorGUILayout.FloatField(floatParam.value);
-                    if (GUILayout.Button("x")) {
-                        deleteNum = i;
-                    }
-                    GUILayout.EndHorizontal();
-                    DrawReferenceNodes(floatParam);
-                    continue;
-                }
-                ActionGameObjectParameter objectParam = stateMachine.parameters[i] as ActionGameObjectParameter;
-                if (objectParam != null) {
-                    GUILayout.BeginHorizontal();
-                    objectParam.label = GUILayout.TextArea(objectParam.label);
-                    if (GUILayout.Button("x")) {
-                        deleteNum = i;
-                    }
-                    GUILayout.EndHorizontal();
-                    DrawReferenceNodes(objectParam);
-                    continue;
-                }
-                */
                 ActionParameter actionParameter = stateMachine.parameters[i];
                 GUILayout.BeginHorizontal();
                 actionParameter.label = GUILayout.TextArea(actionParameter.label);
@@ -151,6 +102,12 @@ namespace SprUnity {
 
             }
             GUILayout.EndHorizontal();
+            foreach(var instance in stateMachine.instances) {
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.ObjectField((ActionManager)instance.Key, typeof(ActionManager));
+                EditorGUILayout.ObjectField((ActionStateMachine)instance.Value, typeof(ActionStateMachine));
+                GUILayout.EndHorizontal();
+            }
             GUILayout.EndVertical();
             if (EditorGUI.EndChangeCheck()) {
                 EditorUtility.SetDirty(stateMachine);
@@ -304,6 +261,10 @@ namespace SprUnity {
             }
             return null;
         }
+        public float energy;
+        public float accuracy;
+        public float noiseCapacity;
+        public float collisionWarningLevel;
 
         // ----- ----- ----- ----- -----
         // 実行用
@@ -316,7 +277,8 @@ namespace SprUnity {
         public ActionManager manager;
         public Body Body {
             get {
-                if (original != null && manager != null) {
+                //if (original != null && manager != null) {
+                if(manager != null) { 
                     return manager.body;
                 }
                 return null;
@@ -336,7 +298,7 @@ namespace SprUnity {
         public ActionStateMachine GetInstance(ActionManager manager) {
             if (instances.ContainsKey(manager)) return instances[manager];
             else {
-                ActionStateMachine instance = this.Clone();
+                ActionStateMachine instance = this.Instantiate(manager);
                 instances.Add(manager, instance);
                 return instance;
             }
@@ -374,17 +336,6 @@ namespace SprUnity {
 
 
         // ----- ----- ----- ----- -----
-        public int nStates {
-            get {
-                return this.GetSubAssets().Where(value => value as ActionState != null).Count();
-            }
-        }
-
-        public int nTransitions {
-            get {
-                return this.GetSubAssets().Where(value => value as ActionTransition != null).Count();
-            }
-        }
 
         public List<ActionState> states {
             get {
@@ -392,9 +343,20 @@ namespace SprUnity {
             }
         }
 
+        public int nStates {
+            get {
+                return this.GetSubAssets().Where(value => value as ActionState != null).Count();
+            }
+        }
         public List<ActionTransition> transitions {
             get {
                 return this.GetSubAssets().OfType<ActionTransition>().ToList();
+            }
+        }
+
+        public int nTransitions {
+            get {
+                return this.GetSubAssets().Where(value => value as ActionTransition != null).Count();
             }
         }
 
@@ -441,12 +403,38 @@ namespace SprUnity {
         public ActionStateMachine Clone() {
             ActionStateMachine clone = ScriptableObject.Instantiate<ActionStateMachine>(this);
             clone.original = this;
+            // Copy nodes
+            for (int i = 0; i < states.Count; i++) {
+                if (states[i] == null) continue;
+                ActionState state = Instantiate(states[i]) as ActionState;
+                state.stateMachine = clone;
+                clone.states[i] = state;
+            }
+            // Copy transitions
+            for(int i = 0; i < this.entryTransitions.Count; i++) {
+                if (entryTransitions[i] == null) continue;
+                ActionTransition transition = Instantiate(entryTransitions[i]) as ActionTransition;
+                transition.stateMachine = clone;
+                int index = this.states.IndexOf(entryTransitions[i].toState);
+                if (index >= 0) transition.toState = clone.states[index];
+            }
+            for (int numStates = 0; numStates < clone.states.Count; numStates++) {
+                var state = clone.states[numStates];
+                for (int i = 0; i < state.transitions.Count; i++) {
+                    if (state.transitions[i] == null) continue;
+                    ActionTransition transition = Instantiate(state.transitions[i]) as ActionTransition;
+                    transition.stateMachine = clone;
+                    int fromIndex = this.states.IndexOf(state.transitions[i].fromState);
+                    if (fromIndex >= 0) transition.toState = clone.states[fromIndex];
+                    int toIndex = this.states.IndexOf(state.transitions[i].toState);
+                    if (toIndex >= 0) transition.toState = clone.states[toIndex];
+                }
+            }
             return clone;
         }
 
         public ActionStateMachine Instantiate(ActionManager actionManager = null) {
-            ActionStateMachine instance = ScriptableObject.Instantiate<ActionStateMachine>(this);
-            instance.original = this;
+            ActionStateMachine instance = Clone();
             instance.manager = actionManager;
             return instance;
         }

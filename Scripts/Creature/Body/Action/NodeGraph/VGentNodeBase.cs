@@ -8,5 +8,9 @@ namespace SprUnity {
 
         public virtual void OnSceneGUI(Body body = null) { }
         public virtual void SetInput<T>(T value) { }
+
+        public virtual void OnValidate() {
+
+        }
     }
 }

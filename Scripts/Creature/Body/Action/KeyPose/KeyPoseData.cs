@@ -14,6 +14,7 @@ namespace SprUnity {
     [Serializable]
     public class BoneKeyPose {
         public HumanBodyBones boneId = HumanBodyBones.Hips;
+        public string boneIdString = "";
         public Vector3 localPosition = new Vector3();
         public Quaternion localRotation = new Quaternion();
         public bool usePosition = true;
@@ -38,7 +39,7 @@ namespace SprUnity {
     [Serializable]
     public class StaticBoneKeyPose : BoneKeyPose{
         //public HumanBodyBones boneId = HumanBodyBones.Hips;
-        public string boneIdString = "";
+        //public string boneIdString = "";
         public enum CoordinateMode {
             World, // World
             BoneLocal, // Local coordinate (Bone GameObject)
@@ -323,7 +324,7 @@ namespace SprUnity {
             if (body != null) {
                 foreach (var boneKeyPose in boneKeyPoses) {
                     if (boneKeyPose.usePosition || boneKeyPose.useRotation) {
-                        Bone bone = body[boneKeyPose.boneId];
+                        Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
                         var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
                         var springDamper = new Vector2(spring, damper);
                         var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);

@@ -38,12 +38,22 @@ namespace SprUnity {
                 Handles.PositionHandle(tempOrigin.position, tempOrigin.rotation);
             }
             PosRotScale tempRelative = GetInputValue<PosRotScale>("relative", this.relative);
-            EditorGUI.BeginChangeCheck();
             PosRotScale r = tempOrigin.TransformPosRotScale(tempRelative);
-            Vector3 pos = Handles.PositionHandle(r.position, r.rotation);
-            Quaternion rot = Handles.RotationHandle(r.rotation, r.position);
-            if (EditorGUI.EndChangeCheck() && !GetPort("relative").IsConnected) {
-                relative = tempOrigin.Inverse().TransformPosRotScale(new PosRotScale(pos, rot, tempOrigin.scale));
+            if (Tools.pivotRotation == PivotRotation.Local) {
+                EditorGUI.BeginChangeCheck();
+                Vector3 pos = Handles.PositionHandle(r.position, r.rotation);
+                Quaternion rot = Handles.RotationHandle(r.rotation, r.position);
+                if (EditorGUI.EndChangeCheck() && !GetPort("relative").IsConnected) {
+                    Undo.RecordObject(this, "Change RelativePosRotScaleNode");
+                    relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, rot, r.scale));
+                }
+            } else {
+                EditorGUI.BeginChangeCheck();
+                Vector3 pos = Handles.PositionHandle(r.position, Quaternion.identity);
+                if (EditorGUI.EndChangeCheck() && !GetPort("relative").IsConnected) {
+                    Undo.RecordObject(this, "Change RelativePosRotScaleNode");
+                    relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, r.rotation, r.scale));
+                }
             }
 #endif
         }

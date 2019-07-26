@@ -124,11 +124,19 @@ namespace SprUnity {
             return result;
         }
 
+        public PosRotScale InverseTransformPosRotScale(PosRotScale posrotscale) {
+            PosRotScale result = new PosRotScale();
+            result.position = Vector3.Scale(scaleInv, (posrotscale.position - position));
+            result.rotation = (Quaternion.Inverse(rotation) * posrotscale.rotation).normalized;
+            result.scale = Vector3.Scale(scaleInv, posrotscale.scale);
+            return result;
+        }
+
         public PosRotScale Inverse() {
             PosRotScale result = new PosRotScale();
             result.rotation = Quaternion.Inverse(rotation);
-            result.position = -(result.rotation * position);
             result.scale = scaleInv;
+            result.position = -(rotation * Vector3.Scale(scale, position));
             return result;
         }
 

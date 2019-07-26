@@ -6,11 +6,12 @@ using XNode;
 using UnityEditor;
 #endif
 
-namespace SprUnity{
+namespace SprUnity {
     [CreateNodeMenu("Output/BoneKeypose")]
     public class BoneKeyPoseNode : KeyPoseNodeBase {
         [Output] public BoneKeyPose boneKeyPose;
         [Input] public HumanBodyBones boneId;
+        [Input] public string boneLabel = "";
         [Input] public PosRotScale posRotScale;
         [Input] public bool usePosition;
         [Input] public bool useRotation;
@@ -30,6 +31,7 @@ namespace SprUnity{
             BoneKeyPose tempBoneKeyPose = new BoneKeyPose();
             PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale", this.posRotScale);
             tempBoneKeyPose.boneId = GetInputValue<HumanBodyBones>("boneID", this.boneId);
+            tempBoneKeyPose.boneIdString = GetInputValue<string>("boneLabel", this.boneLabel);
             tempBoneKeyPose.localPosition = tempPosRotScale.position;
             tempBoneKeyPose.localRotation = tempPosRotScale.rotation;
             tempBoneKeyPose.usePosition = GetInputValue<bool>("usePosition", this.usePosition);
@@ -66,6 +68,7 @@ namespace SprUnity{
             }
 #endif
         }
+
     }
 
 }

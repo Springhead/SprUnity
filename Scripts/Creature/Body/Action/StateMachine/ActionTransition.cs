@@ -53,10 +53,15 @@ namespace SprUnity {
             StaticTimeFromPreviousKeyPoseEnd,
             RelativeTimeFromPreviousKeyPoseStart,
             OuterTrigger,
+            Random,
+            ProportionalToFloatParam,
         };
         public IntervalMode intervalMode;
         public float timeCoefficient = 1.0f;
         public bool intervalNoise;
+        public string floatParam;
+        public float minInterval;
+        public float maxInterval;
 
         // ----- ----- ----- ----- -----
         // Editor関係
@@ -123,6 +128,11 @@ namespace SprUnity {
                     break;
                 case IntervalMode.OuterTrigger:
                     intervalTime = time;
+                    break;
+                case IntervalMode.ProportionalToFloatParam:
+                    float p = (float)aStateMachine.parameter(floatParam)?.value;
+                    p = Mathf.Clamp01(p);
+                    intervalTime = minInterval + (maxInterval - minInterval) * p;
                     break;
                 default:
                     intervalTime = time;

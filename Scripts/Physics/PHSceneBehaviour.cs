@@ -18,6 +18,7 @@ public class PHSceneBehaviourEditor : Editor {
 
         DrawDefaultInspector();
 
+                    EditorGUI.BeginChangeCheck();
         showCollision = EditorGUILayout.Foldout(showCollision, "Collision Setting");
         if (showCollision) {
             int i = 0;
