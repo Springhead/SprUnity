@@ -111,7 +111,6 @@ namespace SprUnity {
         }
 
         public void OnEnable() {
-            Debug.Log("OnEnable");
             //ReloadKeyPoseList();
             //visibleButtonTexture = EditorGUIUtility.IconContent("ClothInspector.ViewValue").image as Texture2D;
             visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;

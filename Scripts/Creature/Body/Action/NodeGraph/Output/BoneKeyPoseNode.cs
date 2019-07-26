@@ -6,7 +6,7 @@ using XNode;
 using UnityEditor;
 #endif
 
-namespace SprUnity{
+namespace SprUnity {
     [CreateNodeMenu("Output/BoneKeypose")]
     public class BoneKeyPoseNode : KeyPoseNodeBase {
         [Output] public BoneKeyPose boneKeyPose;
@@ -68,6 +68,7 @@ namespace SprUnity{
             }
 #endif
         }
+
     }
 
 }
