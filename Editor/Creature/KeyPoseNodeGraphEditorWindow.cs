@@ -95,34 +95,25 @@ namespace SprUnity {
             editableBoneKeyPoseNodes.Clear();
             foreach (var obj in Selection.objects) {
                 VGentNodeBase node = obj as VGentNodeBase;
-                if (node != null) node.OnSceneGUI(body);
-#if UNITY_EDITOR
-                RelativePosRotScaleNode relativePosRotScaleNode = obj as RelativePosRotScaleNode;
-                if (relativePosRotScaleNode != null) {
-                    AddBoneKeyPoseNode(relativePosRotScaleNode, editableBoneKeyPoseNodes);
+                if (node != null) {
+                    node.OnSceneGUI(body);
+                    AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);
                 }
-                foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
-                    DrawHumanBone(editableBoneKeyPoseNode);
-                }
-#endif
+            }
+            foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
+                DrawHumanBone(editableBoneKeyPoseNode);
             }
         }
         void AddBoneKeyPoseNode(Node node, List<BoneKeyPoseNode> boneKeyPoseNodes) {
             foreach (var output in node.Outputs) {
-                if (output.Connection != null) {
-                    var newBoneKeyPoseNode = output.Connection.node as BoneKeyPoseNode;
+                foreach (var connection in output.GetConnections()) {
+                    var newBoneKeyPoseNode = connection.node as BoneKeyPoseNode;
                     if (newBoneKeyPoseNode != null) {
-                        bool isExist = false;
-                        foreach (var boneKeyPoseNode in boneKeyPoseNodes) {
-                            if (boneKeyPoseNode == newBoneKeyPoseNode) {
-                                isExist = true;
-                            }
-                        }
-                        if (!isExist) {
+                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode)) {
                             boneKeyPoseNodes.Add(newBoneKeyPoseNode);
                         }
                     } else {
-                        AddBoneKeyPoseNode(output.Connection.node, boneKeyPoseNodes);
+                        AddBoneKeyPoseNode(connection.node, boneKeyPoseNodes);
                     }
                 }
             }

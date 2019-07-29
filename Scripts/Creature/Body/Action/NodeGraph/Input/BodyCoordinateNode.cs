@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/Body")]
-    public class BodyCoordinateNode : Node {
+    public class BodyCoordinateNode : VGentNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
 
         // Use this for initialization
@@ -27,6 +30,15 @@ namespace SprUnity {
             } else {
                 return null;
             }
+        }
+
+        public override void OnSceneGUI(Body body = null) {
+#if UNITY_EDITOR
+            PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale");
+            if(tempPosRotScale != null) {
+                Handles.PositionHandle(tempPosRotScale.position, tempPosRotScale.rotation);
+            }
+#endif
         }
     }
 }
