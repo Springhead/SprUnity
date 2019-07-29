@@ -16,7 +16,6 @@ namespace SprUnity {
         // perceptionObjectGroup.partsListが外部のメンバでboolを持ったクラスにすべきでない
         // partsの型情報は保存されないのでstringを使用
         private int partsTypeIndex;
-        private GameObject aaa;
         public override void OnInspectorGUI() {
             MentalGroup mentalGroup = (MentalGroup)target;
             foreach (var parts in mentalGroup.GetAllParts()) {
