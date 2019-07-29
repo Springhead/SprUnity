@@ -39,7 +39,7 @@ namespace SprUnity {
             Vector3 p = Vector3.zero;
             Quaternion r = Quaternion.identity;
             if (GetPort("pos").IsConnected) {
-                Handles.PositionHandle(tempPos, tempRot);
+                //Handles.PositionHandle(tempPos, tempRot);
             } else {
                 p = Handles.PositionHandle(tempPos, tempRot);
             }
@@ -49,6 +49,7 @@ namespace SprUnity {
                 r = Handles.RotationHandle(tempRot, tempPos);
             }
             if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(this, "Change PosRotScaleNode");
                 if (!GetPort("pos").IsConnected) {
                     pos = p;
                 }

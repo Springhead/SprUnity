@@ -4,7 +4,7 @@ using UnityEngine;
 using XNode;
 
 namespace SprUnity {
-    public class BlendPosRotScaleNode : Node {
+    public class BlendPosRotScaleNode : VGentNodeBase {
         [Output] public PosRotScale output;
         [Input] public PosRotScale input1;
         [Input] public PosRotScale input2;

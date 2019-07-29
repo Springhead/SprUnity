@@ -40,8 +40,6 @@ namespace SprUnity {
         //[HideInInspector]
         public ActionStateMachine inAction = null;
 
-        public GameObject Target;
-
         // ----- ----- ----- ----- -----
 
         private float time = 0.0f;
@@ -103,7 +101,8 @@ namespace SprUnity {
 
         public void Action(string name) {
             if (inAction != null) {
-                inAction.End();
+                if (inAction.name == name) return;
+                else inAction.End();
             }
             print("Action: " + name);
             foreach (var action in actions) {
