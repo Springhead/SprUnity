@@ -72,7 +72,7 @@ namespace SprUnity {
         }
 
         private void FixedUpdate() {
-            if(body != null && inAction != null) {
+            if (body != null && inAction != null) {
                 inAction.UpdateStateMachine();
             }
         }
