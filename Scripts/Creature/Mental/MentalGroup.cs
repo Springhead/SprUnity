@@ -13,10 +13,6 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CustomEditor(typeof(MentalGroup))]
     public class MentalGroupEditor : Editor {
-        // perceptionObjectGroup.partsListが外部のメンバでboolを持ったクラスにすべきでない
-        // partsの型情報は保存されないのでstringを使用
-        private int partsTypeIndex;
-        private GameObject aaa;
         public override void OnInspectorGUI() {
             MentalGroup mentalGroup = (MentalGroup)target;
             foreach (var parts in mentalGroup.GetAllParts()) {
@@ -40,9 +36,6 @@ namespace SprUnity {
                 }
                 EditorGUI.indentLevel--;
             }
-            if (GUILayout.Button("Test")) {
-                mentalGroup.Test();
-            }
             base.OnInspectorGUI();
         }
     }
@@ -50,8 +43,6 @@ namespace SprUnity {
 
     public class MentalGroup : MentalExistance {
 
-        //private List<MentalAttribute> attributes = new List<MentalAttribute>();
-        //実態はGameObjectに格納されている
         public override Type GetAttribute<Type>() {
             var mentalAttribute = GetComponentInChildren<Type>();
             if (mentalAttribute?.GetComponentInParent<MentalGroup>() == this) {
@@ -70,10 +61,7 @@ namespace SprUnity {
             return newMentalAttributeList;
         }
 
-        // Dictionaryだとinspectorに表示が確実にできないpublicにまずしてはならない
-        // inspectorに表示が絶対にあった穂がようい
         public Type GetParts<Type>() where Type : MentalParts, new() {
-            // 子供の中を探し見つかったpartsがこのMentalGroupのものであれば返す
             var mentalParts = GetComponentInChildren<Type>();
             if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
                 return mentalParts;
@@ -92,31 +80,5 @@ namespace SprUnity {
             }
             return newMentalPartsList;
         }
-
-        public void Test() {
-            foreach (var parts in GetAllParts()) {
-                foreach (var part in parts) {
-                    if (part != null) {
-                        if (part.gameObject != null) {
-                            Debug.Log(part.gameObject.name);
-                        }
-                    }
-                }
-            }
-        }
-        //// Testように
-        //List<Parts> test;
-        //public void Start() {
-        //    PersonParts ppc = new PersonParts();
-
-        //    test = new List<Parts>();
-        //    test.Add(new CupParts());
-        //    foreach (var tes in test) {
-        //        Debug.Log(tes.GetType());
-        //    }
-        //    //foreach (var pp in ppc) {
-        //    //    Debug.Log("posrot = " + pp.PosRot().position);
-        //    //}
-        //}
     }
 }

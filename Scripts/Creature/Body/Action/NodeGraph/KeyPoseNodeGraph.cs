@@ -13,7 +13,6 @@ namespace SprUnity {
         [System.NonSerialized]
         public KeyPoseNodeGraph original = null;
 
-        [System.NonSerialized]
         public ActionManager manager;
         public Body body {
             get {
@@ -46,7 +45,8 @@ namespace SprUnity {
 
         public IEnumerable<Node> inputNodes { get { foreach (var node in nodes) { if (IsInputNode(node)) yield return node; } } }
         private bool IsInputNode(Node node){
-            if (node.Inputs.Count() == 0) {
+            if (node == null) return false;
+            if (!node.Inputs.Any()) {
                 return true;
             } else {
                 foreach (var inputPort in node.Inputs) {

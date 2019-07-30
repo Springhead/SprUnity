@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
+using XNode;
 
 namespace SprUnity {
 
@@ -17,7 +18,7 @@ namespace SprUnity {
         private float handleSize = 0.05f;
         private float selectedHandleSize = 0.15f;
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
-
+        private List<BoneKeyPoseNode> editableBoneKeyPoseNodes = new List<BoneKeyPoseNode>();
 
         protected override void OnEnable() {
             base.OnEnable();
@@ -91,31 +92,34 @@ namespace SprUnity {
 
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
+            editableBoneKeyPoseNodes.Clear();
             foreach (var obj in Selection.objects) {
                 VGentNodeBase node = obj as VGentNodeBase;
-                if (node != null) node.OnSceneGUI(body);
-#if UNITY_EDITOR
-                RelativePosRotScaleNode relativePosRotScaleNode = obj as RelativePosRotScaleNode;
-                if(relativePosRotScaleNode != null) {
-                    foreach(var output in relativePosRotScaleNode.Outputs) {
-                        var boneKeyPoseNode = output.Connection.node as BoneKeyPoseNode;
-                        if(boneKeyPoseNode != null) {
-                            DrawHumanBone(relativePosRotScaleNode ,boneKeyPoseNode);
-                        }
-                    }
+                if (node != null) {
+                    node.OnSceneGUI(body);
+                    AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);
                 }
-#endif
+            }
+            foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
+                DrawHumanBone(editableBoneKeyPoseNode);
             }
         }
-
-        void DrawHumanBone(RelativePosRotScaleNode relativePosRotScaleNode,BoneKeyPoseNode boneKeyPoseNode) {
-            PosRotScale tempOrigin = relativePosRotScaleNode.GetInputValue<PosRotScale>("origin");
-            if (relativePosRotScaleNode.GetPort("origin").IsConnected) {
-                Handles.PositionHandle(tempOrigin.position, tempOrigin.rotation);
+        void AddBoneKeyPoseNode(Node node, List<BoneKeyPoseNode> boneKeyPoseNodes) {
+            foreach (var output in node.Outputs) {
+                foreach (var connection in output.GetConnections()) {
+                    var newBoneKeyPoseNode = connection.node as BoneKeyPoseNode;
+                    if (newBoneKeyPoseNode != null) {
+                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode)) {
+                            boneKeyPoseNodes.Add(newBoneKeyPoseNode);
+                        }
+                    } else {
+                        AddBoneKeyPoseNode(connection.node, boneKeyPoseNodes);
+                    }
+                }
             }
-            PosRotScale tempRelative = relativePosRotScaleNode.GetInputValue<PosRotScale>("relative", relativePosRotScaleNode.relative);
-            PosRotScale r = tempOrigin.TransformPosRotScale(tempRelative);
-
+        }
+        void DrawHumanBone(BoneKeyPoseNode boneKeyPoseNode) {
+            PosRotScale r = boneKeyPoseNode.GetInputValue<PosRotScale>("posRotScale");
             if (boneKeyPoseNode.usePosition || boneKeyPoseNode.useRotation) {
                 // 調整用の手などを表示
                 editableMat.SetPass(0); // 1だと影しか見えない？ 

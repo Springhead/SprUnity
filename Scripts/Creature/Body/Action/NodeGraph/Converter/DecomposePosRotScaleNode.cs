@@ -5,8 +5,8 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Converter/DecomposePosRotScale")]
-    public class DecomposePosRotScaleNode : Node {
-        [Input] public PosRotScale posRotScale;
+    public class DecomposePosRotScaleNode : VGentNodeBase {
+        [Input] public PosRotScale posRotScale = new PosRotScale();
         [Output] public Vector3 pos;
         [Output] public Quaternion rot;
         [Output] public Vector3 scale;

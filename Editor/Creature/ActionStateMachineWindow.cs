@@ -49,8 +49,6 @@ namespace SprUnity {
             window = GetWindow<ActionStateMachineWindow>();
             window.titleContent = new GUIContent("ActionStateMachine");
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
-            ActionTransitionWindowEditor.Initialize();
-            ActionStateWindowEditor.Initialize();
             ReloadActionList();
             Init();
             ActionEditorWindowManager.instance.selectedAction = ActionEditorWindowManager.instance.actions[0];

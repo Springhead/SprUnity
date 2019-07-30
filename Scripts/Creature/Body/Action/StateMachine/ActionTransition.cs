@@ -4,26 +4,15 @@ using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditorInternal;
 #endif
 
 namespace SprUnity {
 
-#if UNITY_EDITOR
-    [CustomEditor(typeof(ActionTransition))]
-    public class ActionTransitionEditor : Editor {
-        public override void OnInspectorGUI() {
-            EditorGUI.BeginChangeCheck();
-            target.name = EditorGUILayout.TextField("Name", target.name);
-            base.OnInspectorGUI();
-            if (EditorGUI.EndChangeCheck()) {
-                EditorUtility.SetDirty(target);
-                string mainPath = AssetDatabase.GetAssetPath(this);
-                //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
-                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((ActionTransition)target));
-            }
-        }
+    [System.Serializable]
+    public class TransitionCondition {
+        public ActionParameter param;
     }
-#endif
 
     public class ActionTransition : ScriptableObject, System.IComparable<ActionTransition> {
 
@@ -62,6 +51,8 @@ namespace SprUnity {
         public string floatParam;
         public float minInterval;
         public float maxInterval;
+        [HideInInspector]
+        public TransitionCondition[] conditions;
 
         // ----- ----- ----- ----- -----
         // Editor関係
