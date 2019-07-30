@@ -14,8 +14,7 @@ namespace SprUnity {
             //}
             return null;
         }
-        // ここの構造どうしようか..PosRotConfを作るか？
-        private PosRot[] posrots; // 真ん中を現在のPosRotとする
+        private PosRot[] posrots; // 真ん中(length/2+1)を現在のPosRotとする
         private float[] deltaTimes;
         public float confidence;
         private int length = 3;
