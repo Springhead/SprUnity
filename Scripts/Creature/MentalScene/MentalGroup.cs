@@ -41,7 +41,7 @@ namespace SprUnity {
     }
 #endif
 
-    public class MentalGroup : MentalExistance {
+    public class MentalGroup : MentalExistence {
 
         public override Type GetAttribute<Type>() {
             var mentalAttribute = GetComponentInChildren<Type>();
