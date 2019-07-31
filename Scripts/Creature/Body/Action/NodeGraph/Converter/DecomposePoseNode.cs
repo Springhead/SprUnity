@@ -4,16 +4,28 @@ using UnityEngine;
 using XNode;
 
 namespace SprUnity {
+    [CreateNodeMenu("Converter/DecomposePose")]
     public class DecomposePoseNode : VGentNodeBase {
+        [Input] public Pose pose = new Pose();
+        [Output] public Vector3 pos = Vector3.zero;
+        [Output] public Quaternion rot = Quaternion.identity;
 
         // Use this for initialization
-        void Start() {
+        protected override void Init() {
+            base.Init();
 
         }
 
-        // Update is called once per frame
-        void Update() {
-
+        // Return the correct value of an output port when requested
+        public override object GetValue(NodePort port) {
+            var tempPose = GetInputValue<Pose>("pose", this.pose);
+            if(port.fieldName == "pos") {
+                return tempPose.position;
+            } else if(port.fieldName == "rot") {
+                return tempPose.rotation;
+            } else {
+                return null;
+            }
         }
     }
 }
