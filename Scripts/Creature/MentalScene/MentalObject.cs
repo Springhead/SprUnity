@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace SprUnity {
-    public class MentalObject : MentalExistance {
+    public class MentalObject : MentalExistence {
         public override Type GetAttribute<Type>() {
             //if (attributes.ContainsKey(typeof(Type))) {
             //    return (attributes[typeof(Type)] as Type);

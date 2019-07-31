@@ -41,7 +41,7 @@ namespace SprUnity {
     }
 #endif
 
-    public class MentalGroup : MentalExistance {
+    public class MentalGroup : MentalExistence {
 
         public override Type GetAttribute<Type>() {
             var mentalAttribute = GetComponentInChildren<Type>();
@@ -54,7 +54,7 @@ namespace SprUnity {
             var mentalAttributeList = GetComponentsInChildren<MentalAttribute>();
             List<MentalAttribute> newMentalAttributeList = new List<MentalAttribute>();
             foreach (var mentalParts in mentalAttributeList) {
-                if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+                if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
                     newMentalAttributeList.Add(mentalParts);
                 }
             }
@@ -63,7 +63,7 @@ namespace SprUnity {
 
         public Type GetParts<Type>() where Type : MentalParts, new() {
             var mentalParts = GetComponentInChildren<Type>();
-            if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+            if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
                 return mentalParts;
             }
             // ここで作成したところでMentalObjectとGameObjectの対応関係を決めれない
@@ -74,7 +74,7 @@ namespace SprUnity {
             var mentalPartsList = GetComponentsInChildren<MentalParts>();
             List<MentalParts> newMentalPartsList = new List<MentalParts>();
             foreach (var mentalParts in mentalPartsList) {
-                if (mentalParts.GetComponentInParent<MentalGroup>() == this) {
+                if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
                     newMentalPartsList.Add(mentalParts);
                 }
             }
