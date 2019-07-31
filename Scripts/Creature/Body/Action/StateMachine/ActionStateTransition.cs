@@ -14,7 +14,7 @@ namespace SprUnity {
         public ActionParameter param;
     }
 
-    public class ActionTransition : ScriptableObject, System.IComparable<ActionTransition> {
+    public class ActionStateTransition : ScriptableObject, System.IComparable<ActionStateTransition> {
 
         // ----- ----- ----- ----- -----
 
@@ -73,7 +73,7 @@ namespace SprUnity {
 
         static void CreateTransition(ActionState from, ActionState to) {
 #if UNITY_EDITOR
-            var transition = ScriptableObject.CreateInstance<ActionTransition>();
+            var transition = ScriptableObject.CreateInstance<ActionStateTransition>();
             transition.name = "transition";
             transition.fromState = from;
             transition.toState = to;
@@ -92,7 +92,7 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- ----- -----
         // 
-        public int CompareTo(ActionTransition other) {
+        public int CompareTo(ActionStateTransition other) {
             if (this.time == other.time) return 0;
             else if (this.time < other.time) return -1;
             else return 1;

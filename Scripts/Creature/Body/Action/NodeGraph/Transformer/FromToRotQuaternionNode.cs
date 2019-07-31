@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Transform/FromToRot")]
-    public class FromToRotQuaternionNode : VGentNodeBase {
+    public class FromToRotQuaternionNode : ActionTargetNodeBase {
         [Output] public Quaternion output;
         [Input] public Vector3 from = Vector3.forward;
         [Input] public Vector3 to = Vector3.up;

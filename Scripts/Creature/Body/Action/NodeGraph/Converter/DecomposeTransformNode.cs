@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Converter/DecomposeTransform")]
-    public class DecomposeTransformNode : VGentNodeBase {
+    public class DecomposeTransformNode : ActionTargetNodeBase {
 
         // Use this for initialization
         protected override void Init() {

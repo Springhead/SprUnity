@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Converter/DecomposeVector3")]
-    public class DecomposeVector3Node : VGentNodeBase {
+    public class DecomposeVector3Node : ActionTargetNodeBase {
         [Input] public Vector3 vec = Vector3.zero;
         [Output] public float x;
         [Output] public float y;

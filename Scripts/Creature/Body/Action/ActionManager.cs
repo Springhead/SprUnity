@@ -34,7 +34,8 @@ namespace SprUnity {
         public Body body = null;
         public BlendShapeController blendController;
 
-        public List<KeyPoseNodeGraph> keyPoseGraphs = new List<KeyPoseNodeGraph>();
+        public List<ActionTargetGraph> keyPoseGraphs = new List<ActionTargetGraph>();
+        public string[] stateMachineFolders = new string[] { };
         public List<ActionStateMachine> actions = new List<ActionStateMachine>();
 
         //[HideInInspector]
@@ -89,7 +90,7 @@ namespace SprUnity {
                     var graph = keyPoseGraph;//.GetInstance(this);
                     foreach(var inputNode in graph.inputNodes) {
                         if (inputNode.name.Contains(nodeName)) {
-                            (inputNode as VGentNodeBase).SetInput<T>((T)value);
+                            (inputNode as ActionTargetNodeBase).SetInput<T>((T)value);
                         }
                     }
                 }
@@ -117,6 +118,38 @@ namespace SprUnity {
             if (inAction != null) {
                 inAction.End();
                 inAction = null;
+            }
+        }
+
+
+        // ----- ----- ----- ----- -----
+
+        public void GetActionStateMachineFromFolders() {
+            actions.Clear();
+            // 特定フォルダ
+            var guids = AssetDatabase.FindAssets("t:ActionStateMachine", stateMachineFolders);
+
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                var action = obj as ActionStateMachine;
+                if (action != null && AssetDatabase.IsMainAsset(obj)) {
+                    actions.Add(action);
+                }
+            }
+        }
+
+        public void GetActionTargetGraphFromStateMachines() {
+            foreach(var action in actions) {
+                var states = action.states;
+                foreach(var state in states) {
+                    foreach(var node in state.nodes) {
+                        var graph = node.graph as ActionTargetGraph;
+                        if(graph != null) {
+                            if (!keyPoseGraphs.Contains(graph)) keyPoseGraphs.Add(graph);
+                        }
+                    }
+                }
             }
         }
     }

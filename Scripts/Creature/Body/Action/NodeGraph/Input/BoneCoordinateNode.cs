@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/Bone")]
-    public class BoneCoordinateNode : VGentNodeBase {
+    public class BoneCoordinateNode : ActionTargetNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
         public HumanBodyBones boneId;
 
@@ -21,8 +21,8 @@ namespace SprUnity {
         public override object GetValue(NodePort port) {
             if(port.fieldName == "posRotScale") {
                 PosRotScale tempPosRotScale = new PosRotScale();
-                Body body = (graph as KeyPoseNodeGraph)?.body;
-                Debug.LogWarning(((graph as KeyPoseNodeGraph)?.body == null ? "a" : "b") + " " + ((graph as KeyPoseNodeGraph)?.manager == null ? "a" : "b"));
+                Body body = (graph as ActionTargetGraph)?.body;
+                Debug.LogWarning(((graph as ActionTargetGraph)?.body == null ? "a" : "b") + " " + ((graph as ActionTargetGraph)?.manager == null ? "a" : "b"));
                 Bone bone = body?[boneId];
                 if (body != null && bone != null) {
                     tempPosRotScale.position = bone.transform.position;

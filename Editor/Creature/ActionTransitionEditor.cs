@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SprUnity {
-    [CustomEditor(typeof(ActionTransition))]
+    [CustomEditor(typeof(ActionStateTransition))]
     public class ActionTransitionEditor : Editor {
 
         ReorderableList conditionList;
@@ -26,7 +26,7 @@ namespace SprUnity {
             }
             target.name = EditorGUILayout.TextField("Name", target.name);
             base.OnInspectorGUI();
-            ActionTransition transition = (ActionTransition)target;
+            ActionStateTransition transition = (ActionStateTransition)target;
             conditionList.DoLayoutList();
             if (EditorGUI.EndChangeCheck()) {
                 EditorUtility.SetDirty(target);
@@ -34,7 +34,7 @@ namespace SprUnity {
             if (textChangeComp) {
                 string mainPath = AssetDatabase.GetAssetPath(this);
                 //EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(mainPath));
-                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((ActionTransition)target));
+                AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath((ActionStateTransition)target));
             }
         }
     }

@@ -340,7 +340,7 @@ namespace SprUnity {
 #if UNITY_EDITOR
     [CreateAssetMenu(menuName = "Action/Create KeyPose")]
 #endif
-    public class KeyPoseNodeGraph : ScriptableObject {
+    public class ActionTargetGraph : ScriptableObject {
         public List<StaticBoneKeyPose> boneKeyPoses = new List<StaticBoneKeyPose>();
 
         public float testDuration = 1.0f;

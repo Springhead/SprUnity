@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace SprUnity {
     [CreateAssetMenu]
-    public class KeyPoseNodeGraph : NodeGraph {
+    public class ActionTargetGraph : NodeGraph {
 
         private bool isKeyPoseData = false;
 
         [System.NonSerialized]
-        public KeyPoseNodeGraph original = null;
+        public ActionTargetGraph original = null;
 
         public ActionManager manager;
         public Body body {
@@ -24,12 +24,12 @@ namespace SprUnity {
         }
         /*
         [System.NonSerialized]
-        public Dictionary<ActionManager, KeyPoseNodeGraph> instances = new Dictionary<ActionManager, KeyPoseNodeGraph>();
-        public KeyPoseNodeGraph GetInstance(ActionManager manager) {
+        public Dictionary<ActionManager, ActionTargetGraph> instances = new Dictionary<ActionManager, ActionTargetGraph>();
+        public ActionTargetGraph GetInstance(ActionManager manager) {
             if (instances.ContainsKey(manager)) return instances[manager];
             else {
                 if (this.original == null) {
-                    KeyPoseNodeGraph instance = this.Copy() as KeyPoseNodeGraph;
+                    ActionTargetGraph instance = this.Copy() as ActionTargetGraph;
                     instances.Add(manager, instance);
                     instance.manager = manager;
                     instance.original = this;
@@ -38,7 +38,7 @@ namespace SprUnity {
             }
         }*/
         public override NodeGraph Copy() {
-            KeyPoseNodeGraph graph = base.Copy() as KeyPoseNodeGraph;
+            ActionTargetGraph graph = base.Copy() as ActionTargetGraph;
             graph.isKeyPoseData = this.isKeyPoseData;
             return graph as NodeGraph;
         }

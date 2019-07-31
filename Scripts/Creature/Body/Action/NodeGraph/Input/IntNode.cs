@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Value/Int")]
-    public class IntNode : VGentNodeBase {
+    public class IntNode : ActionTargetNodeBase {
         [Output] public int output;
         public int value;
 

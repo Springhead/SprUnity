@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Input/PerceptionObject")]
-    public class InputPerceptionObjectNode : VGentNodeBase {
+    public class InputPerceptionObjectNode : ActionTargetNodeBase {
         public GameObject perceptionObj;
         [Output] public PosRotScale posRotScale;
         [Output] public Vector3 pos;

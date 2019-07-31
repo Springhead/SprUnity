@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Transform/Vector3Operator")]
-    public class Vector3OperatorNode : VGentNodeBase {
+    public class Vector3OperatorNode : ActionTargetNodeBase {
         [Output] public Vector3 result;
         [Input] public Vector3 input1;
         [Input] public Vector3 input2;
