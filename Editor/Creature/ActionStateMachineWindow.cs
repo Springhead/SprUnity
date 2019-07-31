@@ -20,7 +20,7 @@ namespace SprUnity {
         private bool initialized = false;
         private List<List<int>> graphConnectionMatrix;
         // Stateにナンバリングしてソートして同じStateToStateのものをまとめる
-        private List<List<ActionTransition>> transitionGraph;
+        private List<List<ActionStateTransition>> transitionGraph;
 
         // GUI
         //private Vector2 scrollPos;
@@ -115,7 +115,7 @@ namespace SprUnity {
                         continue;
                     }
                     // 遷移の表示
-                    ActionTransition transition = item.Value as ActionTransition;
+                    ActionStateTransition transition = item.Value as ActionStateTransition;
                     if (transition != null) {
                         transition.Draw();
                         bool changed = transition.ProcessEvents();

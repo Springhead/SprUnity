@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
 
-    public abstract class KeyPoseNodeBase : VGentNodeBase {
+    public abstract class KeyPoseNodeBase : ActionTargetNodeBase {
 
         // Use this for initialization
         protected override void Init() {

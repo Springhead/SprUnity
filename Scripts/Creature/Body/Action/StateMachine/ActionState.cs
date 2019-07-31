@@ -16,7 +16,7 @@ namespace SprUnity {
         public ActionStateMachine stateMachine;
         public BoneKeyPoseNode[] nodes;
         [HideInInspector]
-        public List<ActionTransition> transitions = new List<ActionTransition>();
+        public List<ActionStateTransition> transitions = new List<ActionStateTransition>();
         public List<string> useParams;
 
         public enum DurationMode {
@@ -79,9 +79,9 @@ namespace SprUnity {
         // ----- ----- ----- ----- ----- -----
         // Creator
 
-        static ActionTransition CreateTransition(ActionState from, ActionState to) {
+        static ActionStateTransition CreateTransition(ActionState from, ActionState to) {
 #if UNITY_EDITOR
-            var transition = ScriptableObject.CreateInstance<ActionTransition>();
+            var transition = ScriptableObject.CreateInstance<ActionStateTransition>();
             transition.name = "transition";
             transition.fromState = from;
             transition.toState = to;
@@ -120,11 +120,8 @@ namespace SprUnity {
             if (nodes != null) {
                 aStateMachine.ApplyParameters();
                 foreach (var boneKeyPose in nodes) {
-                    int index = boneKeyPose.graph.nodes.IndexOf(boneKeyPose);
-                    if (index >= 0) {
-                        //var nodeInstance = (boneKeyPose.graph as KeyPoseNodeGraph).GetInstance(manager).nodes[index] as BoneKeyPoseNode;
-                        kp.boneKeyPoses.Add(boneKeyPose.GetBoneKeyPose());
-                    }
+                    //var nodeInstance = (boneKeyPose.graph as ActionTargetGraph).GetInstance(manager).nodes[index] as BoneKeyPoseNode;
+                    kp.boneKeyPoses.Add(boneKeyPose.GetBoneKeyPose());
                 }
             } 
             switch (durationMode) {
@@ -262,7 +259,7 @@ namespace SprUnity {
             genericMenu.AddItem(new GUIContent("Add Transition from../" + "Entry"), false, () => OnClickAddTransition(null, this));
             int nTransitions = transitions.Count;
             for (int i = 0; i < nTransitions; i++) {
-                ActionTransition transition = transitions[i]; // 
+                ActionStateTransition transition = transitions[i]; // 
                 genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => OnRemoveTransition(transition));
             }
             genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
@@ -276,8 +273,8 @@ namespace SprUnity {
 
         private void OnRemoveState() {
             // ステートマシンの関係する遷移を全部消す
-            List<ActionTransition> deleteList = new List<ActionTransition>();
-            List<ActionTransition> removeListEntry = new List<ActionTransition>();
+            List<ActionStateTransition> deleteList = new List<ActionStateTransition>();
+            List<ActionStateTransition> removeListEntry = new List<ActionStateTransition>();
             var entryTransitions = stateMachine.entryTransitions;
             for (int i = 0; i < entryTransitions.Count; i++) {
                 if (entryTransitions[i].toState == this) {
@@ -289,7 +286,7 @@ namespace SprUnity {
                 entryTransitions.Remove(transition);
             }
             var states = stateMachine.states;
-            List<ActionTransition> removeList = new List<ActionTransition>();
+            List<ActionStateTransition> removeList = new List<ActionStateTransition>();
             for (int i = 0; i < states.Count; i++) {
                 removeList.Clear();
                 foreach (var transition in states[i].transitions) {
@@ -312,7 +309,7 @@ namespace SprUnity {
 #endif
         }
 
-        private void OnRemoveTransition(ActionTransition transition) {
+        private void OnRemoveTransition(ActionStateTransition transition) {
 #if UNITY_EDITOR
             transitions.Remove(transition);
             Object.DestroyImmediate(transition, true);

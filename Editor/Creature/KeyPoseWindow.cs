@@ -8,7 +8,7 @@ using SprCs;
 namespace SprUnity {
 
     public class KeyPoseStatus {
-        public KeyPoseNodeGraph keyPose;
+        public ActionTargetGraph keyPose;
         public bool isVisible;
         public bool isEditable;
         public KeyPoseStatus() {
@@ -16,7 +16,7 @@ namespace SprUnity {
             this.isVisible = false;
             this.isEditable = false;
         }
-        public KeyPoseStatus(KeyPoseNodeGraph keyPose) {
+        public KeyPoseStatus(ActionTargetGraph keyPose) {
             this.keyPose = keyPose;
             this.isVisible = false;
             this.isEditable = false;
@@ -69,17 +69,17 @@ namespace SprUnity {
         private string editableButtonpath = "pictures/te.png";
         private string editableLabelpath = "GUISkins/labelbackEditable.png";
 
-        private KeyPoseNodeGraph latestEditableKeyPose;
-        private KeyPoseNodeGraph latestVisibleKeyPose;
+        private ActionTargetGraph latestEditableKeyPose;
+        private ActionTargetGraph latestVisibleKeyPose;
         private static Dictionary<KeyPoseStatus, Rect> keyPoseDataRectDict;
 
         static float scrollwidth = 20;
         static float parameterheight = 150;
         static float buttonheight = 25;
 
-        private static KeyPoseNodeGraph recordKeyPose;
+        private static ActionTargetGraph recordKeyPose;
         private static StaticBoneKeyPose recordBoneKeyPose;
-        private static KeyPoseNodeGraph renameKeyPose;
+        private static ActionTargetGraph renameKeyPose;
         private string renaming;
         private static KeyPoseDataGroup renameKeyPoseGroup;
         private string grouprenaming;
@@ -330,7 +330,7 @@ namespace SprUnity {
             DrawHandles();            
         }
 
-        void DrawHuman(KeyPoseNodeGraph latestEditableKeyPose, KeyPoseNodeGraph latestVisibleKeyPose) {
+        void DrawHuman(ActionTargetGraph latestEditableKeyPose, ActionTargetGraph latestVisibleKeyPose) {
             /*
             if (latestEditableKeyPose != null) {
                 foreach (var boneKeyPose in latestEditableKeyPose.boneKeyPoses) {
@@ -449,7 +449,7 @@ namespace SprUnity {
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                var keyPose = obj as KeyPoseNodeGraph;
+                var keyPose = obj as ActionTargetGraph;
                 if (keyPose != null) {
                     var keyPoseStatus = new KeyPoseStatus(keyPose);
                     keyPoseDataRectDict.Add(keyPoseStatus, new Rect());
@@ -491,29 +491,29 @@ namespace SprUnity {
                 SceneView.RepaintAll();
             }
         }
-        void RightClickMenu(Rect rect, KeyPoseNodeGraph KeyPoseNodeGraph) {
+        void RightClickMenu(Rect rect, ActionTargetGraph KeyPoseNodeGraph) {
             if (rect.Contains(Event.current.mousePosition) &&
                 Event.current.type == EventType.MouseDown &&
                 Event.current.button == 1) {
                 GenericMenu menu = new GenericMenu();
                 /*
-                foreach (var boneKeyPose in KeyPoseNodeGraph.boneKeyPoses) {
+                foreach (var boneKeyPose in ActionTargetGraph.boneKeyPoses) {
                     menu.AddItem(new GUIContent(boneKeyPose.boneId.ToString()), false,
                         () => {
                             recordBoneKeyPose = boneKeyPose;
-                            recordKeyPose = KeyPoseNodeGraph;
+                            recordKeyPose = ActionTargetGraph;
                         });
                 }
                 menu.AddItem(new GUIContent("All"), false,
                     () => {
                         recordBoneKeyPose = null;
-                        recordKeyPose = KeyPoseNodeGraph;
+                        recordKeyPose = ActionTargetGraph;
                     });
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Paste"), false,
                     () => {
                         if (recordBoneKeyPose != null) { //一部
-                            foreach (var boneKeyPose in KeyPoseNodeGraph.boneKeyPoses) {
+                            foreach (var boneKeyPose in ActionTargetGraph.boneKeyPoses) {
                                 if (boneKeyPose.boneId == recordBoneKeyPose.boneId) {
                                     boneKeyPose.usePosition = recordBoneKeyPose.usePosition;
                                     boneKeyPose.useRotation = recordBoneKeyPose.usePosition;
@@ -525,7 +525,7 @@ namespace SprUnity {
                                 }
                             }
                         } else if (recordKeyPose != null) { //All
-                            foreach (var boneKeyPose in KeyPoseNodeGraph.boneKeyPoses) {
+                            foreach (var boneKeyPose in ActionTargetGraph.boneKeyPoses) {
                                 foreach (var record in recordKeyPose.boneKeyPoses) {
                                     if (boneKeyPose.boneId == record.boneId) {
                                         boneKeyPose.usePosition = record.usePosition;
@@ -544,13 +544,13 @@ namespace SprUnity {
                 menu.AddSeparator("");
                 menu.AddItem(new GUIContent("Rename"), false,
                     () => {
-                        renameKeyPose = KeyPoseNodeGraph;
-                        renaming = KeyPoseNodeGraph.name;
+                        renameKeyPose = ActionTargetGraph;
+                        renaming = ActionTargetGraph.name;
                         Repaint();
                     });
                 menu.AddItem(new GUIContent("Delete"), false,
                     () => {
-                        RemoveKeyPose(KeyPoseNodeGraph);
+                        RemoveKeyPose(ActionTargetGraph);
                         Repaint();
                         SceneView.RepaintAll();
                     });
@@ -573,7 +573,7 @@ namespace SprUnity {
                 menu.ShowAsContext();
             }
         }
-        void RemoveKeyPose(KeyPoseNodeGraph KeyPoseNodeGraph) {
+        void RemoveKeyPose(ActionTargetGraph KeyPoseNodeGraph) {
             if (KeyPoseNodeGraph == null) {
                 Debug.LogWarning("No sub asset.");
                 return;

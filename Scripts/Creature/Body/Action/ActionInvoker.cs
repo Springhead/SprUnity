@@ -9,7 +9,7 @@ namespace SprUnity {
 
     [Serializable]
     public class KeyPoseTiming {
-        public KeyPoseNodeGraph keyPose = null;
+        public ActionTargetGraph keyPose = null;
         public float start = 0;
         public float duration = 1;
         public Vector2 springDamper = new Vector2(1, 1);

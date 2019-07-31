@@ -440,7 +440,7 @@ namespace SprUnity {
                         int futureCount = controller.futureTransitions.Count;
                         int boxWidth = (int)Mathf.Max(Mathf.Min(0.66f * position.width / (specifiedCount + futureCount), maxBoxWidth), minBoxWidth);
                         //int boxWidth = (int)(position.width / (numStatesInStream + 5));
-                        List<ActionTransition> transitionsFromCurrent;
+                        List<ActionStateTransition> transitionsFromCurrent;
                         if (controller.CurrentState) {
                             transitionsFromCurrent = controller.CurrentState.transitions;
                         } else {
@@ -479,7 +479,7 @@ namespace SprUnity {
                                 Rect buttonRect = new Rect(boxPosition.x - 10, boxPosition.y, 20, 20);
                                 if (GUI.Button(buttonRect, "")) {
                                     if (transitionsFromCurrent[j] != controller.specifiedTransitions[i]) {
-                                        List<ActionTransition> changedTransitions = new List<ActionTransition>();
+                                        List<ActionStateTransition> changedTransitions = new List<ActionStateTransition>();
                                         for (int k = 0; k < i; k++) {
                                             changedTransitions.Add(controller.specifiedTransitions[k]);
                                         }
@@ -497,7 +497,7 @@ namespace SprUnity {
                                 currentState = controller.specifiedTransitions[i].toState;
                                 nTransitionsFromCurrernt = transitionsFromCurrent.Count;
                             } else {
-                                transitionsFromCurrent = new List<ActionTransition>();
+                                transitionsFromCurrent = new List<ActionStateTransition>();
                                 nTransitionsFromCurrernt = 0;
                                 currentState = null;
                             }
@@ -518,7 +518,7 @@ namespace SprUnity {
                                 }
                                 Rect buttonRect = new Rect(boxPosition.x - 10, boxPosition.y, 20, 20);
                                 if (GUI.Button(buttonRect, "")) {
-                                    List<ActionTransition> addedTransitions = new List<ActionTransition>();
+                                    List<ActionStateTransition> addedTransitions = new List<ActionStateTransition>();
                                     for (int k = 0; k < i; k++) {
                                         addedTransitions.Add(controller.futureTransitions[k]);
                                     }
@@ -535,7 +535,7 @@ namespace SprUnity {
                                 currentState = controller.futureTransitions[i].toState;
                                 nTransitionsFromCurrernt = transitionsFromCurrent.Count;
                             } else {
-                                transitionsFromCurrent = new List<ActionTransition>();
+                                transitionsFromCurrent = new List<ActionStateTransition>();
                                 currentState = null;
                                 nTransitionsFromCurrernt = 0;
                             }

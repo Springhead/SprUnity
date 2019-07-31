@@ -7,7 +7,7 @@ using XNode;
 
 namespace SprUnity {
 
-    public class KeyPoseNodeGraphEditorWindow : XNodeEditor.NodeEditorWindow {
+    public class ActionTargetGraphEditorWindow : XNodeEditor.NodeEditorWindow {
         private Material editableMat, visibleMat;
         private Mesh leftHand;
         private Mesh rightHand;
@@ -74,7 +74,7 @@ namespace SprUnity {
 
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
-            KeyPoseNodeGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as KeyPoseNodeGraph;
+            ActionTargetGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionTargetGraph;
             if (nodeGraph != null) {
                 Open(nodeGraph);
                 return true;
@@ -82,10 +82,10 @@ namespace SprUnity {
             return false;
         }
 
-        public static void Open(KeyPoseNodeGraph graph) {
+        public static void Open(ActionTargetGraph graph) {
             if (!graph) return;
 
-            KeyPoseNodeGraphEditorWindow w = GetWindow(typeof(KeyPoseNodeGraphEditorWindow), false, "KeyPoseNodeGraph", true) as KeyPoseNodeGraphEditorWindow;
+            ActionTargetGraphEditorWindow w = GetWindow(typeof(ActionTargetGraphEditorWindow), false, "ActionTargetGraph", true) as ActionTargetGraphEditorWindow;
             w.wantsMouseMove = true;
             w.graph = graph;
         }
@@ -94,7 +94,7 @@ namespace SprUnity {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
             foreach (var obj in Selection.objects) {
-                VGentNodeBase node = obj as VGentNodeBase;
+                ActionTargetNodeBase node = obj as ActionTargetNodeBase;
                 if (node != null) {
                     node.OnSceneGUI(body);
                     AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);

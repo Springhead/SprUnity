@@ -121,7 +121,7 @@ namespace SprUnity {
             int deleteNode = -1;
             for (int i = 0; i < param.referenceNodes.Count(); i++) {
                 GUILayout.BeginHorizontal();
-                param.referenceNodes[i] = (VGentNodeBase)EditorGUILayout.ObjectField(param.referenceNodes[i], typeof(VGentNodeBase));
+                param.referenceNodes[i] = (ActionTargetNodeBase)EditorGUILayout.ObjectField(param.referenceNodes[i], typeof(ActionTargetNodeBase));
                 if (GUILayout.Button("x")) {
                     deleteNode = i;
                 }
@@ -156,7 +156,7 @@ namespace SprUnity {
         public object value;
         [SerializeField]
         private string valueData;
-        public List<VGentNodeBase> referenceNodes = new List<VGentNodeBase>();
+        public List<ActionTargetNodeBase> referenceNodes = new List<ActionTargetNodeBase>();
         public ActionParameter() {
             label = "";
         }
@@ -331,7 +331,7 @@ namespace SprUnity {
         public bool isChanged = false;
         
         [HideInInspector] public Rect entryRect = new Rect(100, 100, 100, 50);
-        [HideInInspector ]public List<ActionTransition> entryTransitions = new List<ActionTransition>();
+        [HideInInspector ]public List<ActionStateTransition> entryTransitions = new List<ActionStateTransition>();
         [HideInInspector] public Rect exitRect = new Rect(100, 200, 100, 50);
 
 
@@ -348,15 +348,15 @@ namespace SprUnity {
                 return this.GetSubAssets().Where(value => value as ActionState != null).Count();
             }
         }
-        public List<ActionTransition> transitions {
+        public List<ActionStateTransition> transitions {
             get {
-                return this.GetSubAssets().OfType<ActionTransition>().ToList();
+                return this.GetSubAssets().OfType<ActionStateTransition>().ToList();
             }
         }
 
         public int nTransitions {
             get {
-                return this.GetSubAssets().Where(value => value as ActionTransition != null).Count();
+                return this.GetSubAssets().Where(value => value as ActionStateTransition != null).Count();
             }
         }
 
@@ -413,7 +413,7 @@ namespace SprUnity {
             // Copy transitions
             for(int i = 0; i < this.entryTransitions.Count; i++) {
                 if (entryTransitions[i] == null) continue;
-                ActionTransition transition = Instantiate(entryTransitions[i]) as ActionTransition;
+                ActionStateTransition transition = Instantiate(entryTransitions[i]) as ActionStateTransition;
                 transition.stateMachine = clone;
                 int index = this.states.IndexOf(entryTransitions[i].toState);
                 if (index >= 0) transition.toState = clone.states[index];
@@ -422,7 +422,7 @@ namespace SprUnity {
                 var state = clone.states[numStates];
                 for (int i = 0; i < state.transitions.Count; i++) {
                     if (state.transitions[i] == null) continue;
-                    ActionTransition transition = Instantiate(state.transitions[i]) as ActionTransition;
+                    ActionStateTransition transition = Instantiate(state.transitions[i]) as ActionStateTransition;
                     transition.stateMachine = clone;
                     int fromIndex = this.states.IndexOf(state.transitions[i].fromState);
                     if (fromIndex >= 0) transition.toState = clone.states[fromIndex];
