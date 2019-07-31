@@ -47,12 +47,16 @@ namespace SprUnity {
         public bool actionSelectChanged = false;
         public bool actionUpdated = false;
 
+        // ActionTragetGraphEditorWindow関係
+        public List<ActionTargetGraph> actionTargetGraphs;
+        public ActionTargetGraph selectedActionTargetGraph;
+        
         // Log data
-
 
         ActionEditorWindowManager() {
             keyPoseStatuses = new List<KeyPoseStatus>();
             actions = new List<ActionStateMachine>();
+            actionTargetGraphs = new List<ActionTargetGraph>();
 
             EditorApplication.hierarchyChanged -= OnHierarchyChanged;
             EditorApplication.hierarchyChanged += OnHierarchyChanged;

@@ -17,7 +17,8 @@ namespace XNodeEditor {
 
         private Matrix4x4 prevGuiMatrix;
 
-        private void OnGUI() {
+        // <!!> OnGUIをprivateからpublicに変更
+        public void OnGUI() {
             Event e = Event.current;
             Matrix4x4 m = GUI.matrix;
             if (graph == null) return;
