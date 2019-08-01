@@ -155,7 +155,7 @@ namespace SprUnity {
         public void Action(string name) {
             if (inAction != null) {
                 if (inAction.name == name) return;
-                else inAction.End();
+                else QuitAction();
             }
             print("Action: " + name);
             foreach (var action in stateMachines) {
