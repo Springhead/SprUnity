@@ -149,6 +149,7 @@ namespace SprUnity {
             }
 
             if (GUILayout.Button("Create", toolbarButton, GUILayout.Width(70))) {
+                CreateActionTargetGraphWindow.Open(position.center);
             }
 
             GUILayout.Space(10);
