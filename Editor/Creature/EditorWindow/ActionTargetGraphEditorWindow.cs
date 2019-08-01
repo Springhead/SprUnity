@@ -107,6 +107,13 @@ namespace SprUnity {
             w.wantsMouseMove = true;
             w.graph = graph;
         }
+
+        public void AddItemsToMenu(GenericMenu menu) {
+            menu.AddItem(new GUIContent("Reload"), false, () => {
+                ReloadActionTargetGraphs();
+            });
+        }
+
         public new void OnGUI() {
             base.OnGUI();
 
@@ -124,7 +131,8 @@ namespace SprUnity {
 
         void DrawToolBar() {
             int toolBarHeight = 17;
-            Rect rect = new Rect(0, 20, this.position.width, toolBarHeight);
+            //Vector2 pos = GridToWindowPosition(Vector2.zero);
+            Rect rect = new Rect(0, 19 * zoom, this.position.width, toolBarHeight);
 
             GUILayout.BeginArea(rect, toolbarBase);
             GUILayout.BeginHorizontal();
@@ -223,6 +231,7 @@ namespace SprUnity {
             //    }
             //}
         }
+
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
             // Asset全検索
@@ -230,7 +239,7 @@ namespace SprUnity {
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
 
-            ActionEditorWindowManager.instance.actions.Clear();
+            ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
 
             foreach (var guid in guids) {
@@ -240,6 +249,22 @@ namespace SprUnity {
                 if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
+                }
+            }
+        }
+
+        public void ReloadActionTargetGraphs() {
+            var guids = AssetDatabase.FindAssets("*").Distinct();
+            Debug.Log(guids.Count());
+
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                var action = obj as NodeGraph;
+                if (action != null && AssetDatabase.IsMainAsset(obj)) {
+                    foreach (Node node in action.nodes) {
+                        node.graph = action;
+                    }
                 }
             }
         }
