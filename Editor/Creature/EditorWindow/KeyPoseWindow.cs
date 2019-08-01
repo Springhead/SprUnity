@@ -590,7 +590,7 @@ namespace SprUnity {
             if (editableLabelTexture == null) {
                 var mono = MonoScript.FromScriptableObject(this);
                 var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("KeyPoseWindow.cs", "");
+                scriptpath = scriptpath.Replace("EditorWindow\\KeyPoseWindow.cs", "");
                 var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
                 if (bytes != null) {
                     editableLabelTexture = new Texture2D(1, 1);
