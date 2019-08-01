@@ -131,7 +131,7 @@ namespace SprUnity {
 
         void DrawToolBar() {
             int toolBarHeight = 17;
-            //Vector2 pos = GridToWindowPosition(Vector2.zero);
+            // <!!> まだ微妙にずれてるけどこれで上に表示できる
             Rect rect = new Rect(0, 19 * zoom, this.position.width, toolBarHeight);
 
             GUILayout.BeginArea(rect, toolbarBase);

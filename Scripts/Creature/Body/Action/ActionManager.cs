@@ -195,12 +195,16 @@ namespace SprUnity {
             foreach(var action in stateMachines) {
                 var states = action?.states;
                 foreach(var state in states) {
-                    foreach(var node in state?.nodes) {
-                        var graph = node?.graph as ActionTargetGraph;
-                        Debug.Log(graph?.name);
-                        if(graph != null) {
-                            if (!targetGraphs.Contains(graph)) targetGraphs.Add(graph);
+                    try { 
+                        foreach (var node in state?.nodes) {
+                            var graph = node?.graph as ActionTargetGraph;
+                            Debug.Log(graph?.name);
+                            if (graph != null) {
+                                if (!targetGraphs.Contains(graph)) targetGraphs.Add(graph);
+                            }
                         }
+                    } catch {
+                        continue;
                     }
                 }
             }
