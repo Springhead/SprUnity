@@ -41,8 +41,25 @@ namespace SprUnity {
     }
 #endif
 
+    [DefaultExecutionOrder(2)]
     public class MentalGroup : MentalExistence {
+        private MentalScene mentalScene;
+        private List<MentalAttribute> mentalAttributeList = new List<MentalAttribute>();
+        private List<MentalParts> mentalParts = new List<MentalParts>();
 
+        void Start() {
+            mentalScene = FindObjectOfType<MentalScene>();
+            if(mentalScene == null) {
+                return;
+            }
+            mentalScene.AddMentalGroup(this);
+        }
+        void OnDestroy() {
+            if(mentalScene == null) {
+                return;
+            }
+            mentalScene.RemoveMentalGroup(this);
+        }
         public override Type GetAttribute<Type>() {
             var mentalAttribute = GetComponentInChildren<Type>();
             if (mentalAttribute?.GetComponentInParent<MentalGroup>() == this) {
