@@ -318,7 +318,7 @@ namespace SprUnity {
         }
 
         public void OnValidate() {
-            stateMachine.isChanged = true;
+
         }
     }
 

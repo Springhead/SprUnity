@@ -38,6 +38,7 @@ namespace SprUnity {
             }
         }
 
+        private static bool guiInitialized = false;
         public static GUIStyle toolbarBase;
         public static GUIStyle toolbarButton;
         public static GUIStyle toolbarLabel;
@@ -78,7 +79,13 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            if (window == null) Open();
+            if (window == null) {
+                Open();
+            }
+            if (!guiInitialized) {
+                ReloadActionList();
+                Init();
+            }
 
             DrawBackGround();
 

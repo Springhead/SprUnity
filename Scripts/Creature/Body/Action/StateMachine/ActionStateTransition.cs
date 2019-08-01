@@ -254,7 +254,7 @@ namespace SprUnity {
         }
 
         public void OnValidate() {
-            stateMachine.isChanged = true;
+
         }
 
         // https://qiita.com/boiledorange73/items/bcd4e150e7caa0210ee6

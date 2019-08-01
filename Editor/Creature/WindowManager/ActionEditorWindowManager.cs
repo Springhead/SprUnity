@@ -38,7 +38,6 @@ namespace SprUnity {
         public ActionStateMachine selectedAction;
 
         public ActionStateMachine lastSelectedStateMachine;
-        public ActionManager lastSelectedActionManager;
 
         // KeyPoseBoneWindow関係
         public bool showKeyPoseBoneWindow;
@@ -111,9 +110,6 @@ namespace SprUnity {
         void OnHierarchyChanged() {
             // <!!> ループしてる？
             //ActionStateMachineWindow.ReloadActionList();
-            if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
-                instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
-            }
             SearchBody();
         }
 
@@ -124,24 +120,9 @@ namespace SprUnity {
 
         void Update() {
             if (actionSelectChanged) {
-                Debug.LogWarning(lastSelectedActionManager?[selectedAction.name]);
-                if (lastSelectedActionManager?[selectedAction.name] != null) {
-                    //instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
-                }
                 if (instance.timelineWindow != null) instance.timelineWindow.Repaint();
                 if (instance.stateMachineWindow != null) instance.stateMachineWindow.Repaint();
                 actionSelectChanged = false;
-            }
-            if (selectedAction) {
-                if (selectedAction.isChanged) {
-                    if (lastSelectedActionManager?[selectedAction.name] != null) {
-                        //instance.lastSelectedActionManager[selectedAction.name].PredictFutureTransition();
-                        instance.timelineWindow?.Repaint();
-                        instance.lastSelectedActionManager[selectedAction.name].isChanged = false;
-                    }
-                    instance.stateMachineWindow?.Repaint();
-                    selectedAction.isChanged = false;
-                }
             }
             if(instance.body == null) {
                 bodiesInScene = GameObject.FindObjectsOfType<Body>();
@@ -170,9 +151,7 @@ namespace SprUnity {
         }
 
         void OnSelectionChanged() {
-            if (Selection.activeGameObject?.GetComponent<ActionManager>()) {
-                instance.lastSelectedActionManager = Selection.activeGameObject.GetComponent<ActionManager>();
-            }
+
         }
 
         void OnSceneGUI(SceneView sceneView) {

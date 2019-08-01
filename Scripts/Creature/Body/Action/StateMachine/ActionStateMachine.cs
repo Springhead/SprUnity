@@ -327,8 +327,6 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
         // Editor関係
-
-        public bool isChanged = false;
         
         [HideInInspector] public Rect entryRect = new Rect(100, 100, 100, 50);
         [HideInInspector ]public List<ActionStateTransition> entryTransitions = new List<ActionStateTransition>();
@@ -452,7 +450,6 @@ namespace SprUnity {
             currentState = entryTransitions[0].toState;
             var logs = currentState.OnEnter(this, out currentDuration);
             Debug.Log("Begin:" + currentState.name);
-            isChanged = true;
         }
 
         // Update StateMachine if it's enabled
@@ -475,7 +472,6 @@ namespace SprUnity {
                     } else {
                         var logs = currentState.OnEnter(this, out currentDuration);
                     }
-                    isChanged = true;
                     break;
                 }
             }
@@ -488,7 +484,6 @@ namespace SprUnity {
         // 
         public void End() {
             enabled = false;
-            isChanged = true;
             ResetStateMachine();
         }
 
