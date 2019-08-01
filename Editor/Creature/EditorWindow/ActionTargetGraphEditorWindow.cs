@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using XNode;
 using XNodeEditor;
+using System.Linq;
 
 namespace SprUnity {
 
@@ -21,6 +22,16 @@ namespace SprUnity {
         private float selectedHandleSize = 0.15f;
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
         private List<BoneKeyPoseNode> editableBoneKeyPoseNodes = new List<BoneKeyPoseNode>();
+
+        private static bool guiInitialized = false;
+        public static GUIStyle toolbarBase;
+        public static GUIStyle toolbarButton;
+        public static GUIStyle toolbarLabel;
+        public static GUIStyle toolbarDropdown;
+        public static GUIStyle toolbarPopup;
+
+        private static List<string> actionTargetGraphNames;
+        private static int actionTargetGraphIndex = 0;
 
         protected override void OnEnable() {
             base.OnEnable();
@@ -77,6 +88,11 @@ namespace SprUnity {
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
             ActionTargetGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionTargetGraph;
+            toolbarBase = GUI.skin.FindStyle("toolbar");
+            toolbarButton = GUI.skin.FindStyle("toolbarButton");
+            toolbarLabel = GUI.skin.FindStyle("toolbarButton");
+            toolbarDropdown = GUI.skin.FindStyle("toolbarDropdown");
+            toolbarPopup = GUI.skin.FindStyle("toolbarPopup");
             if (nodeGraph != null) {
                 Open(nodeGraph);
                 return true;
@@ -91,13 +107,56 @@ namespace SprUnity {
             w.wantsMouseMove = true;
             w.graph = graph;
         }
+        public new void OnGUI() {
+            base.OnGUI();
 
-        public void AddItemsToMenu(GenericMenu menu) {
-            menu.AddItem(new GUIContent("Reload"), false, () => {
-                ReloadActionTargetGraphs();
-            });
+            if (!guiInitialized) {
+                ReloadActionList();
+                toolbarBase = GUI.skin.FindStyle("toolbar");
+                toolbarButton = GUI.skin.FindStyle("toolbarButton");
+                toolbarLabel = GUI.skin.FindStyle("toolbarButton");
+                toolbarDropdown = GUI.skin.FindStyle("toolbarDropdown");
+                toolbarPopup = GUI.skin.FindStyle("toolbarPopup");
+                guiInitialized = true;
+            }
+            DrawToolBar();
         }
 
+        void DrawToolBar() {
+            int toolBarHeight = 17;
+            Rect rect = new Rect(0, 20, this.position.width, toolBarHeight);
+
+            GUILayout.BeginArea(rect, toolbarBase);
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Current Graph", toolbarLabel, GUILayout.Width(100));
+
+            //actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(ActionEditorWindowManager.instance.selectedAction);
+            actionTargetGraphIndex = EditorGUILayout.Popup(actionTargetGraphIndex, actionTargetGraphNames.ToArray(), toolbarPopup, GUILayout.Width(120));
+            foreach (var act in ActionEditorWindowManager.instance.actionTargetGraphs) {
+                if (act.name == actionTargetGraphNames[actionTargetGraphIndex]) {
+                    //if (ActionEditorWindowManager.instance.selectedActionTargetGraph != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
+                    this.graph = act;
+                }
+            }
+
+            if (GUILayout.Button("Create", toolbarButton, GUILayout.Width(70))) {
+            }
+
+            GUILayout.Space(10);
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Menu", toolbarButton, GUILayout.Width(50))) {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Create"), false, null);
+                menu.AddItem(new GUIContent("Home"), true, () => { this.zoom = 1.0f; this.panOffset = Vector2.zero; });
+
+                menu.DropDown(new Rect(0, -20, 50, 40));
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndArea();
+        }
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
@@ -164,19 +223,23 @@ namespace SprUnity {
             //    }
             //}
         }
-
-        public void ReloadActionTargetGraphs() {
+        public static void ReloadActionList() {
+            actionTargetGraphNames = new List<string>();
+            // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
-            Debug.Log(guids.Count());
+            // 特定フォルダ
+            // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
+
+            ActionEditorWindowManager.instance.actions.Clear();
+            actionTargetGraphNames.Clear();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                var action = obj as NodeGraph;
-                if (action != null && AssetDatabase.IsMainAsset(obj)) {
-                    foreach(Node node in action.nodes) {
-                        node.graph = action;
-                    }
+                var actionTargetGraph = obj as ActionTargetGraph;
+                if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
+                    ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
+                    actionTargetGraphNames.Add(actionTargetGraph.name);
                 }
             }
         }
