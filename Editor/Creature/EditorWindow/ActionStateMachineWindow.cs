@@ -38,7 +38,6 @@ namespace SprUnity {
             }
         }
 
-        private static bool guiInitialized = false;
         public static GUIStyle toolbarBase;
         public static GUIStyle toolbarButton;
         public static GUIStyle toolbarLabel;
@@ -50,8 +49,6 @@ namespace SprUnity {
             window = GetWindow<ActionStateMachineWindow>();
             window.titleContent = new GUIContent("ActionStateMachine");
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
-            ReloadActionList();
-            Init();
             ActionEditorWindowManager.instance.selectedAction = ActionEditorWindowManager.instance.actions[0];
         }
 
@@ -65,10 +62,6 @@ namespace SprUnity {
                 return true;
             }
             return false;
-        }
-
-        void OnEnable() {
-            Init();
         }
 
         void OnDisable() {
@@ -85,13 +78,7 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            if (window == null) {
-                Open();
-            }
-            if (!guiInitialized) {
-                ReloadActionList();
-                Init();
-            }
+            if (window == null) Open();
 
             DrawBackGround();
 
@@ -137,7 +124,7 @@ namespace SprUnity {
                 Repaint();
             }
             EndWindows();
-
+            
             DrawToolBar();
             DrawLeftWindow();
         }
@@ -181,7 +168,7 @@ namespace SprUnity {
             GUILayout.Label("Current Action", toolbarLabel, GUILayout.Width(100));
             var currentActionName = ActionEditorWindowManager.instance.selectedAction.name;
 
-            //actionIndex = ActionEditorWindowManager.instance.stateMachines.IndexOf(ActionEditorWindowManager.instance.selectedAction);
+            //actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(ActionEditorWindowManager.instance.selectedAction);
             actionIndex = EditorGUILayout.Popup(actionIndex, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
                 if (act.name == actionNames[actionIndex]) {
@@ -190,7 +177,7 @@ namespace SprUnity {
                 }
             }
 
-            if (GUILayout.Button("Create", toolbarButton, GUILayout.Width(70))) {
+            if(GUILayout.Button("Create", toolbarButton, GUILayout.Width(70))) {
                 CreateActionStateMachineWindow.Open(position.center);
             }
 
@@ -213,7 +200,7 @@ namespace SprUnity {
 
         }
 
-
+        
 
         public void InitializeGraphMatrix() {
             var action = ActionEditorWindowManager.instance.selectedAction;
