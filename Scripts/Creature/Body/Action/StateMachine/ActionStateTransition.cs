@@ -11,7 +11,7 @@ namespace SprUnity {
 
     [System.Serializable]
     public class TransitionCondition {
-        public ActionParameter param;
+        public ActionStateMachineParameter param;
     }
 
     public class ActionStateTransition : ScriptableObject, System.IComparable<ActionStateTransition> {

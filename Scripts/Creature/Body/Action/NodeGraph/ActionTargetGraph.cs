@@ -62,5 +62,13 @@ namespace SprUnity {
         public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
             return null;
         }
+
+        public void SetInput<T>(string nodeName, T value) {
+            foreach (var inputNode in inputNodes) {
+                if (inputNode.name.Contains(nodeName)) {
+                    (inputNode as ActionTargetNodeBase).SetInput<T>((T)value);
+                }
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace SprUnity {
     [CustomEditor(typeof(ActionStateTransition))]
-    public class ActionTransitionEditor : Editor {
+    public class ActionStateTransitionEditor : Editor {
 
         ReorderableList conditionList;
 
