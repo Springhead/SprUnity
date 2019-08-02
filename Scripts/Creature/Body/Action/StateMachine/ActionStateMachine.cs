@@ -484,7 +484,7 @@ namespace SprUnity {
         // 
         public void End() {
             enabled = false;
-            ResetStateMachine();
+            //ResetStateMachine();
         }
 
         void ResetStateMachine() {
