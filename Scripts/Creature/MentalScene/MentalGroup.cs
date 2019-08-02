@@ -15,7 +15,7 @@ namespace SprUnity {
     public class MentalGroupEditor : Editor {
         public override void OnInspectorGUI() {
             MentalGroup mentalGroup = (MentalGroup)target;
-            foreach (var parts in mentalGroup.GetAllParts()) {
+            foreach (var parts in mentalGroup.mentalPartsList) {
                 EditorGUILayout.LabelField(parts.GetType().ToString());
                 EditorGUI.indentLevel++;
                 foreach (var field in target.GetType().GetFields()) {
@@ -26,7 +26,7 @@ namespace SprUnity {
                 EditorGUI.indentLevel--;
             }
             EditorGUILayout.LabelField("");
-            foreach (var attribute in mentalGroup.GetAllAttribute()) {
+            foreach (var attribute in mentalGroup.mentalAttributeList) {
                 EditorGUILayout.LabelField(attribute.GetType().ToString());
                 EditorGUI.indentLevel++;
                 foreach (var field in target.GetType().GetFields()) {
@@ -44,58 +44,84 @@ namespace SprUnity {
     [DefaultExecutionOrder(2)]
     public class MentalGroup : MentalExistence {
         private MentalScene mentalScene;
-        private List<MentalAttribute> mentalAttributeList = new List<MentalAttribute>();
-        private List<MentalParts> mentalParts = new List<MentalParts>();
+        private List<MentalAttribute> mentalAttributeListOnPlaying = new List<MentalAttribute>();
+        private List<MentalParts> mentalPartsListOnPlaying = new List<MentalParts>();
+        public List<MentalAttribute> mentalAttributeList {
+            get {
+                if (Application.isPlaying) {
+                    return mentalAttributeListOnPlaying;
+                } else {
+                    var tempMentalAttributeList = GetComponentsInChildren<MentalAttribute>();
+                    List<MentalAttribute> newMentalAttributeList = new List<MentalAttribute>();
+                    foreach (var mentalAttribute in tempMentalAttributeList) {
+                        if (mentalAttribute?.GetComponentInParent<MentalGroup>() == this) {
+                            newMentalAttributeList.Add(mentalAttribute);
+                        }
+                    }
+                    return newMentalAttributeList;
+                }
+            }
+        }
+        public List<MentalParts> mentalPartsList {
+            get {
+                if (Application.isPlaying) {
+                    return mentalPartsListOnPlaying;
+                } else {
+                    var tempMentalPartsList = GetComponentsInChildren<MentalParts>();
+                    List<MentalParts> newMentalPartsList = new List<MentalParts>();
+                    foreach (var mentalParts in tempMentalPartsList) {
+                        if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
+                            newMentalPartsList.Add(mentalParts);
+                        }
+                    }
+                    return newMentalPartsList;
+                }
+            }
+        }
+        public void AddMentalAttribute(MentalAttribute mentalAttribute) {
+            mentalAttributeListOnPlaying.Add(mentalAttribute);
+        }
+        public void RemoveMentalAttribute(MentalAttribute mentalAttribute) {
+            mentalAttributeListOnPlaying.Remove(mentalAttribute);
+        }
+
+        public void AddMentalParts(MentalParts mentalParts) {
+            mentalPartsListOnPlaying.Add(mentalParts);
+        }
+        public void RemoveMentalParts(MentalParts mentalParts) {
+            mentalPartsListOnPlaying.Remove(mentalParts);
+        }
 
         void Start() {
             mentalScene = FindObjectOfType<MentalScene>();
-            if(mentalScene == null) {
+            if (mentalScene == null) {
                 return;
             }
             mentalScene.AddMentalGroup(this);
         }
         void OnDestroy() {
-            if(mentalScene == null) {
+            if (mentalScene == null) {
                 return;
             }
             mentalScene.RemoveMentalGroup(this);
         }
         public override Type GetAttribute<Type>() {
-            var mentalAttribute = GetComponentInChildren<Type>();
-            if (mentalAttribute?.GetComponentInParent<MentalGroup>() == this) {
-                return mentalAttribute;
+            foreach(var mentalAttribute in mentalAttributeList) {
+                if(mentalAttribute.GetType() == typeof(Type)) {
+                    return mentalAttribute as Type;
+                }
             }
             return this.gameObject.AddComponent<Type>();
         }
-        public List<MentalAttribute> GetAllAttribute() {
-            var mentalAttributeList = GetComponentsInChildren<MentalAttribute>();
-            List<MentalAttribute> newMentalAttributeList = new List<MentalAttribute>();
-            foreach (var mentalParts in mentalAttributeList) {
-                if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
-                    newMentalAttributeList.Add(mentalParts);
-                }
-            }
-            return newMentalAttributeList;
-        }
 
         public Type GetParts<Type>() where Type : MentalParts, new() {
-            var mentalParts = GetComponentInChildren<Type>();
-            if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
-                return mentalParts;
+            foreach(var mentalParts in mentalPartsList) {
+                if(mentalParts.GetType() == typeof(Type)) {
+                    return mentalParts as Type;
+                }
             }
             // ここで作成したところでMentalObjectとGameObjectの対応関係を決めれない
             return null;
-        }
-
-        public List<MentalParts> GetAllParts() {
-            var mentalPartsList = GetComponentsInChildren<MentalParts>();
-            List<MentalParts> newMentalPartsList = new List<MentalParts>();
-            foreach (var mentalParts in mentalPartsList) {
-                if (mentalParts?.GetComponentInParent<MentalGroup>() == this) {
-                    newMentalPartsList.Add(mentalParts);
-                }
-            }
-            return newMentalPartsList;
         }
     }
 }

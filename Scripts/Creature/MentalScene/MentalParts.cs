@@ -39,6 +39,21 @@ namespace SprUnity {
     }
 #endif
     public class MentalParts : MonoBehaviour, IEnumerable<MentalObject> {
+        public MentalGroup mentalGroup;
+        // 他のところでStartを定義されるとそちらが優先される
+        void Start() {
+            mentalGroup = GetComponentInParent<MentalGroup>();
+            if(mentalGroup == null) {
+                return;
+            }
+            mentalGroup.AddMentalParts(this);
+        }
+        void OnDestroy() {
+            if (mentalGroup== null) {
+                return;
+            }
+            mentalGroup.RemoveMentalParts(this);
+        }
 
         public IEnumerator<MentalObject> GetEnumerator() {
             foreach (var field in this.GetType().GetFields()) {

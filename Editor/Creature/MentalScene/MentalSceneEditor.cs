@@ -11,7 +11,7 @@ namespace SprUnity {
             foreach (var mentalGroup in mentalScene.mentalGroups) {
                 EditorGUILayout.LabelField(mentalGroup.name);
                 EditorGUI.indentLevel++;
-                foreach (var parts in mentalGroup.GetAllParts()) {
+                foreach (var parts in mentalGroup.mentalPartsList) {
                     EditorGUILayout.LabelField(parts.GetType().ToString());
                     EditorGUI.indentLevel++;
                     foreach (var field in target.GetType().GetFields()) {
@@ -22,7 +22,7 @@ namespace SprUnity {
                     EditorGUI.indentLevel--;
                 }
                 EditorGUILayout.LabelField("");
-                foreach (var attribute in mentalGroup.GetAllAttribute()) {
+                foreach (var attribute in mentalGroup.mentalAttributeList) {
                     EditorGUILayout.LabelField(attribute.GetType().ToString());
                     EditorGUI.indentLevel++;
                     foreach (var field in target.GetType().GetFields()) {

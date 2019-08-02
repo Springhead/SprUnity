@@ -29,7 +29,6 @@ namespace SprUnity {
         }
         public void AddMentalGroup(MentalGroup mentalGroup) {
             mentalGroupList.Add(mentalGroup);
-            OnValidate();
         }
         public void RemoveMentalGroup(MentalGroup mentalGroup) {
             mentalGroupList.Remove(mentalGroup);
