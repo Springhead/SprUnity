@@ -484,6 +484,7 @@ namespace SprUnity {
         // 
         public void End() {
             enabled = false;
+            // <!!> buildすると止まる
             //ResetStateMachine();
         }
 
