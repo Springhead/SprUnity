@@ -178,6 +178,7 @@ namespace SprUnity {
 
         public void GetActionStateMachineFromFolders() {
             stateMachines.Clear();
+#if UNITY_EDITOR
             // 
             var guids = AssetDatabase.FindAssets("t:ActionStateMachine", stateMachineFolders);
 
@@ -189,6 +190,7 @@ namespace SprUnity {
                     stateMachines.Add(action);
                 }
             }
+#endif
         }
 
         public void GetActionTargetGraphFromStateMachines() {

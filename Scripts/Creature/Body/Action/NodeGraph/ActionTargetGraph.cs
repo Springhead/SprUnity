@@ -4,6 +4,11 @@ using UnityEngine;
 using XNode;
 using System.Linq;
 
+#if UNITY_EDITOR
+using UnityEditor;
+using System.Reflection;
+#endif
+
 namespace SprUnity {
     [CreateAssetMenu]
     public class ActionTargetGraph : NodeGraph {
@@ -37,6 +42,14 @@ namespace SprUnity {
                 } else return manager == this.manager ? this : null;
             }
         }*/
+        public static void CreateActionTargetGraph(string newName) {
+            var graph = CreateInstance<ActionTargetGraph>();
+#if UNITY_EDITOR
+            AssetDatabase.CreateAsset(graph, "Assets/Actions/KeyPoses/" + newName + ".asset");
+            AssetDatabase.Refresh();
+# endif
+        }
+
         public override NodeGraph Copy() {
             ActionTargetGraph graph = base.Copy() as ActionTargetGraph;
             graph.isKeyPoseData = this.isKeyPoseData;

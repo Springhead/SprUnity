@@ -39,6 +39,21 @@ namespace SprUnity {
     }
 #endif
     public class MentalParts : MonoBehaviour, IEnumerable<MentalObject> {
+        public MentalGroup mentalGroup;
+        // 他のところでStartを定義されるとそちらが優先される
+        void Start() {
+            mentalGroup = GetComponentInParent<MentalGroup>();
+            if(mentalGroup == null) {
+                return;
+            }
+            mentalGroup.AddMentalParts(this);
+        }
+        void OnDestroy() {
+            if (mentalGroup== null) {
+                return;
+            }
+            mentalGroup.RemoveMentalParts(this);
+        }
 
         public IEnumerator<MentalObject> GetEnumerator() {
             foreach (var field in this.GetType().GetFields()) {
@@ -53,6 +68,7 @@ namespace SprUnity {
         }
 
         public void SetSameNameGameObject() {
+#if UNITY_EDITOR
             var children = this.GetComponentsInChildren<Transform>();
             foreach (var field in this.GetType().GetFields()) {
                 if (field.FieldType == typeof(MentalObject)) {
@@ -68,6 +84,7 @@ namespace SprUnity {
                     }
                 }
             }
+#endif
         }
         public void DeleteMental() {
             var children = this.GetComponentsInChildren<MentalObject>();
@@ -77,7 +94,9 @@ namespace SprUnity {
                 }
             }
             foreach(var child in children) {
+#if UNITY_EDITOR
                 Undo.DestroyObjectImmediate(child);
+#endif
             }
         }
     }

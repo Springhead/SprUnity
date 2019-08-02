@@ -15,10 +15,21 @@ namespace SprUnity {
 
     public class MentalAttribute : MonoBehaviour {
         // Attributeを所持している親からAttributeやPartsの情報を取得する
-        public MentalGroup parent;
-
-        private void Start() {
-            parent = GetComponentInParent<MentalGroup>();
+        public MentalGroup mentalGroup;
+        
+        // 他のところでStartを定義されるとそちらが優先される
+        void Start() {
+            mentalGroup = GetComponentInParent<MentalGroup>();
+            if(mentalGroup == null) {
+                return;
+            }
+            mentalGroup.AddMentalAttribute(this);
+        }
+        void OnDestroy() {
+            if (mentalGroup== null) {
+                return;
+            }
+            mentalGroup.RemoveMentalAttribute(this);
         }
     }
 }
