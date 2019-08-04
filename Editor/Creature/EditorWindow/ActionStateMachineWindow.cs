@@ -319,8 +319,6 @@ namespace SprUnity {
             actionNames = new List<string>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
-            // 特定フォルダ
-            // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
 
             ActionEditorWindowManager.instance.actions.Clear();
             actionNames.Clear();

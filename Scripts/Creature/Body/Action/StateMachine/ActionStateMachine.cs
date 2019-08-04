@@ -367,10 +367,10 @@ namespace SprUnity {
             CreateStateMachine("ActionStateMachine");
         }
 #endif
-        public static void CreateStateMachine(string newName) {
+        public static void CreateStateMachine(string newName,string pathName = "Assets/Actions/Actions/") {
             var action = CreateInstance<ActionStateMachine>();
 #if UNITY_EDITOR
-            AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
+            AssetDatabase.CreateAsset(action, pathName + newName + ".asset");
             AssetDatabase.Refresh();
 # endif
         }
