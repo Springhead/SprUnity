@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Transform/Blend")]
-    public class BlendPosRotScaleNode : ActionTargetNodeBase {
+    public class BlendPosRotScaleNode : ActionTargetTransformNodeBase {
         [Output] public PosRotScale output;
         [Input] public PosRotScale input1;
         [Input] public PosRotScale input2;

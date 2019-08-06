@@ -176,6 +176,7 @@ namespace SprUnity {
         public void InitializeController() {
             // Initialize Bone Controller
             if (controller != null) {
+                controller.bone = this;
                 controller.Initialize();
             }
         }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InputNodeBase : MonoBehaviour {
+public class WorldCoordinateNodeEditor : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

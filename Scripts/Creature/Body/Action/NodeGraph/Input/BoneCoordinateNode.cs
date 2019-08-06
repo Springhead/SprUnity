@@ -8,9 +8,10 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/Bone")]
-    public class BoneCoordinateNode : ActionTargetNodeBase {
+    public class BoneCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
         public HumanBodyBones boneId;
+        public string boneLabel = "";
 
         // Use this for initialization
         protected override void Init() {
@@ -22,12 +23,13 @@ namespace SprUnity {
             if(port.fieldName == "posRotScale") {
                 PosRotScale tempPosRotScale = new PosRotScale();
                 Body body = (graph as ActionTargetGraph)?.body;
-                Debug.LogWarning(((graph as ActionTargetGraph)?.body == null ? "a" : "b") + " " + ((graph as ActionTargetGraph)?.manager == null ? "a" : "b"));
                 Bone bone = body?[boneId];
                 if (body != null && bone != null) {
                     tempPosRotScale.position = bone.transform.position;
                     tempPosRotScale.rotation = bone.transform.rotation;
                     tempPosRotScale.scale = body.height * Vector3.one;
+                } else {
+                    tempPosRotScale = posRotScale;
                 }
                 return tempPosRotScale;
             } else {

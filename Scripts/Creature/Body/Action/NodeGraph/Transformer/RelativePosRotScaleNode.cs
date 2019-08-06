@@ -9,7 +9,7 @@ using UnityEditor;
 namespace SprUnity {
     [CreateNodeMenu("Transform/Relative")]
     [NodeTint("#bae1ff")]
-    public class RelativePosRotScaleNode : ActionTargetNodeBase {
+    public class RelativePosRotScaleNode : ActionTargetTransformNodeBase {
         [Input] public PosRotScale origin = new PosRotScale();
         [Input] public PosRotScale relative = new PosRotScale();
         [Output] public PosRotScale result = new PosRotScale();

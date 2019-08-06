@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Converter/DecomposePose")]
-    public class DecomposePoseNode : ActionTargetNodeBase {
+    public class DecomposePoseNode : ActionTargetTransformNodeBase {
         [Input] public Pose pose = new Pose();
         [Output] public Vector3 pos = Vector3.zero;
         [Output] public Quaternion rot = Quaternion.identity;

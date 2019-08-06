@@ -160,7 +160,7 @@ namespace SprUnity {
             newLogs.AddFuture(boneSubMovement, s);
             subMovementLogs.Add(newLogs);
         }
-        public void AddFuture(BoneKeyPose boneKeyPose, string s, float startTime, float duration, float spring, float damper, Body body) {
+        public void AddFuture(ActionTarget boneKeyPose, string s, float startTime, float duration, float spring, float damper, Body body) {
             var bone = body[boneKeyPose.boneId];
             SubMovement boneSubMovement = new SubMovement();
             foreach (var subMovementLog in subMovementLogs) {

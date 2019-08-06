@@ -8,8 +8,8 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Output/BoneKeypose")]
-    public class BoneKeyPoseNode : KeyPoseNodeBase {
-        [Output] public BoneKeyPose boneKeyPose;
+    public class ActionTargetOutputNode : KeyPoseNodeBase {
+        [Output] public ActionTarget boneKeyPose;
         [Input] public HumanBodyBones boneId;
         [Input] public string boneLabel = "";
         [Input] public PosRotScale posRotScale;
@@ -27,8 +27,8 @@ namespace SprUnity {
             return GetBoneKeyPose(); // Replace this
         }
 
-        public BoneKeyPose GetBoneKeyPose() {
-            BoneKeyPose tempBoneKeyPose = new BoneKeyPose();
+        public ActionTarget GetBoneKeyPose() {
+            ActionTarget tempBoneKeyPose = new ActionTarget();
             PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale", this.posRotScale);
             tempBoneKeyPose.boneId = GetInputValue<HumanBodyBones>("boneID", this.boneId);
             tempBoneKeyPose.boneIdString = GetInputValue<string>("boneLabel", this.boneLabel);
@@ -41,7 +41,7 @@ namespace SprUnity {
 
         public override KeyPose GetKeyPose() {
             KeyPose keyPose = new KeyPose();
-            BoneKeyPose boneKeyPose = new BoneKeyPose();
+            ActionTarget boneKeyPose = new ActionTarget();
             PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale", this.posRotScale);
             boneKeyPose.boneId = boneId;
             boneKeyPose.localPosition = tempPosRotScale.position;
@@ -53,7 +53,7 @@ namespace SprUnity {
         }
 
         public override void OnSceneGUI(Body body = null) {
-            BoneKeyPose temp = GetBoneKeyPose();
+            ActionTarget temp = GetBoneKeyPose();
 #if UNITY_EDITOR
             if (GetPort("posRotScale").IsConnected) {
                 Handles.PositionHandle(temp.position, temp.rotation);
