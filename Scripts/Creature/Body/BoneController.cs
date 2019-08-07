@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using SprCs;
 using SprUnity;
 using UnityEngine;
@@ -99,6 +100,8 @@ public class BoneController : MonoBehaviour {
 
     public List<Bone> changeSpringDamperBones = new List<Bone>();
 
+    public bool debugLog = false;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     [HideInInspector]
@@ -118,9 +121,17 @@ public class BoneController : MonoBehaviour {
 
     private bool initialized = false;
 
+    private StreamWriter streamWriter;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     public void Start() {
+    }
+
+    public void OnApplicationQuit() {
+        if (debugLog) {
+            streamWriter.Close();
+        }
     }
 
     public void Initialize() {
@@ -156,6 +167,10 @@ public class BoneController : MonoBehaviour {
             subMov.t1 = 0.0001f;
 
             subTrajectory.Enqueue(subMov);
+        }
+
+        if (debugLog) {
+            streamWriter = new StreamWriter(Application.dataPath + "/../BoneController" + bone.label + ".txt", append: false);
         }
 
         initialized = true;
@@ -201,6 +216,10 @@ public class BoneController : MonoBehaviour {
             if (rotdiff > 5.0f) {
                 rotSubMov.AddNoise();
             }
+        }
+
+        if(debugLog){
+            streamWriter.WriteLine("Add p0:" + posSubMov.p0 + " p1:" + posSubMov.p1 + " q0:" + rotSubMov.q0 + " q1:" + rotSubMov.q1 + " t0:" + posSubMov.t0 + " t1" + posSubMov.t1 + "\n");
         }
 
         // Enqueue
@@ -361,6 +380,10 @@ public class BoneController : MonoBehaviour {
                 bone.springRatio = spring[0];
                 bone.damperRatio = spring[1];
             }
+        }
+
+        if (debugLog) {
+            streamWriter.WriteLine("Target " + currTime + " p:" + pose.position + subPose.position + " q:" + subPose.rotation * pose.rotation + "\n");
         }
     }
 }

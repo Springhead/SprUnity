@@ -31,7 +31,10 @@ namespace SprUnity {
             newName = GUILayout.TextField(newName, textField, GUILayout.Height(20));
             if (Event.current.keyCode == KeyCode.Return) {
                 if (newName != "" && !existActionTargetGraph(newName)) {
-                    ActionTargetGraph.CreateActionTargetGraph(newName);
+                    var graph = ActionTargetGraph.CreateActionTargetGraph(newName);
+                    AssetDatabase.CreateAsset(graph, "Assets/Actions/KeyPoses/" + newName + ".asset");
+                    AssetDatabase.Refresh();
+                    ActionTargetGraphEditorWindow.ReloadActionList();
                 }
                 textField.fontSize = backTextField;
                 this.Close();

@@ -249,7 +249,7 @@ namespace SprUnity {
     }
 
 #if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/ Create ActionStateMachine Instance")]
+    [CreateAssetMenu(menuName = "ActionStateMachine")]
 #endif
     public class ActionStateMachine : ScriptableObject {
 

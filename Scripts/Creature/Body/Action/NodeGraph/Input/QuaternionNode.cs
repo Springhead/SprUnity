@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Value/Quaternion")]
-    public class QuaternionNode : ActionTargetNodeBase {
+    public class QuaternionNode : ActionTargetInputNodeBase {
         [Output] public Quaternion output;
         [Input] public float x;
         [Input] public float y;

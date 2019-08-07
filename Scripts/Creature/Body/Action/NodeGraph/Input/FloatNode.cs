@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Value/Float")]
-    public class FloatNode : ActionTargetNodeBase {
+    public class FloatNode : ActionTargetInputNodeBase {
         [Output] public float output;
         public float value;
 

@@ -21,7 +21,7 @@ namespace SprUnity {
         private float handleSize = 0.05f;
         private float selectedHandleSize = 0.15f;
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
-        private List<BoneKeyPoseNode> editableBoneKeyPoseNodes = new List<BoneKeyPoseNode>();
+        private List<ActionTargetOutputNode> editableBoneKeyPoseNodes = new List<ActionTargetOutputNode>();
 
         private static bool guiInitialized = false;
         public static GUIStyle toolbarBase;
@@ -112,6 +112,9 @@ namespace SprUnity {
             menu.AddItem(new GUIContent("Reload"), false, () => {
                 ReloadActionTargetGraphs();
             });
+            menu.AddItem(new GUIContent("Reload list"), false, () => {
+                ReloadActionList();
+            });
         }
 
         public new void OnGUI() {
@@ -184,10 +187,10 @@ namespace SprUnity {
                 DrawHumanBone(editableBoneKeyPoseNode);
             }
         }
-        void AddBoneKeyPoseNode(Node node, List<BoneKeyPoseNode> boneKeyPoseNodes) {
+        void AddBoneKeyPoseNode(Node node, List<ActionTargetOutputNode> boneKeyPoseNodes) {
             foreach (var output in node.Outputs) {
                 foreach (var connection in output.GetConnections()) {
-                    var newBoneKeyPoseNode = connection.node as BoneKeyPoseNode;
+                    var newBoneKeyPoseNode = connection.node as ActionTargetOutputNode;
                     if (newBoneKeyPoseNode != null) {
                         if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode)) {
                             boneKeyPoseNodes.Add(newBoneKeyPoseNode);
@@ -198,7 +201,7 @@ namespace SprUnity {
                 }
             }
         }
-        void DrawHumanBone(BoneKeyPoseNode boneKeyPoseNode) {
+        void DrawHumanBone(ActionTargetOutputNode boneKeyPoseNode) {
             PosRotScale r = boneKeyPoseNode.GetInputValue<PosRotScale>("posRotScale");
             if (boneKeyPoseNode.usePosition || boneKeyPoseNode.useRotation) {
                 // 調整用の手などを表示

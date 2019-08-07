@@ -14,7 +14,7 @@ namespace SprUnity {
 
         [HideInInspector]
         public ActionStateMachine stateMachine;
-        public BoneKeyPoseNode[] nodes;
+        public ActionTargetOutputNode[] nodes;
         [HideInInspector]
         public List<ActionStateTransition> transitions = new List<ActionStateTransition>();
         public List<string> useParams;

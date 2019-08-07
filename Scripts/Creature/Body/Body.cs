@@ -91,6 +91,7 @@ namespace SprUnity {
             body.changeRoundConeOnStart = EditorGUILayout.Toggle("Change RoundCone On Start", body.changeRoundConeOnStart);
 
             body.syncEnabled = EditorGUILayout.Toggle("Synchronize", body.syncEnabled);
+            body.syncMode = (Body.SyncMode)EditorGUILayout.EnumPopup("Sync Mode", body.syncMode);
 
             /*
             // For BodyGenerator
@@ -122,6 +123,11 @@ namespace SprUnity {
         public Animator animator = null;
 
         public bool syncEnabled = true;
+        public enum SyncMode {
+            Solid,
+            IK,
+        }
+        public SyncMode syncMode = SyncMode.Solid;
 
         // Fit Target Flag
         public bool fitSpringDamper = true;
@@ -160,8 +166,14 @@ namespace SprUnity {
         void FixedUpdate() {
             if (syncEnabled) {
                 // Synchronize Avatar Pose from PHSolid Poses
-                foreach (var bone in bones) {
-                    bone.SyncAvatarBoneFromSolid();
+                if (syncMode == SyncMode.Solid) {
+                    foreach (var bone in bones) {
+                        bone.SyncAvatarBoneFromSolid();
+                    }
+                }else if(syncMode == SyncMode.IK) {
+                    foreach (var bone in bones) {
+                        bone.SyncAvatarBoneFromIK();
+                    }
                 }
             }
         }

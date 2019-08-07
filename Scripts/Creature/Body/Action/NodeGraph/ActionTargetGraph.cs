@@ -42,12 +42,9 @@ namespace SprUnity {
                 } else return manager == this.manager ? this : null;
             }
         }*/
-        public static void CreateActionTargetGraph(string newName) {
+        public static ActionTargetGraph CreateActionTargetGraph(string newName) {
             var graph = CreateInstance<ActionTargetGraph>();
-#if UNITY_EDITOR
-            AssetDatabase.CreateAsset(graph, "Assets/Actions/KeyPoses/" + newName + ".asset");
-            AssetDatabase.Refresh();
-# endif
+            return graph;
         }
 
         public override NodeGraph Copy() {
@@ -69,8 +66,8 @@ namespace SprUnity {
                 }return true;
             }
         }
-        public IEnumerable<BoneKeyPoseNode> boneKeyPoseNodes { get { foreach (var node in nodes) { if (node is BoneKeyPoseNode) yield return (BoneKeyPoseNode)node; } } }
-        public IEnumerable<BoneKeyPose> boneKeyPoses { get { foreach (var boneKeyPoseNode in boneKeyPoseNodes) yield return boneKeyPoseNode.GetBoneKeyPose(); } }
+        public IEnumerable<ActionTargetOutputNode> actionTargetOutputNodes { get { foreach (var node in nodes) { if (node is ActionTargetOutputNode) yield return (ActionTargetOutputNode)node; } } }
+        public IEnumerable<ActionTarget> actionTargets { get { foreach (var actionTargetNode in actionTargetOutputNodes) yield return actionTargetNode.GetBoneKeyPose(); } }
 
         public List<BoneSubMovementPair> Action(Body body = null, float duration = -1, float startTime = -1, float spring = -1, float damper = -1, Quaternion? rotate = null) {
             return null;

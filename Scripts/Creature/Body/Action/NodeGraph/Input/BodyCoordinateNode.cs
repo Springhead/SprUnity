@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/Body")]
-    public class BodyCoordinateNode : ActionTargetNodeBase {
+    public class BodyCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
 
         // Use this for initialization
@@ -25,6 +25,8 @@ namespace SprUnity {
                     tempPosRotScale.position = body.transform.position;
                     tempPosRotScale.rotation = body.transform.rotation;
                     tempPosRotScale.scale = body.height * Vector3.one;
+                } else {
+                    tempPosRotScale = posRotScale;
                 }
                 return tempPosRotScale;
             } else {

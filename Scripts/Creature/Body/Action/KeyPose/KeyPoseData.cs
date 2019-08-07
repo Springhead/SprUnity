@@ -12,7 +12,7 @@ using UnityEditor;
 namespace SprUnity {
 
     [Serializable]
-    public class BoneKeyPose {
+    public class ActionTarget {
         public HumanBodyBones boneId = HumanBodyBones.Hips;
         public string boneIdString = "";
         public Vector3 localPosition = new Vector3();
@@ -37,7 +37,7 @@ namespace SprUnity {
     }
 
     [Serializable]
-    public class StaticBoneKeyPose : BoneKeyPose{
+    public class StaticBoneKeyPose : ActionTarget{
         //public HumanBodyBones boneId = HumanBodyBones.Hips;
         //public string boneIdString = "";
         public enum CoordinateMode {
@@ -290,13 +290,13 @@ namespace SprUnity {
     // 実行時に使用されるKeyPose
     [Serializable]
     public class KeyPose {
-        public List<BoneKeyPose> boneKeyPoses = new List<BoneKeyPose>();
+        public List<ActionTarget> boneKeyPoses = new List<ActionTarget>();
 
         public float testDuration = 1.0f;
         public float testSpring = 1.0f;
         public float testDamper = 1.0f;
 
-        public BoneKeyPose this[string key] {
+        public ActionTarget this[string key] {
             get {
                 foreach (var boneKeyPose in boneKeyPoses) {
                     if (boneKeyPose.boneId.ToString() == key) {
@@ -307,7 +307,7 @@ namespace SprUnity {
             }
         }
         // <!!> Is it better ?
-        public BoneKeyPose this[HumanBodyBones key] {
+        public ActionTarget this[HumanBodyBones key] {
             get { return this[key.ToString()]; }
         }
 
@@ -354,7 +354,7 @@ namespace SprUnity {
                         return boneKeyPose;
                     }
                 }
-                Debug.LogWarning("KeyPose " + this.name + " does not contain BoneKeyPose of " + key);
+                Debug.LogWarning("KeyPose " + this.name + " does not contain ActionTarget of " + key);
                 return null;
             }
         }

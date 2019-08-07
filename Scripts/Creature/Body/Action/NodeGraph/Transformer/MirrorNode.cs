@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Transform/Mirror")]
-    public class Mirror : ActionTargetNodeBase {
+    public class MirrorNode : ActionTargetTransformNodeBase {
 
         [Output] public PosRotScale output;
         [Input] public PosRotScale input;
