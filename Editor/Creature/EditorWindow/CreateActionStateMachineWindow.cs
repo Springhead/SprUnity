@@ -18,12 +18,29 @@ namespace SprUnity {
             //position.center = new Rect(0f, 0f, Screen.currentResolution.width, Screen.currentResolution.height).center;
             position.center = vec;
             window.position = position;
-            window.minSize = new Vector2(300, 44);
-            window.maxSize = new Vector2(300, 44);
+            window.minSize = new Vector2(300, 66);
+            window.maxSize = new Vector2(300, 66);
             ReloadPathList();
         }
         void OnGUI() {
             pathIndex = EditorGUILayout.Popup(pathIndex, pathList.ToArray());
+            if(GUILayout.Button("Add")) {
+                var addFullPath = EditorUtility.OpenFolderPanel("Add Path", Application.dataPath, "");
+                if (addFullPath != "") {
+                    // Assetsの下のみ選べるようにする
+                    if (!addFullPath.Contains(Application.dataPath)) {
+                        Debug.LogError("Wrong path. Please choose in Assets/");
+                    } else {
+                        var addShortPath = addFullPath.Replace(Application.dataPath.Replace("Assets", ""), "");
+                        if (!pathList.Contains(addShortPath)) {
+                            pathList.Add(addShortPath.Replace("/", "\\")+"\\");
+                            pathIndex = pathList.Count - 1;
+                        } else {
+                            pathIndex = pathList.IndexOf(addShortPath);
+                        }
+                    }
+                }
+            }
             GUILayout.BeginHorizontal();
             var label = GUI.skin.GetStyle("label");
             var backLabel = label.fontSize;
@@ -70,6 +87,8 @@ namespace SprUnity {
                 var action = obj as ActionStateMachine;
                 if (action != null && AssetDatabase.IsMainAsset(obj)) {
                     var newPath = path.Replace(action.name+".asset","");
+                    // "/"があるとPopUpでサブメニューになってしまうため"\"に変更
+                    newPath = newPath.Replace("/", "\\");
                     if (!pathList.Contains(newPath)) {
                         pathList.Add(newPath);
                     }
