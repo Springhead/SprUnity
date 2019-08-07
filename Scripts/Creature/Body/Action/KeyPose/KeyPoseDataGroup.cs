@@ -9,9 +9,6 @@ using UnityEditor;
 
 namespace SprUnity {
 
-#if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
-#endif
     public class KeyPoseDataGroup : ScriptableObject {
         public static string path = "Assets/Actions/KeyPoses/";
 #if UNITY_EDITOR

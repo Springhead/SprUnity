@@ -201,6 +201,26 @@ namespace SprUnity {
             }
         }
 
+        public void SyncAvatarBoneFromIK() {
+            if (avatarBone != null) {
+                if (ikActuator != null) {
+                    if (syncPosition) {
+                        avatarBone.transform.position = ikActuator.phIKActuator.GetSolidTempPose().Pos().ToVector3();
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = ikActuator.phIKActuator.GetSolidTempPose().Ori().ToQuaternion() * relativeRotSolidAvatar;
+                    }
+                } else {
+                    if (syncPosition) {
+                        avatarBone.transform.position = transform.position;
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = transform.rotation * relativeRotSolidAvatar;
+                    }
+                }
+            }
+        }
+
         public void SyncSolidFromAvatarBone() {
             if (avatarBone != null) {
                 if(joint != null) { 
