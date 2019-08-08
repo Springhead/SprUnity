@@ -178,7 +178,7 @@ namespace SprUnity {
             GUISkin s = GUI.skin;
             if (myskin != null) {
                 GUI.skin = myskin;
-            } 
+            }
 
             float windowWidth = this.position.width;
             // 縦スクロールが出た場合に下に横スクロールが出るのを防ぐ
@@ -192,69 +192,69 @@ namespace SprUnity {
                 // 選択が消えてしまうので残っている情報からフラグを正しくする
                 // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
                 foreach (var keyPoseStatus in keyPoseStatuses) {
-                        if (keyPoseStatus.keyPose == latestEditableKeyPose) {
-                            keyPoseStatus.isEditable = true;
-                        }
-                        if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
-                            keyPoseStatus.isVisible = true;
-                        }
+                    if (keyPoseStatus.keyPose == latestEditableKeyPose) {
+                        keyPoseStatus.isEditable = true;
+                    }
+                    if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                        keyPoseStatus.isVisible = true;
+                    }
                 }
             }
             var body = ActionEditorWindowManager.instance.body;
-                EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(windowWidth - scrollwidth));
-                foreach (var keyPoseStatus in keyPoseStatuses) {
-                    //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
-                    //GUILayout.BeginArea(singleRect);
-                    GUILayout.BeginHorizontal();
-                    Texture2D currentTexture = noneButtonTexture;
-                    if (keyPoseStatus.isVisible) {
-                        currentTexture = visibleButtonTexture;
-                    } else {
-                        currentTexture = noneButtonTexture;
-                    }
-                    if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
-                        if (!keyPoseStatus.isVisible) {
-                            keyPoseStatus.isVisible = true;
-                            latestVisibleKeyPose = keyPoseStatus.keyPose;
-                                foreach (var keyPoseStatus2 in keyPoseStatuses) {
-                                    if (keyPoseStatus2.isVisible && keyPoseStatus2.keyPose != latestVisibleKeyPose) {
-                                        keyPoseStatus2.isVisible = false;
-                                    }
-                                }
-                            SceneView.RepaintAll();
-                        } else {
-                            keyPoseStatus.isVisible = false;
-                            if (latestVisibleKeyPose == keyPoseStatus.keyPose) {
-                                latestVisibleKeyPose = null;
-                            }
-                            SceneView.RepaintAll();
-                        }
-                    }
-                    var defaultback = GUI.skin.label.normal.background;
-                    if (keyPoseStatus.isEditable) {
-                        GUI.skin.label.normal.background = GetEditableTexture();
-                    }
-                    if (keyPoseStatus.keyPose == renameKeyPose) {
-                        renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
-                        if (Event.current.keyCode == KeyCode.Return) {
-                            Undo.RecordObject(keyPoseStatus.keyPose, "Change KeyPose Name");
-                            renameKeyPose.name = renaming;
-                            renameKeyPose = null;
-                            renaming = "";
-                            EditorUtility.SetDirty(keyPoseStatus.keyPose);
-                            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
-                            Repaint();
-                        }
-                    } else {
-                        GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
-                    }
-                    GUI.skin.label.normal.background = defaultback;
-                    // <!!>毎回呼ぶのか..
-                    keyPoseDataRectDict[keyPoseStatus] = GUILayoutUtility.GetLastRect();
-                    GUILayout.EndHorizontal();
-                    RightClickMenu(GUILayoutUtility.GetLastRect(), keyPoseStatus.keyPose);
+            EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(windowWidth - scrollwidth));
+            foreach (var keyPoseStatus in keyPoseStatuses) {
+                //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
+                //GUILayout.BeginArea(singleRect);
+                GUILayout.BeginHorizontal();
+                Texture2D currentTexture = noneButtonTexture;
+                if (keyPoseStatus.isVisible) {
+                    currentTexture = visibleButtonTexture;
+                } else {
+                    currentTexture = noneButtonTexture;
                 }
-                EditorGUILayout.EndVertical();
+                if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
+                    if (!keyPoseStatus.isVisible) {
+                        keyPoseStatus.isVisible = true;
+                        latestVisibleKeyPose = keyPoseStatus.keyPose;
+                        foreach (var keyPoseStatus2 in keyPoseStatuses) {
+                            if (keyPoseStatus2.isVisible && keyPoseStatus2.keyPose != latestVisibleKeyPose) {
+                                keyPoseStatus2.isVisible = false;
+                            }
+                        }
+                        SceneView.RepaintAll();
+                    } else {
+                        keyPoseStatus.isVisible = false;
+                        if (latestVisibleKeyPose == keyPoseStatus.keyPose) {
+                            latestVisibleKeyPose = null;
+                        }
+                        SceneView.RepaintAll();
+                    }
+                }
+                var defaultback = GUI.skin.label.normal.background;
+                if (keyPoseStatus.isEditable) {
+                    GUI.skin.label.normal.background = GetEditableTexture();
+                }
+                if (keyPoseStatus.keyPose == renameKeyPose) {
+                    renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
+                    if (Event.current.keyCode == KeyCode.Return) {
+                        Undo.RecordObject(keyPoseStatus.keyPose, "Change KeyPose Name");
+                        renameKeyPose.name = renaming;
+                        renameKeyPose = null;
+                        renaming = "";
+                        EditorUtility.SetDirty(keyPoseStatus.keyPose);
+                        AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(keyPoseStatus.keyPose));
+                        Repaint();
+                    }
+                } else {
+                    GUILayout.Label(keyPoseStatus.keyPose.name, GUILayout.Height(buttonheight));
+                }
+                GUI.skin.label.normal.background = defaultback;
+                // <!!>毎回呼ぶのか..
+                keyPoseDataRectDict[keyPoseStatus] = GUILayoutUtility.GetLastRect();
+                GUILayout.EndHorizontal();
+                RightClickMenu(GUILayoutUtility.GetLastRect(), keyPoseStatus.keyPose);
+            }
+            EditorGUILayout.EndVertical();
 
             if (GUILayout.Button("Add KeyPoseGroup", GUILayout.Height(buttonheight))) {
                 AddKeyPoseGroup();
@@ -327,7 +327,7 @@ namespace SprUnity {
 
         void OnSceneGUI(SceneView sceneView) {
             DrawHuman(latestEditableKeyPose, latestVisibleKeyPose);
-            DrawHandles();            
+            DrawHandles();
         }
 
         void DrawHuman(ActionTargetGraph latestEditableKeyPose, ActionTargetGraph latestVisibleKeyPose) {
@@ -459,7 +459,27 @@ namespace SprUnity {
         }
 
         void AddKeyPoseGroup() {
-            KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
+            //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
+            // Asset全検索
+            var guids = AssetDatabase.FindAssets("*").Distinct();
+            List<string> nameList = new List<string>();
+            ActionTargetGraph templateActionTargetGraph = null;
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+                var actionTargetGraph = obj as ActionTargetGraph;
+                if (actionTargetGraph != null) {
+                    nameList.Add(actionTargetGraph.name);
+                    if (actionTargetGraph.name == "Punchi") {
+                        templateActionTargetGraph = actionTargetGraph;
+                    }
+                }
+            }
+            if (templateActionTargetGraph != null) {
+                var newActionTargetGraph = templateActionTargetGraph.Copy();
+                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                AssetDatabase.Refresh();
+            }
         }
         void AddKeyPose(KeyPoseDataGroup kpg) {
             //Undo.RecordObject(kpg, "Add KeyPose to " + kpg.name); <!!> Undo出来ない
