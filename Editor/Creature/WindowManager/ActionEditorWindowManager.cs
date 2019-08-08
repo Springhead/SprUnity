@@ -49,13 +49,15 @@ namespace SprUnity {
         // ActionTragetGraphEditorWindow関係
         public List<ActionTargetGraph> actionTargetGraphs;
         public ActionTargetGraph selectedActionTargetGraph;
-        
+
+        public List<ActionTargetGraphStatus> actionTargetGraphStatuses;
         // Log data
 
         ActionEditorWindowManager() {
             keyPoseStatuses = new List<KeyPoseStatus>();
             actions = new List<ActionStateMachine>();
             actionTargetGraphs = new List<ActionTargetGraph>();
+            actionTargetGraphStatuses = new List<ActionTargetGraphStatus>();
 
             EditorApplication.hierarchyChanged -= OnHierarchyChanged;
             EditorApplication.hierarchyChanged += OnHierarchyChanged;

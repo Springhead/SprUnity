@@ -33,6 +33,36 @@ namespace SprUnity {
         private static List<string> actionTargetGraphNames;
         private static int actionTargetGraphIndex = 0;
 
+        // SubWindow
+        private bool showSubWindow = false;
+        private float subWindowFirstSpaceNum = 8;
+        private float subWindowWidth = 200;
+        static Texture2D noneButtonTexture;
+        static Texture2D visibleButtonTexture;
+        static Texture2D editableButtonTexture;
+        static Texture2D editableLabelTexture;
+
+        private GUISkin myskin;
+        private string skinpath = "GUISkins/SprGUISkin.guiskin";
+        private string editableButtonpath = "pictures/te.png";
+        private string editableLabelpath = "GUISkins/labelbackEditable.png";
+
+        private Vector2 scrollPos;
+        private Vector2 scrollPosParameterWindow;
+
+        static float scrollwidth = 20;
+        static float parameterheight = 150;
+        static float buttonheight = 25;
+
+        private ActionTargetGraph latestEditableKeyPose;
+        private ActionTargetGraph latestVisibleKeyPose;
+        private static Dictionary<ActionTargetGraphStatus, Rect> keyPoseDataRectDict;
+
+        private static ActionTargetGraph renameActionTargetGraph;
+        private string renaming;
+
+        static private float parameterWindowHeight = 160;
+
         protected override void OnEnable() {
             base.OnEnable();
 
@@ -76,6 +106,15 @@ namespace SprUnity {
             if (rightFoot == null) {
                 Debug.Log("fbx null");
             }
+
+            // SubWindow
+            if (myskin == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
+                myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
+            }
+            visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
 
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
@@ -130,6 +169,7 @@ namespace SprUnity {
                 guiInitialized = true;
             }
             DrawToolBar();
+            SubWindow();
         }
 
         void DrawToolBar() {
@@ -168,6 +208,149 @@ namespace SprUnity {
 
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
+        }
+        void SubWindow() {
+            Event e = Event.current;
+            GUISkin defaultSkin = GUI.skin;
+            Color defaultFoldoutTextColor = EditorStyles.foldout.onNormal.textColor;
+            if (myskin != null) {
+                GUI.skin = myskin;
+                EditorStyles.foldout.onNormal.textColor = Color.white;
+            }
+
+            // 縦スクロールが出た場合に下に横スクロールが出るのを防ぐ
+            for (int i = 0; i < subWindowFirstSpaceNum; i++) {
+                EditorGUILayout.Space();
+            }
+            showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
+            if (!showSubWindow) {
+                scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
+
+                var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphStatuses;
+
+                GUILayout.Label("ActionTargetGraphs", GUILayout.Width(subWindowWidth - scrollwidth));
+                //if (window == null) {
+                //    Open(); // なぜかOnEnableに書くと新しくwindowが生成される
+                //    // 選択が消えてしまうので残っている情報からフラグを正しくする
+                //    // latest系がstaticにできないのでReloadKeyPoseList内に書けない(staticにするとプレイすると初期化される)
+                //    foreach (var keyPoseStatus in keyPoseStatuses) {
+                //        if (keyPoseStatus.keyPose == latestEditableKeyPose) {
+                //            keyPoseStatus.isEditable = true;
+                //        }
+                //        if (keyPoseStatus.keyPose == latestVisibleKeyPose) {
+                //            keyPoseStatus.isVisible = true;
+                //        }
+                //    }
+                //}
+                var body = ActionEditorWindowManager.instance.body;
+                EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollwidth));
+                foreach (var actionTargetGraphStatus in actionTargetGraphStatuses) {
+                    //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
+                    //GUILayout.BeginArea(singleRect);
+                    GUILayout.BeginHorizontal();
+                    Texture2D currentTexture = noneButtonTexture;
+                    if (actionTargetGraphStatus.isVisible) {
+                        currentTexture = visibleButtonTexture;
+                    } else {
+                        currentTexture = noneButtonTexture;
+                    }
+                    if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
+                        if (!actionTargetGraphStatus.isVisible) {
+                            actionTargetGraphStatus.isVisible = true;
+                            latestVisibleKeyPose = actionTargetGraphStatus.actionTargetGraph;
+                            foreach (var keyPoseStatus2 in actionTargetGraphStatuses) {
+                                if (keyPoseStatus2.isVisible && keyPoseStatus2.actionTargetGraph != latestVisibleKeyPose) {
+                                    keyPoseStatus2.isVisible = false;
+                                }
+                            }
+                            SceneView.RepaintAll();
+                        } else {
+                            actionTargetGraphStatus.isVisible = false;
+                            if (latestVisibleKeyPose == actionTargetGraphStatus.actionTargetGraph) {
+                                latestVisibleKeyPose = null;
+                            }
+                            SceneView.RepaintAll();
+                        }
+                    }
+                    if (actionTargetGraphStatus.actionTargetGraph == renameActionTargetGraph) {
+                        renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
+                        if (Event.current.keyCode == KeyCode.Return) {
+                            Undo.RecordObject(actionTargetGraphStatus.actionTargetGraph, "Change KeyPose Name");
+                            renameActionTargetGraph.name = renaming;
+                            renameActionTargetGraph = null;
+                            renaming = "";
+                            EditorUtility.SetDirty(actionTargetGraphStatus.actionTargetGraph);
+                            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(actionTargetGraphStatus.actionTargetGraph));
+                            Repaint();
+                        }
+                    } else {
+                        GUILayout.Label(actionTargetGraphStatus.actionTargetGraph.name, GUILayout.Height(buttonheight));
+                    }
+                    // <!!>毎回呼ぶのか..
+                    //keyPoseDataRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
+                    GUILayout.EndHorizontal();
+                    RightClickMenu(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
+                }
+                EditorGUILayout.EndVertical();
+
+                EditorGUILayout.EndScrollView();
+            }
+            GUI.skin = defaultSkin; // 他のwindowに影響が出ないように元に戻す
+            EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
+        }
+        // Addする機能はいらない
+        void AddActionTargetGraph() {
+            //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
+            // Asset全検索
+            var guids = AssetDatabase.FindAssets("*").Distinct();
+            List<string> nameList = new List<string>();
+            ActionTargetGraph templateActionTargetGraph = null;
+            foreach (var guid in guids) {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+                var actionTargetGraph = obj as ActionTargetGraph;
+                if (actionTargetGraph != null) {
+                    nameList.Add(actionTargetGraph.name);
+                    if (actionTargetGraph.name == "Punchi") {
+                        templateActionTargetGraph = actionTargetGraph;
+                    }
+                }
+            }
+            if (templateActionTargetGraph != null) {
+                var newActionTargetGraph = templateActionTargetGraph.Copy();
+                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                AssetDatabase.Refresh();
+            }
+        }
+        void RightClickMenu(Rect rect, ActionTargetGraph actionTargetGraph) {
+            if (rect.Contains(Event.current.mousePosition) &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 1) {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Rename"), false,
+                    () => {
+                        renameActionTargetGraph = actionTargetGraph;
+                        renaming = actionTargetGraph.name;
+                        Repaint();
+                    });
+                menu.AddItem(new GUIContent("Delete"), false,
+                    () => {
+                        RemoveActionTargetGraph(actionTargetGraph);
+                        ReloadActionList();
+                        Repaint();
+                        SceneView.RepaintAll();
+                    });
+                menu.ShowAsContext();
+            }
+        }
+        void RemoveActionTargetGraph(ActionTargetGraph actionTargetGraph) {
+            Debug.Log(actionTargetGraph.name + " Delete");
+            if (actionTargetGraph == null) {
+                Debug.LogWarning("No sub asset.");
+                return;
+            }
+            string path = AssetDatabase.GetAssetPath(actionTargetGraph);
+            AssetDatabase.MoveAssetToTrash(path);
         }
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
@@ -238,6 +421,8 @@ namespace SprUnity {
 
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
+            keyPoseDataRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             // 特定フォルダ
@@ -245,7 +430,7 @@ namespace SprUnity {
 
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
-
+            
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
@@ -253,7 +438,38 @@ namespace SprUnity {
                 if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
+                    var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);
+                    keyPoseDataRectDict.Add(actionTargetGraphStatus, new Rect());
+                    // ActionEditorWindowManagerにない場合のみ追加
+                    actionTargetGraphsInAsset.Add(actionTargetGraph);
+                    bool isExist = false;
+                    foreach(var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                        if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                            isExist = true;
+                            break;
+                        }
+                    }
+                    if (!isExist) {
+                        ActionEditorWindowManager.instance.actionTargetGraphStatuses.Add(actionTargetGraphStatus);
+                    }
                 }
+            }
+
+            // 残っているものを削除
+            List<ActionTargetGraphStatus> deleteList = new List<ActionTargetGraphStatus>();
+            foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                bool isExist = false;
+                foreach (var actionTargetGraph in actionTargetGraphsInAsset) {
+                    if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                        isExist = true;
+                    }
+                }
+                if (!isExist) {
+                    deleteList.Add(existActionTargetGraphStatus);
+                }
+            }
+            foreach(var delete in deleteList) {
+                ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
         }
 
@@ -271,6 +487,18 @@ namespace SprUnity {
                     }
                 }
             }
+        }
+    }
+    public class ActionTargetGraphStatus {
+        public ActionTargetGraph actionTargetGraph;
+        public bool isVisible;
+        public ActionTargetGraphStatus() {
+            this.actionTargetGraph = null;
+            this.isVisible = false;
+        }
+        public ActionTargetGraphStatus(ActionTargetGraph keyPose) {
+            this.actionTargetGraph = keyPose;
+            this.isVisible = false;
         }
     }
 
