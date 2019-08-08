@@ -172,9 +172,9 @@ namespace SprUnity {
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
-            foreach (var obj in Selection.objects) {
+            foreach (var obj in graph.nodes) {
                 ActionTargetNodeBase node = obj as ActionTargetNodeBase;
-                if (node != null) {
+                if (node != null && node.visualizable) {
                     var editor = NodeEditor.GetEditor(node, this) as ActionTargetNodeBaseEditor;
                     if (editor != null) {
                         editor.OnSceneGUI(body);
