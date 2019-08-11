@@ -24,6 +24,8 @@ public class Attention : MonoBehaviour {
 
     public Body body = null;
     public LookController lookController = null;
+    public MentalGroup agent;
+    public MentalScene mentalScene;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // Parameters
@@ -38,7 +40,7 @@ public class Attention : MonoBehaviour {
     private float nextGazeTransitionTime = 0.0f;
 
     [HideInInspector]
-    public Person currentAttentionTarget = null;
+    public MentalGroup currentAttentionTarget = null;
 
     [HideInInspector]
     public bool attentionTargetChanged = false;
@@ -49,16 +51,26 @@ public class Attention : MonoBehaviour {
     // MonoBehaviour Methods
 
     void Start() {
+        if (mentalScene == null) {
+            mentalScene = FindObjectOfType<MentalScene>();
+        }
+        if (agent == null) {
+            var mentalGroup = body.GetComponent<MentalGroup>();
+            if (mentalGroup.GetParts<PersonParts>() != null) {
+                agent = mentalGroup;
+            }
+        }
     }
 
     void FixedUpdate() {
         attentionTargetChanged = false;
 
         if (currentAttentionTarget == null) {
-            if (Person.persons.Count > 0) {
-                currentAttentionTarget = Person.persons[0];
-            } else {
-                return;
+            foreach (var mentalGroup in mentalScene.mentalGroups) {
+                if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() != null) {
+                    currentAttentionTarget = mentalGroup;
+                    break;
+                }
             }
         }
 
@@ -69,9 +81,9 @@ public class Attention : MonoBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // Public APIs
 
-    public void OverrideGazeTarget(Person person, float attention = -1, bool forceStraight = false, float overrideStare = -1) {
+    public void OverrideGazeTarget(MentalGroup person, float attention = -1, bool forceStraight = false, float overrideStare = -1) {
         if (attention >= 0.0f) {
-            person.GetAttr<AttentionAttr>().attention = attention;
+            person.GetAttribute<AttentionAttribute>().attention = attention;
         }
         ChangeGazeTarget(person, forceStraight, overrideStare);
     }
@@ -88,11 +100,12 @@ public class Attention : MonoBehaviour {
     public bool noHumanAttention = false; // <!!> sorry, for layeredgazer demo (mitake)
     void CompAttention() {
         float maxPersonAttention = 0.0f;
-        foreach (var person in Person.persons) {
-            var attentionInfo = person.GetAttr<AttentionAttr>();
-            if (!person.gameObject.activeInHierarchy) { continue; }
+        foreach (var mentalGroup in mentalScene.mentalGroups) {
+            if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() != null) {
+                var person = mentalGroup;
+                var attentionInfo = person.GetAttribute<AttentionAttribute>();
+                if (!person.gameObject.activeInHierarchy) { continue; }
 
-            if (person.human) {
                 // 距離による注意
                 var pos = person.transform.position; pos.y = 0;
                 float distance = pos.magnitude;
@@ -117,11 +130,12 @@ public class Attention : MonoBehaviour {
             }
         }
 
-        foreach (var person in Person.persons) {
-            var attentionInfo = person.GetAttr<AttentionAttr>();
-            if (!person.gameObject.activeInHierarchy) { continue; }
+        foreach (var mentalGroup in mentalScene.mentalGroups) {
+            if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() == null) {
+                var person = mentalGroup;
+                var attentionInfo = person.GetAttribute<AttentionAttribute>();
+                if (!person.gameObject.activeInHierarchy) { continue; }
 
-            if (!person.human) {
                 // 背景オブジェクトには人の注意量に応じて変化する一律の注意量を与える
                 attentionInfo.attention = Mathf.Clamp(1 - maxPersonAttention, 0.0f, 1.0f);
             }
@@ -140,7 +154,7 @@ public class Attention : MonoBehaviour {
 
         // ----- ----- ----- ----- -----
 
-        Person newAttentionTarget = null;
+        MentalGroup newAttentionTarget = null;
         Vector3 headPos = body["Head"].transform.position;
         Vector3 currDir;
         if (currentAttentionTarget != null) {
@@ -153,28 +167,31 @@ public class Attention : MonoBehaviour {
 
         if (nextGazeTransitionTime < timeFromGazeTransition) {
             // Determine Gaze Target according to Attention Value
-            List<Person> candidates = new List<Person>();
+            List<MentalGroup> candidates = new List<MentalGroup>();
             List<float> probs = new List<float>();
 
-            foreach (Person person in Person.persons) {
-                if (!person.gameObject.activeInHierarchy) { continue; }
-                if (person != currentAttentionTarget) {
-                    // 位置のおかしな対象はスキップする
-                    if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
+            foreach (var mentalGroup in mentalScene.mentalGroups) {
+                if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() != null) {
+                    var person = mentalGroup;
+                    if (!person.gameObject.activeInHierarchy) { continue; }
+                    if (person != currentAttentionTarget) {
+                        // 位置のおかしな対象はスキップする
+                        if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
 
-                    // 注意量が小さすぎる対象はスキップする
-                    if (person.GetAttr<AttentionAttr>().attention < 1e-5) { continue; }
+                        // 注意量が小さすぎる対象はスキップする
+                        if (person.GetAttribute<AttentionAttribute>().attention < 1e-5) { continue; }
 
-                    // 現在の注視対象とのなす角を求める
-                    Vector3 candDir = (person.transform.position - headPos);
-                    float angleDistance = Vector3.Angle(currDir, candDir);
+                        // 現在の注視対象とのなす角を求める
+                        Vector3 candDir = (person.transform.position - headPos);
+                        float angleDistance = Vector3.Angle(currDir, candDir);
 
-                    // 角度に従って遷移確率を求める（角度が小さいほど高確率で遷移する）
-                    float prob = Mathf.Max(0, (1.0f * Mathf.Exp(-angleDistance / 10.0f)));
+                        // 角度に従って遷移確率を求める（角度が小さいほど高確率で遷移する）
+                        float prob = Mathf.Max(0, (1.0f * Mathf.Exp(-angleDistance / 10.0f)));
 
-                    // 注視対象候補としてリストに追加
-                    candidates.Add(person);
-                    probs.Add(prob);
+                        // 注視対象候補としてリストに追加
+                        candidates.Add(person);
+                        probs.Add(prob);
+                    }
                 }
             }
 
@@ -192,7 +209,7 @@ public class Attention : MonoBehaviour {
             // TDAに基づいて遷移確率にバイアスをかける
             for (int i = 0; i < probs.Count; i++) {
                 // 現在の注視対象よりTDAの大きな対象に（TDA差に比例して）遷移しやすくする
-                float diffAttention = candidates[i].GetAttr<AttentionAttr>().attention - currentAttentionTarget.GetAttr<AttentionAttr>().attention;
+                float diffAttention = candidates[i].GetAttribute<AttentionAttribute>().attention - currentAttentionTarget.GetAttribute<AttentionAttribute>().attention;
                 if (diffAttention > 0) {
                     probs[i] += diffAttention * 20;
                 }
@@ -236,21 +253,21 @@ public class Attention : MonoBehaviour {
 
     }
 
-    void ChangeGazeTarget(Person newAttentionTarget, bool forceStraight = false, float overrideStare = -1) {
+    void ChangeGazeTarget(MentalGroup newAttentionTarget, bool forceStraight = false, float overrideStare = -1) {
         if (newAttentionTarget != null) {
             // 目を動かす
-            var attention = newAttentionTarget.GetAttr<AttentionAttr>().attention;
+            var attention = newAttentionTarget.GetAttribute<AttentionAttribute>().attention;
             lookController.target = newAttentionTarget.gameObject;
             lookController.speed = 0.3f;
-            if (forceStraight || (newAttentionTarget.human && lookController.straight == false)) {
+            if (forceStraight || (newAttentionTarget.GetParts<PersonParts>() != null && lookController.straight == false)) {
                 lookController.straight = true;
             } else {
                 lookController.straight = false;
             }
 
             // 次に視線移動するまでの時間を決定する
-            float x_ = LinearFunction(new Vector2(0, 100), new Vector2(1, 150), newAttentionTarget.GetAttr<AttentionAttr>().attention);
-            float y_ = LinearFunction(new Vector2(0, 79), new Vector2(1, 32), newAttentionTarget.GetAttr<AttentionAttr>().attention);
+            float x_ = LinearFunction(new Vector2(0, 100), new Vector2(1, 150), newAttentionTarget.GetAttribute<AttentionAttribute>().attention);
+            float y_ = LinearFunction(new Vector2(0, 79), new Vector2(1, 32), newAttentionTarget.GetAttribute<AttentionAttribute>().attention);
 
             float b = y_;
             float a = -(y_ / x_);
@@ -263,7 +280,7 @@ public class Attention : MonoBehaviour {
                     break;
                 }
             }
-            nextGazeTransitionTime = x / 30.0f + newAttentionTarget.GetAttr<AttentionAttr>().attention * 0.5f;
+            nextGazeTransitionTime = x / 30.0f + newAttentionTarget.GetAttribute<AttentionAttribute>().attention * 0.5f;
             timeFromGazeTransition = 0.0f;
 
             // 次の視線移動までの時間から直視度を決定する（チラ見は一瞬、長時間なら直視、ただし注意度が小さいときはチラ見しかしない）

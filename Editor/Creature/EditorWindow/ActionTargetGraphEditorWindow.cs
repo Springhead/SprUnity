@@ -56,7 +56,7 @@ namespace SprUnity {
 
         private ActionTargetGraph latestEditableKeyPose;
         private ActionTargetGraph latestVisibleKeyPose;
-        private static Dictionary<ActionTargetGraphStatus, Rect> keyPoseDataRectDict;
+        private static Dictionary<ActionTargetGraphStatus, Rect> actionTargetGraphRectDict;
 
         private static ActionTargetGraph renameActionTargetGraph;
         private string renaming;
@@ -272,6 +272,10 @@ namespace SprUnity {
                             SceneView.RepaintAll();
                         }
                     }
+                    var defaultback = GUI.skin.label.normal.background;
+                    if (actionTargetGraphStatus.actionTargetGraph == this.graph) {
+                        GUI.skin.label.normal.background = GetEditableTexture();
+                    }
                     if (actionTargetGraphStatus.actionTargetGraph == renameActionTargetGraph) {
                         renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
                         if (Event.current.keyCode == KeyCode.Return) {
@@ -286,15 +290,27 @@ namespace SprUnity {
                     } else {
                         GUILayout.Label(actionTargetGraphStatus.actionTargetGraph.name, GUILayout.Height(buttonheight));
                     }
+                    GUI.skin.label.normal.background = defaultback;
                     // <!!>毎回呼ぶのか..
-                    //keyPoseDataRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
+                    //GUI.Box(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph.name);
+                    LeftClick(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
+                    actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
                     GUILayout.EndHorizontal();
                     RightClickMenu(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
+                }
+                if (GUILayout.Button("add")) {
+                    AddActionTargetGraph();
                 }
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.EndScrollView();
             }
+
+            // ここでBox描画するとずれるが上で描画するとずれない
+            //foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
+            //GUI.Box(actionTargetGraphRect.Value, actionTargetGraphRect.Key.actionTargetGraph.name);
+            //LeftClick(actionTargetGraphRect.Value, actionTargetGraphRect.Key.actionTargetGraph);
+            //}
             GUI.skin = defaultSkin; // 他のwindowに影響が出ないように元に戻す
             EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
         }
@@ -318,8 +334,29 @@ namespace SprUnity {
             }
             if (templateActionTargetGraph != null) {
                 var newActionTargetGraph = templateActionTargetGraph.Copy();
-                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                //AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + newActionTargetGraph.name + ".asset");
+                var assets = AssetDatabase
+                    .LoadAllAssetsAtPath("Assets/Actions/KeyPoses/" + newActionTargetGraph.name + ".asset")
+                    .Where(x => AssetDatabase.IsSubAsset(x));
+                foreach (var asset in assets) {
+                    Debug.Log(asset.name);
+                }
+
                 AssetDatabase.Refresh();
+                ReloadActionList();
+            }
+        }
+        void LeftClick(Rect rect, ActionTargetGraph actionTargetGraph) {
+            if (rect.Contains(Event.current.mousePosition) &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 0) {
+                this.graph = actionTargetGraph;
+                for (int i = 0; i < actionTargetGraphNames.Count; i++) {
+                    if (actionTargetGraphNames[i] == this.graph.name) {
+                        actionTargetGraphIndex = i;
+                    }
+                }
             }
         }
         void RightClickMenu(Rect rect, ActionTargetGraph actionTargetGraph) {
@@ -421,7 +458,7 @@ namespace SprUnity {
 
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
-            keyPoseDataRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            actionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
@@ -430,7 +467,7 @@ namespace SprUnity {
 
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
-            
+
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
@@ -439,12 +476,12 @@ namespace SprUnity {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);
-                    keyPoseDataRectDict.Add(actionTargetGraphStatus, new Rect());
+                    actionTargetGraphRectDict.Add(actionTargetGraphStatus, new Rect());
                     // ActionEditorWindowManagerにない場合のみ追加
                     actionTargetGraphsInAsset.Add(actionTargetGraph);
                     bool isExist = false;
-                    foreach(var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
-                        if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                        if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                             isExist = true;
                             break;
                         }
@@ -460,7 +497,7 @@ namespace SprUnity {
             foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
                 bool isExist = false;
                 foreach (var actionTargetGraph in actionTargetGraphsInAsset) {
-                    if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                    if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                         isExist = true;
                     }
                 }
@@ -468,7 +505,7 @@ namespace SprUnity {
                     deleteList.Add(existActionTargetGraphStatus);
                 }
             }
-            foreach(var delete in deleteList) {
+            foreach (var delete in deleteList) {
                 ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
         }
@@ -487,6 +524,23 @@ namespace SprUnity {
                     }
                 }
             }
+        }
+
+        Texture2D GetEditableTexture() {
+            if (editableLabelTexture == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
+                if (bytes != null) {
+                    editableLabelTexture = new Texture2D(1, 1);
+                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
+                    editableLabelTexture.filterMode = FilterMode.Bilinear;
+                } else {
+                    Debug.Log("picture null");
+                }
+            }
+            return editableLabelTexture;
         }
     }
     public class ActionTargetGraphStatus {
