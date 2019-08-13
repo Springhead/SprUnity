@@ -223,6 +223,7 @@ namespace SprUnity {
                 EditorGUILayout.Space();
             }
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
+            var showSubWindowRect = GUILayoutUtility.GetLastRect();
             if (!showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
 
@@ -296,7 +297,6 @@ namespace SprUnity {
                     LeftClick(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
                     actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
                     GUILayout.EndHorizontal();
-                    RightClickMenu(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
                 }
                 if (GUILayout.Button("add")) {
                     AddActionTargetGraph();
@@ -306,11 +306,13 @@ namespace SprUnity {
                 EditorGUILayout.EndScrollView();
             }
 
-            // ここでBox描画するとずれるが上で描画するとずれない
-            //foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
-            //GUI.Box(actionTargetGraphRect.Value, actionTargetGraphRect.Key.actionTargetGraph.name);
-            //LeftClick(actionTargetGraphRect.Value, actionTargetGraphRect.Key.actionTargetGraph);
-            //}
+            // Foldoutによる描画のずれを修正
+            foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
+                var rect = actionTargetGraphRect.Value;
+                rect.y += showSubWindowRect.y + showSubWindowRect.height;
+                //GUI.Box(rect, actionTargetGraphRect.Key.actionTargetGraph.name);
+                RightClickMenu(rect, actionTargetGraphRect.Key.actionTargetGraph);
+            }
             GUI.skin = defaultSkin; // 他のwindowに影響が出ないように元に戻す
             EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
         }
@@ -333,18 +335,34 @@ namespace SprUnity {
                 }
             }
             if (templateActionTargetGraph != null) {
-                var newActionTargetGraph = templateActionTargetGraph.Copy();
-                //AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
-                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + newActionTargetGraph.name + ".asset");
-                var assets = AssetDatabase
-                    .LoadAllAssetsAtPath("Assets/Actions/KeyPoses/" + newActionTargetGraph.name + ".asset")
-                    .Where(x => AssetDatabase.IsSubAsset(x));
-                foreach (var asset in assets) {
-                    Debug.Log(asset.name);
+                bool exist = false;
+                int index = 0;
+                for (; index < 100; index++) {
+                    exist = false;
+                    foreach (var name in nameList) {
+                        if (name == "Graph" + index) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (!exist) {
+                        break;
+                    }
                 }
+                if (!exist) {
+                    var newActionTargetGraph = templateActionTargetGraph.Copy();
+                    // この処理がなくても描画されるがProjectWindowでnodeが見えなくなる
+                    //AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                    AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "Graph" + index + ".asset");
+                    foreach (var node in newActionTargetGraph.nodes) {
+                        node.name = node.name.Replace("(Clone)", "");
+                        AssetDatabase.AddObjectToAsset(node, newActionTargetGraph);
+                    }
 
-                AssetDatabase.Refresh();
-                ReloadActionList();
+                    AssetDatabase.Refresh();
+                    ReloadActionList();
+                    Repaint();
+                }
             }
         }
         void LeftClick(Rect rect, ActionTargetGraph actionTargetGraph) {
@@ -381,7 +399,7 @@ namespace SprUnity {
             }
         }
         void RemoveActionTargetGraph(ActionTargetGraph actionTargetGraph) {
-            Debug.Log(actionTargetGraph.name + " Delete");
+            //Debug.Log(Event.current.type);
             if (actionTargetGraph == null) {
                 Debug.LogWarning("No sub asset.");
                 return;
@@ -508,6 +526,9 @@ namespace SprUnity {
             foreach (var delete in deleteList) {
                 ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
+            
+            //ソート
+            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a,b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
         }
 
         public void ReloadActionTargetGraphs() {
