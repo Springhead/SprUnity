@@ -138,7 +138,15 @@ namespace SprUnity {
             }
             return false;
         }
-
+        [MenuItem("Window/SprUnity Action/Action Target Graph Editor Window")]
+        static void Open() {
+            ReloadActionList();
+            if (ActionEditorWindowManager.instance.actionTargetGraphStatuses != null) {
+                ActionTargetGraphEditorWindow w = GetWindow(typeof(ActionTargetGraphEditorWindow), false, "ActionTargetGraph", true) as ActionTargetGraphEditorWindow;
+                w.wantsMouseMove = true;
+                w.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
+            }
+        }
         public static void Open(ActionTargetGraph graph) {
             if (!graph) return;
 
@@ -179,7 +187,7 @@ namespace SprUnity {
 
             GUILayout.BeginArea(rect, toolbarBase);
             GUILayout.BeginHorizontal();
-
+            /*
             GUILayout.Label("Current Graph", toolbarLabel, GUILayout.Width(100));
 
             //actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(ActionEditorWindowManager.instance.selectedAction);
@@ -205,7 +213,7 @@ namespace SprUnity {
 
                 menu.DropDown(new Rect(0, -20, 50, 40));
             }
-
+            */
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
@@ -333,7 +341,7 @@ namespace SprUnity {
                         var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
                         var actionTargetGraph = obj as ActionTargetGraph;
                         if (actionTargetGraph != null) {
-                            if(actionTargetGraph.name == "Graph" + index) {
+                            if (actionTargetGraph.name == "Graph" + index) {
                                 exist = true;
                                 break;
                             }

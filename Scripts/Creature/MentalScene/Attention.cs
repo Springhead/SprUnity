@@ -101,13 +101,13 @@ public class Attention : MonoBehaviour {
     void CompAttention() {
         float maxPersonAttention = 0.0f;
         foreach (var mentalGroup in mentalScene.mentalGroups) {
-            if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() != null) {
+            if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>()?.Head != null) {
                 var person = mentalGroup;
                 var attentionInfo = person.GetAttribute<AttentionAttribute>();
                 if (!person.gameObject.activeInHierarchy) { continue; }
 
                 // 距離による注意
-                var pos = person.transform.position; pos.y = 0;
+                var pos = person.GetParts<PersonParts>().Head.transform.position; pos.y = 0;
                 float distance = pos.magnitude;
                 float min = 2.0f, max = 4.0f; // [m]
                 float baseAttention = 0;
