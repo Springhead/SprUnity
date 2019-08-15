@@ -219,9 +219,9 @@ namespace SprUnity {
             }
 
             // 縦スクロールが出た場合に下に横スクロールが出るのを防ぐ
-            for (int i = 0; i < subWindowFirstSpaceNum; i++) {
-                EditorGUILayout.Space();
-            }
+            //for (int i = 0; i < subWindowFirstSpaceNum; i++) {
+                GUILayout.Space(19 * zoom + 20);
+            //}
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
             if (!showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
