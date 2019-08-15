@@ -7,7 +7,7 @@ namespace SprUnity {
     [CreateNodeMenu("Output/KeyPose")]
     public class KeyPoseNode : KeyPoseNodeBase {
         [Output] public KeyPose key;
-        [Input(dynamicPortList = true)] public BoneKeyPose[] boneKeyPoses;
+        [Input(dynamicPortList = true)] public ActionTarget[] boneKeyPoses;
 
         // Use this for initialization
         protected override void Init() {
@@ -22,7 +22,7 @@ namespace SprUnity {
 
         public override KeyPose GetKeyPose() {
             KeyPose keyPose = new KeyPose();
-            BoneKeyPose[] tempBoneKeyPoses = GetInputValues<BoneKeyPose>("boneKeyPoses", this.boneKeyPoses);
+            ActionTarget[] tempBoneKeyPoses = GetInputValues<ActionTarget>("boneKeyPoses", this.boneKeyPoses);
             foreach(var boneKeyPose in tempBoneKeyPoses) {
                 if (boneKeyPose.Enabled()) {
                     keyPose.boneKeyPoses.Add(boneKeyPose);

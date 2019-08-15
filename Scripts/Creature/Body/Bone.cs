@@ -176,6 +176,7 @@ namespace SprUnity {
         public void InitializeController() {
             // Initialize Bone Controller
             if (controller != null) {
+                controller.bone = this;
                 controller.Initialize();
             }
         }
@@ -188,6 +189,26 @@ namespace SprUnity {
                     }
                     if (syncRotation) {
                         avatarBone.transform.rotation = solid.transform.rotation * relativeRotSolidAvatar;
+                    }
+                } else {
+                    if (syncPosition) {
+                        avatarBone.transform.position = transform.position;
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = transform.rotation * relativeRotSolidAvatar;
+                    }
+                }
+            }
+        }
+
+        public void SyncAvatarBoneFromIK() {
+            if (avatarBone != null) {
+                if (ikActuator != null) {
+                    if (syncPosition) {
+                        avatarBone.transform.position = ikActuator.phIKActuator.GetSolidTempPose().Pos().ToVector3();
+                    }
+                    if (syncRotation) {
+                        avatarBone.transform.rotation = ikActuator.phIKActuator.GetSolidTempPose().Ori().ToQuaternion() * relativeRotSolidAvatar;
                     }
                 } else {
                     if (syncPosition) {

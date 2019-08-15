@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/Body")]
-    public class BodyCoordinateNode : VGentNodeBase {
+    public class BodyCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
 
         // Use this for initialization
@@ -20,11 +20,13 @@ namespace SprUnity {
         public override object GetValue(NodePort port) {
             if (port.fieldName == "posRotScale") {
                 PosRotScale tempPosRotScale = new PosRotScale();
-                Body body = (graph as KeyPoseNodeGraph)?.body;
+                Body body = (graph as ActionTargetGraph)?.body;
                 if(body != null) {
                     tempPosRotScale.position = body.transform.position;
                     tempPosRotScale.rotation = body.transform.rotation;
                     tempPosRotScale.scale = body.height * Vector3.one;
+                } else {
+                    tempPosRotScale = posRotScale;
                 }
                 return tempPosRotScale;
             } else {
@@ -34,7 +36,7 @@ namespace SprUnity {
 
         public override void OnSceneGUI(Body body = null) {
 #if UNITY_EDITOR
-            PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale");
+            PosRotScale tempPosRotScale = GetInputValue<PosRotScale>("posRotScale", this.posRotScale);
             if(tempPosRotScale != null) {
                 Handles.PositionHandle(tempPosRotScale.position, tempPosRotScale.rotation);
             }

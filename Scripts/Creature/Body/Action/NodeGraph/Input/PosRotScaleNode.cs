@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace SprUnity {
     [CreateNodeMenu("Value/PosRotScale")]
-    public class PosRotScaleNode : VGentNodeBase {
+    public class PosRotScaleNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale output;
         [Input] public Vector3 pos = new Vector3();
         [Input] public Quaternion rot = Quaternion.identity;

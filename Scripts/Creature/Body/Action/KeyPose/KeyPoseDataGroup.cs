@@ -9,9 +9,6 @@ using UnityEditor;
 
 namespace SprUnity {
 
-#if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/Create KeyPoseGroup")]
-#endif
     public class KeyPoseDataGroup : ScriptableObject {
         public static string path = "Assets/Actions/KeyPoses/";
 #if UNITY_EDITOR
@@ -57,7 +54,7 @@ namespace SprUnity {
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPoseNodeGraph>();
+            var keypose = ScriptableObject.CreateInstance<ActionTargetGraph>();
             keypose.name = "keypose";
             //keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, selected);
@@ -75,7 +72,7 @@ namespace SprUnity {
                 return;
             }
 
-            var keypose = ScriptableObject.CreateInstance<KeyPoseNodeGraph>();
+            var keypose = ScriptableObject.CreateInstance<ActionTargetGraph>();
             keypose.name = name;
             //keypose.InitializeByCurrentPose();
             AssetDatabase.AddObjectToAsset(keypose, this);

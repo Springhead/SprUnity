@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace SprUnity {
     /*
-    [CustomPropertyDrawer(typeof(ActionParameter))]
+    [CustomPropertyDrawer(typeof(ActionStateMachineParameter))]
     public class ActionParameterPropertyDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             var labelProp = property.FindPropertyRelative("label");
@@ -30,27 +30,27 @@ namespace SprUnity {
     [CustomEditor(typeof(ActionStateMachine))]
     public class ActionStateMachineEditor : Editor {
         bool showParameterList;
-        ActionParameter.ParameterType addType;
+        ActionStateMachineParameter.ParameterType addType;
         public override void OnInspectorGUI() {
             EditorGUI.BeginChangeCheck();
             ActionStateMachine stateMachine = (ActionStateMachine)target;
             GUILayout.BeginVertical();
             int deleteNum = -1;
             for(int i = 0; i < stateMachine.parameters.Count(); i++) {
-                ActionParameter actionParameter = stateMachine.parameters[i];
+                ActionStateMachineParameter actionParameter = stateMachine.parameters[i];
                 GUILayout.BeginHorizontal();
                 actionParameter.label = GUILayout.TextArea(actionParameter.label);
                 switch (actionParameter.type) {
-                    case ActionParameter.ParameterType.Bool:
+                    case ActionStateMachineParameter.ParameterType.Bool:
                         actionParameter.value = GUILayout.Toggle((bool)actionParameter.value, "");
                         break;
-                    case ActionParameter.ParameterType.Int:
+                    case ActionStateMachineParameter.ParameterType.Int:
                         actionParameter.value = EditorGUILayout.IntField((int)actionParameter.value);
                         break;
-                    case ActionParameter.ParameterType.Float:
+                    case ActionStateMachineParameter.ParameterType.Float:
                         actionParameter.value = EditorGUILayout.FloatField(actionParameter.value != null ? (float)actionParameter.value : 0.0f);
                         break;
-                    case ActionParameter.ParameterType.GameObject:
+                    case ActionStateMachineParameter.ParameterType.GameObject:
                         /*
                         if(actionParameter.value != null) {
                             GUILayout.Label(((GameObject)actionParameter.value).name);
@@ -73,28 +73,28 @@ namespace SprUnity {
                 stateMachine.parameters.RemoveAt(deleteNum);
             }
             GUILayout.BeginHorizontal();
-            addType = (ActionParameter.ParameterType)EditorGUILayout.EnumPopup(addType);
+            addType = (ActionStateMachineParameter.ParameterType)EditorGUILayout.EnumPopup(addType);
             if(GUILayout.Button("Add Parameter")) {
-                ActionParameter actionParameter = new ActionParameter();
+                ActionStateMachineParameter actionParameter = new ActionStateMachineParameter();
                 switch (addType) {
-                    case ActionParameter.ParameterType.Bool:
+                    case ActionStateMachineParameter.ParameterType.Bool:
                         actionParameter.label = "new Bool";
-                        actionParameter.type = ActionParameter.ParameterType.Bool;
+                        actionParameter.type = ActionStateMachineParameter.ParameterType.Bool;
                         actionParameter.value = false;
                         break;
-                    case ActionParameter.ParameterType.Int:
+                    case ActionStateMachineParameter.ParameterType.Int:
                         actionParameter.label = "new Int";
-                        actionParameter.type = ActionParameter.ParameterType.Int;
+                        actionParameter.type = ActionStateMachineParameter.ParameterType.Int;
                         actionParameter.value = 0;
                         break;
-                    case ActionParameter.ParameterType.Float:
+                    case ActionStateMachineParameter.ParameterType.Float:
                         actionParameter.label = "new Float";
-                        actionParameter.type = ActionParameter.ParameterType.Float;
+                        actionParameter.type = ActionStateMachineParameter.ParameterType.Float;
                         actionParameter.value = 0.0f;
                         break;
-                    case ActionParameter.ParameterType.GameObject:
+                    case ActionStateMachineParameter.ParameterType.GameObject:
                         actionParameter.label = "new GameObject";
-                        actionParameter.type = ActionParameter.ParameterType.GameObject;
+                        actionParameter.type = ActionStateMachineParameter.ParameterType.GameObject;
                         actionParameter.value = null;
                         break;
                 }
@@ -115,13 +115,13 @@ namespace SprUnity {
             
         }
 
-        public void DrawReferenceNodes(ActionParameter param) {
+        public void DrawReferenceNodes(ActionStateMachineParameter param) {
             var backupIndent = EditorGUI.indentLevel;
             //EditorGUI.indentLevel++;
             int deleteNode = -1;
             for (int i = 0; i < param.referenceNodes.Count(); i++) {
                 GUILayout.BeginHorizontal();
-                param.referenceNodes[i] = (VGentNodeBase)EditorGUILayout.ObjectField(param.referenceNodes[i], typeof(VGentNodeBase));
+                param.referenceNodes[i] = (ActionTargetNodeBase)EditorGUILayout.ObjectField(param.referenceNodes[i], typeof(ActionTargetNodeBase));
                 if (GUILayout.Button("x")) {
                     deleteNode = i;
                 }
@@ -138,7 +138,7 @@ namespace SprUnity {
     }
 #endif
     [System.Serializable]
-    public class ActionParameter : ISerializationCallbackReceiver{
+    public class ActionStateMachineParameter : ISerializationCallbackReceiver{
         public string label;
         public enum ParameterType {
             Bool,
@@ -156,11 +156,11 @@ namespace SprUnity {
         public object value;
         [SerializeField]
         private string valueData;
-        public List<VGentNodeBase> referenceNodes = new List<VGentNodeBase>();
-        public ActionParameter() {
+        public List<ActionTargetNodeBase> referenceNodes = new List<ActionTargetNodeBase>();
+        public ActionStateMachineParameter() {
             label = "";
         }
-        public ActionParameter(string l) {
+        public ActionStateMachineParameter(string l) {
             this.label = l;
         }
         public virtual void SetInput() {
@@ -249,13 +249,13 @@ namespace SprUnity {
     }
 
 #if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "Action/ Create ActionStateMachine Instance")]
+    [CreateAssetMenu(menuName = "ActionStateMachine")]
 #endif
     public class ActionStateMachine : ScriptableObject {
 
         [SerializeField]
-        public List<ActionParameter> parameters;
-        public ActionParameter parameter(string name) {
+        public List<ActionStateMachineParameter> parameters;
+        public ActionStateMachineParameter parameter(string name) {
             foreach (var param in parameters) {
                 if (param.label == name) return param;
             }
@@ -327,11 +327,9 @@ namespace SprUnity {
 
         // ----- ----- ----- ----- -----
         // Editor関係
-
-        public bool isChanged = false;
         
         [HideInInspector] public Rect entryRect = new Rect(100, 100, 100, 50);
-        [HideInInspector ]public List<ActionTransition> entryTransitions = new List<ActionTransition>();
+        [HideInInspector ]public List<ActionStateTransition> entryTransitions = new List<ActionStateTransition>();
         [HideInInspector] public Rect exitRect = new Rect(100, 200, 100, 50);
 
 
@@ -348,15 +346,15 @@ namespace SprUnity {
                 return this.GetSubAssets().Where(value => value as ActionState != null).Count();
             }
         }
-        public List<ActionTransition> transitions {
+        public List<ActionStateTransition> transitions {
             get {
-                return this.GetSubAssets().OfType<ActionTransition>().ToList();
+                return this.GetSubAssets().OfType<ActionStateTransition>().ToList();
             }
         }
 
         public int nTransitions {
             get {
-                return this.GetSubAssets().Where(value => value as ActionTransition != null).Count();
+                return this.GetSubAssets().Where(value => value as ActionStateTransition != null).Count();
             }
         }
 
@@ -369,15 +367,13 @@ namespace SprUnity {
             CreateStateMachine("ActionStateMachine");
         }
 #endif
-#if UNITY_EDITOR
-        public static void CreateStateMachine(string newName) {
+        public static void CreateStateMachine(string newName,string pathName = "Assets/Actions/Actions/") {
             var action = CreateInstance<ActionStateMachine>();
 #if UNITY_EDITOR
-            AssetDatabase.CreateAsset(action, "Assets/Actions/Actions/" + newName + ".asset");
+            AssetDatabase.CreateAsset(action, pathName + newName + ".asset");
             AssetDatabase.Refresh();
 # endif
         }
-#endif
         // ----- ----- ----- ----- ----- -----
         // Create/Delete ActionState
 
@@ -413,7 +409,7 @@ namespace SprUnity {
             // Copy transitions
             for(int i = 0; i < this.entryTransitions.Count; i++) {
                 if (entryTransitions[i] == null) continue;
-                ActionTransition transition = Instantiate(entryTransitions[i]) as ActionTransition;
+                ActionStateTransition transition = Instantiate(entryTransitions[i]) as ActionStateTransition;
                 transition.stateMachine = clone;
                 int index = this.states.IndexOf(entryTransitions[i].toState);
                 if (index >= 0) transition.toState = clone.states[index];
@@ -422,7 +418,7 @@ namespace SprUnity {
                 var state = clone.states[numStates];
                 for (int i = 0; i < state.transitions.Count; i++) {
                     if (state.transitions[i] == null) continue;
-                    ActionTransition transition = Instantiate(state.transitions[i]) as ActionTransition;
+                    ActionStateTransition transition = Instantiate(state.transitions[i]) as ActionStateTransition;
                     transition.stateMachine = clone;
                     int fromIndex = this.states.IndexOf(state.transitions[i].fromState);
                     if (fromIndex >= 0) transition.toState = clone.states[fromIndex];
@@ -454,7 +450,6 @@ namespace SprUnity {
             currentState = entryTransitions[0].toState;
             var logs = currentState.OnEnter(this, out currentDuration);
             Debug.Log("Begin:" + currentState.name);
-            isChanged = true;
         }
 
         // Update StateMachine if it's enabled
@@ -477,7 +472,6 @@ namespace SprUnity {
                     } else {
                         var logs = currentState.OnEnter(this, out currentDuration);
                     }
-                    isChanged = true;
                     break;
                 }
             }
@@ -490,8 +484,8 @@ namespace SprUnity {
         // 
         public void End() {
             enabled = false;
-            isChanged = true;
-            ResetStateMachine();
+            // <!!> buildすると止まる
+            //ResetStateMachine();
         }
 
         void ResetStateMachine() {
@@ -504,6 +498,10 @@ namespace SprUnity {
             foreach(var param in parameters) {
                 param.SetInput();
             }
+        }
+
+        public void SetInput<T>(string paramName, T value) {
+            parameter(paramName).SetValue<T>(value);
         }
 
         // ----- ----- ----- ----- -----

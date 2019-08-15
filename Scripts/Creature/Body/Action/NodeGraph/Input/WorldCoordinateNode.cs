@@ -5,7 +5,7 @@ using XNode;
 
 namespace SprUnity {
     [CreateNodeMenu("Coordinate/World")]
-    public class WorldCoordinateNode : VGentNodeBase {
+    public class WorldCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();
 
         // Use this for initialization
