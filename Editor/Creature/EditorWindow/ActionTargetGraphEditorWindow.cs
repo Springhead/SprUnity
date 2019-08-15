@@ -56,7 +56,7 @@ namespace SprUnity {
 
         private ActionTargetGraph latestEditableKeyPose;
         private ActionTargetGraph latestVisibleKeyPose;
-        private static Dictionary<ActionTargetGraphStatus, Rect> keyPoseDataRectDict;
+        private static Dictionary<ActionTargetGraphStatus, Rect> actionTargetGraphRectDict;
 
         private static ActionTargetGraph renameActionTargetGraph;
         private string renaming;
@@ -223,6 +223,7 @@ namespace SprUnity {
                 GUILayout.Space(19 * zoom + 20);
             //}
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
+            var showSubWindowRect = GUILayoutUtility.GetLastRect();
             if (!showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
 
@@ -272,6 +273,10 @@ namespace SprUnity {
                             SceneView.RepaintAll();
                         }
                     }
+                    var defaultback = GUI.skin.label.normal.background;
+                    if (actionTargetGraphStatus.actionTargetGraph == this.graph) {
+                        GUI.skin.label.normal.background = GetEditableTexture();
+                    }
                     if (actionTargetGraphStatus.actionTargetGraph == renameActionTargetGraph) {
                         renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
                         if (Event.current.keyCode == KeyCode.Return) {
@@ -286,40 +291,86 @@ namespace SprUnity {
                     } else {
                         GUILayout.Label(actionTargetGraphStatus.actionTargetGraph.name, GUILayout.Height(buttonheight));
                     }
+                    GUI.skin.label.normal.background = defaultback;
                     // <!!>毎回呼ぶのか..
-                    //keyPoseDataRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
+                    //GUI.Box(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph.name);
+                    LeftClick(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
+                    actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
                     GUILayout.EndHorizontal();
-                    RightClickMenu(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
+                }
+                if (GUILayout.Button("add")) {
+                    createGraphFromTemplate("Assets/Actions/KeyPoses/Punchi.asset");
                 }
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.EndScrollView();
             }
+
+            // Foldoutによる描画のずれを修正
+            foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
+                var rect = actionTargetGraphRect.Value;
+                rect.y += showSubWindowRect.y + showSubWindowRect.height;
+                //GUI.Box(rect, actionTargetGraphRect.Key.actionTargetGraph.name);
+                RightClickMenu(rect, actionTargetGraphRect.Key.actionTargetGraph);
+            }
             GUI.skin = defaultSkin; // 他のwindowに影響が出ないように元に戻す
             EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
         }
         // Addする機能はいらない
-        void AddActionTargetGraph() {
+        void createGraphFromTemplate(string templatePath) {
             //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             List<string> nameList = new List<string>();
             ActionTargetGraph templateActionTargetGraph = null;
-            foreach (var guid in guids) {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                var actionTargetGraph = obj as ActionTargetGraph;
-                if (actionTargetGraph != null) {
-                    nameList.Add(actionTargetGraph.name);
-                    if (actionTargetGraph.name == "Punchi") {
-                        templateActionTargetGraph = actionTargetGraph;
+            var templateObject = AssetDatabase.LoadAssetAtPath<Object>(templatePath);
+            templateActionTargetGraph = templateObject as ActionTargetGraph;
+            if (templateActionTargetGraph != null) {
+                bool exist = false;
+                int index = 0;
+                for (; index < 100; index++) {
+                    exist = false;
+                    foreach (var guid in guids) {
+                        var path = AssetDatabase.GUIDToAssetPath(guid);
+                        var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+                        var actionTargetGraph = obj as ActionTargetGraph;
+                        if (actionTargetGraph != null) {
+                            if(actionTargetGraph.name == "Graph" + index) {
+                                exist = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!exist) {
+                        break;
                     }
                 }
+                if (!exist) {
+                    var newActionTargetGraph = templateActionTargetGraph.Copy();
+                    // この処理がなくても描画されるがProjectWindowでnodeが見えなくなる
+                    //AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
+                    AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "Graph" + index + ".asset");
+                    foreach (var node in newActionTargetGraph.nodes) {
+                        node.name = node.name.Replace("(Clone)", "");
+                        AssetDatabase.AddObjectToAsset(node, newActionTargetGraph);
+                    }
+
+                    AssetDatabase.Refresh();
+                    ReloadActionList();
+                    Repaint();
+                }
             }
-            if (templateActionTargetGraph != null) {
-                var newActionTargetGraph = templateActionTargetGraph.Copy();
-                AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
-                AssetDatabase.Refresh();
+        }
+        void LeftClick(Rect rect, ActionTargetGraph actionTargetGraph) {
+            if (rect.Contains(Event.current.mousePosition) &&
+                Event.current.type == EventType.MouseDown &&
+                Event.current.button == 0) {
+                this.graph = actionTargetGraph;
+                for (int i = 0; i < actionTargetGraphNames.Count; i++) {
+                    if (actionTargetGraphNames[i] == this.graph.name) {
+                        actionTargetGraphIndex = i;
+                    }
+                }
             }
         }
         void RightClickMenu(Rect rect, ActionTargetGraph actionTargetGraph) {
@@ -344,7 +395,7 @@ namespace SprUnity {
             }
         }
         void RemoveActionTargetGraph(ActionTargetGraph actionTargetGraph) {
-            Debug.Log(actionTargetGraph.name + " Delete");
+            //Debug.Log(Event.current.type);
             if (actionTargetGraph == null) {
                 Debug.LogWarning("No sub asset.");
                 return;
@@ -421,7 +472,7 @@ namespace SprUnity {
 
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
-            keyPoseDataRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            actionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
@@ -430,7 +481,7 @@ namespace SprUnity {
 
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
-            
+
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
@@ -439,12 +490,12 @@ namespace SprUnity {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);
-                    keyPoseDataRectDict.Add(actionTargetGraphStatus, new Rect());
+                    actionTargetGraphRectDict.Add(actionTargetGraphStatus, new Rect());
                     // ActionEditorWindowManagerにない場合のみ追加
                     actionTargetGraphsInAsset.Add(actionTargetGraph);
                     bool isExist = false;
-                    foreach(var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
-                        if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                        if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                             isExist = true;
                             break;
                         }
@@ -460,7 +511,7 @@ namespace SprUnity {
             foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
                 bool isExist = false;
                 foreach (var actionTargetGraph in actionTargetGraphsInAsset) {
-                    if(actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
+                    if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                         isExist = true;
                     }
                 }
@@ -468,9 +519,12 @@ namespace SprUnity {
                     deleteList.Add(existActionTargetGraphStatus);
                 }
             }
-            foreach(var delete in deleteList) {
+            foreach (var delete in deleteList) {
                 ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
+
+            //ソート
+            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
         }
 
         public void ReloadActionTargetGraphs() {
@@ -487,6 +541,23 @@ namespace SprUnity {
                     }
                 }
             }
+        }
+
+        Texture2D GetEditableTexture() {
+            if (editableLabelTexture == null) {
+                var mono = MonoScript.FromScriptableObject(this);
+                var scriptpath = AssetDatabase.GetAssetPath(mono);
+                scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
+                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
+                if (bytes != null) {
+                    editableLabelTexture = new Texture2D(1, 1);
+                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
+                    editableLabelTexture.filterMode = FilterMode.Bilinear;
+                } else {
+                    Debug.Log("picture null");
+                }
+            }
+            return editableLabelTexture;
         }
     }
     public class ActionTargetGraphStatus {

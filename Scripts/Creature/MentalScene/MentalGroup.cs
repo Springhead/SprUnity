@@ -105,13 +105,18 @@ namespace SprUnity {
             }
             mentalScene.RemoveMentalGroup(this);
         }
+        // AttributeをStartでmentalAttributeListOnPlayingに追加すると二つ付いてしまうことがある
         public override Type GetAttribute<Type>() {
             foreach(var mentalAttribute in mentalAttributeList) {
                 if(mentalAttribute.GetType() == typeof(Type)) {
                     return mentalAttribute as Type;
                 }
             }
-            return this.gameObject.AddComponent<Type>();
+            var attribute = this.gameObject.AddComponent<Type>();
+            attribute.mentalGroup = this;
+            attribute.initialized = true;
+            AddMentalAttribute(attribute);
+            return attribute;
         }
 
         public Type GetParts<Type>() where Type : MentalParts, new() {
