@@ -218,7 +218,6 @@ namespace SprUnity {
                 EditorStyles.foldout.onNormal.textColor = Color.white;
             }
 
-            // 縦スクロールが出た場合に下に横スクロールが出るのを防ぐ
             for (int i = 0; i < subWindowFirstSpaceNum; i++) {
                 EditorGUILayout.Space();
             }
@@ -242,7 +241,6 @@ namespace SprUnity {
                 //        }
                 //    }
                 //}
-                var body = ActionEditorWindowManager.instance.body;
                 EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollwidth));
                 foreach (var actionTargetGraphStatus in actionTargetGraphStatuses) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
@@ -427,7 +425,6 @@ namespace SprUnity {
             var guids = AssetDatabase.FindAssets("*").Distinct();
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
-
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
             
