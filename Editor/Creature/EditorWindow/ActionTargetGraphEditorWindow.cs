@@ -226,9 +226,9 @@ namespace SprUnity {
                 EditorStyles.foldout.onNormal.textColor = Color.white;
             }
 
-            for (int i = 0; i < subWindowFirstSpaceNum; i++) {
-                EditorGUILayout.Space();
-            }
+            //for (int i = 0; i < subWindowFirstSpaceNum; i++) {
+                GUILayout.Space(19 * zoom + 20);
+            //}
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
             var showSubWindowRect = GUILayoutUtility.GetLastRect();
             if (!showSubWindow) {
