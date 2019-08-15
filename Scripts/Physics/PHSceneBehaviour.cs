@@ -8,7 +8,7 @@ using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 
-[CustomEditor(typeof(PHSceneBehaviour))]
+[CustomEditor(typeof(PHSceneBehaviour),true)]
 public class PHSceneBehaviourEditor : Editor {
 
     public bool showCollision = false;
