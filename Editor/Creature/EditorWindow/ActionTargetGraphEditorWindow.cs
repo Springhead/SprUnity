@@ -299,7 +299,7 @@ namespace SprUnity {
                     GUILayout.EndHorizontal();
                 }
                 if (GUILayout.Button("add")) {
-                    AddActionTargetGraph();
+                    createGraphFromTemplate("Assets/Actions/KeyPoses/Punchi.asset");
                 }
                 EditorGUILayout.EndVertical();
 
@@ -317,32 +317,28 @@ namespace SprUnity {
             EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
         }
         // Addする機能はいらない
-        void AddActionTargetGraph() {
+        void createGraphFromTemplate(string templatePath) {
             //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             List<string> nameList = new List<string>();
             ActionTargetGraph templateActionTargetGraph = null;
-            foreach (var guid in guids) {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                var actionTargetGraph = obj as ActionTargetGraph;
-                if (actionTargetGraph != null) {
-                    nameList.Add(actionTargetGraph.name);
-                    if (actionTargetGraph.name == "Punchi") {
-                        templateActionTargetGraph = actionTargetGraph;
-                    }
-                }
-            }
+            var templateObject = AssetDatabase.LoadAssetAtPath<Object>(templatePath);
+            templateActionTargetGraph = templateObject as ActionTargetGraph;
             if (templateActionTargetGraph != null) {
                 bool exist = false;
                 int index = 0;
                 for (; index < 100; index++) {
                     exist = false;
-                    foreach (var name in nameList) {
-                        if (name == "Graph" + index) {
-                            exist = true;
-                            break;
+                    foreach (var guid in guids) {
+                        var path = AssetDatabase.GUIDToAssetPath(guid);
+                        var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
+                        var actionTargetGraph = obj as ActionTargetGraph;
+                        if (actionTargetGraph != null) {
+                            if(actionTargetGraph.name == "Graph" + index) {
+                                exist = true;
+                                break;
+                            }
                         }
                     }
                     if (!exist) {
@@ -526,9 +522,9 @@ namespace SprUnity {
             foreach (var delete in deleteList) {
                 ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
-            
+
             //ソート
-            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a,b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
+            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
         }
 
         public void ReloadActionTargetGraphs() {
