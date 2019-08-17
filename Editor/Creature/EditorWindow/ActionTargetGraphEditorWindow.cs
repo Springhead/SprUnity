@@ -127,11 +127,11 @@ namespace SprUnity {
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
             ActionTargetGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionTargetGraph;
-            toolbarBase = GUI.skin.FindStyle("toolbar");
-            toolbarButton = GUI.skin.FindStyle("toolbarButton");
-            toolbarLabel = GUI.skin.FindStyle("toolbarButton");
-            toolbarDropdown = GUI.skin.FindStyle("toolbarDropdown");
-            toolbarPopup = GUI.skin.FindStyle("toolbarPopup");
+            //toolbarBase = GUI.skin.FindStyle("toolbar");
+            //toolbarButton = GUI.skin.FindStyle("toolbarButton");
+            //toolbarLabel = GUI.skin.FindStyle("toolbarButton");
+            //toolbarDropdown = GUI.skin.FindStyle("toolbarDropdown");
+            //toolbarPopup = GUI.skin.FindStyle("toolbarPopup");
             if (nodeGraph != null) {
                 Open(nodeGraph);
                 return true;
@@ -299,7 +299,7 @@ namespace SprUnity {
                     GUILayout.EndHorizontal();
                 }
                 if (GUILayout.Button("add")) {
-                    createGraphFromTemplate("Assets/Actions/KeyPoses/Punchi.asset");
+                    createGraphFromTemplate("Assets/Actions/KeyPoses/Template.asset");
                 }
                 EditorGUILayout.EndVertical();
 
@@ -352,6 +352,7 @@ namespace SprUnity {
                     AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "Graph" + index + ".asset");
                     foreach (var node in newActionTargetGraph.nodes) {
                         node.name = node.name.Replace("(Clone)", "");
+                        node.name = node.name.Replace("Template", "Graph" + index);
                         AssetDatabase.AddObjectToAsset(node, newActionTargetGraph);
                     }
 
