@@ -68,12 +68,12 @@ namespace SprUnity {
 
             var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
 
-            editableMat = AssetDatabase.LoadAssetAtPath(modelpath + "editable.mat", typeof(Material)) as Material;
-            visibleMat = AssetDatabase.LoadAssetAtPath(modelpath + "visible.mat", typeof(Material)) as Material;
             if (editableMat == null) {
+                editableMat = AssetDatabase.LoadAssetAtPath(modelpath + "editable.mat", typeof(Material)) as Material;
                 Debug.Log("mat null");
             }
             if (visibleMat == null) {
+                visibleMat = AssetDatabase.LoadAssetAtPath(modelpath + "visible.mat", typeof(Material)) as Material;
                 Debug.Log("mat null");
             }
 
@@ -227,7 +227,7 @@ namespace SprUnity {
             }
 
             //for (int i = 0; i < subWindowFirstSpaceNum; i++) {
-                GUILayout.Space(19 * zoom + 20);
+            GUILayout.Space(19 * zoom + 20);
             //}
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
             var showSubWindowRect = GUILayoutUtility.GetLastRect();
