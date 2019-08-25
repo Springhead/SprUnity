@@ -31,7 +31,6 @@ namespace SprUnity {
         public static GUIStyle toolbarPopup;
 
         private static List<string> actionTargetGraphNames;
-        private static int actionTargetGraphIndex = 0;
 
         // SubWindow
         private bool showSubWindow = false;
@@ -50,9 +49,10 @@ namespace SprUnity {
         private Vector2 scrollPos;
         private Vector2 scrollPosParameterWindow;
 
-        static float scrollwidth = 20;
-        static float parameterheight = 150;
-        static float buttonheight = 25;
+        static float scrollWidth = 20;
+        static float parameterHeight = 150;
+        static float buttonHeight = 25;
+        static float buttonWidth = 40;
 
         private ActionTargetGraph latestEditableKeyPose;
         private ActionTargetGraph latestVisibleKeyPose;
@@ -232,11 +232,11 @@ namespace SprUnity {
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
             var showSubWindowRect = GUILayoutUtility.GetLastRect();
             if (!showSubWindow) {
-                scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterheight));
+                scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterHeight));
 
                 var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphStatuses;
 
-                GUILayout.Label("ActionTargetGraphs", GUILayout.Width(subWindowWidth - scrollwidth));
+                GUILayout.Label("ActionTargetGraphs", GUILayout.Width(subWindowWidth - scrollWidth));
                 //if (window == null) {
                 //    Open(); // なぜかOnEnableに書くと新しくwindowが生成される
                 //    // 選択が消えてしまうので残っている情報からフラグを正しくする
@@ -250,7 +250,7 @@ namespace SprUnity {
                 //        }
                 //    }
                 //}
-                EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollwidth));
+                EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollWidth));
                 foreach (var actionTargetGraphStatus in actionTargetGraphStatuses) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
                     //GUILayout.BeginArea(singleRect);
@@ -261,7 +261,7 @@ namespace SprUnity {
                     } else {
                         currentTexture = noneButtonTexture;
                     }
-                    if (GUILayout.Button(currentTexture, GUILayout.Width(buttonheight), GUILayout.Height(buttonheight))) {
+                    if (GUILayout.Button(currentTexture, GUILayout.Width(buttonHeight), GUILayout.Height(buttonHeight))) {
                         if (!actionTargetGraphStatus.isVisible) {
                             actionTargetGraphStatus.isVisible = true;
                             latestVisibleKeyPose = actionTargetGraphStatus.actionTargetGraph;
@@ -279,12 +279,30 @@ namespace SprUnity {
                             SceneView.RepaintAll();
                         }
                     }
+                    if (Application.isPlaying) {
+                        if (GUILayout.Button("Play", GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight))) {
+                            KeyPose keyPose = new KeyPose();
+                            foreach (var obj in actionTargetGraphStatus.actionTargetGraph.nodes) {
+                                ActionTargetOutputNode actionTargetOutputNode = obj as ActionTargetOutputNode;
+                                if (actionTargetOutputNode != null) {
+                                    // ここでActionを呼びたい
+                                    foreach (var boneKeyPose in keyPose.boneKeyPoses) {
+                                        if (boneKeyPose.boneId == actionTargetOutputNode.boneKeyPose.boneId) {
+                                            continue;
+                                        }
+                                    }
+                                    keyPose.boneKeyPoses.Add(actionTargetOutputNode.GetBoneKeyPose());
+                                }
+                            }
+                            keyPose.Action(actionTargetGraphStatus.actionTargetGraph.body);
+                        }
+                    }
                     var defaultback = GUI.skin.label.normal.background;
                     if (actionTargetGraphStatus.actionTargetGraph == this.graph) {
                         GUI.skin.label.normal.background = GetEditableTexture();
                     }
                     if (actionTargetGraphStatus.actionTargetGraph == renameActionTargetGraph) {
-                        renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonheight));
+                        renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonHeight));
                         if (Event.current.keyCode == KeyCode.Return) {
                             Undo.RecordObject(actionTargetGraphStatus.actionTargetGraph, "Change KeyPose Name");
                             renameActionTargetGraph.name = renaming;
@@ -295,7 +313,7 @@ namespace SprUnity {
                             Repaint();
                         }
                     } else {
-                        GUILayout.Label(actionTargetGraphStatus.actionTargetGraph.name, GUILayout.Height(buttonheight));
+                        GUILayout.Label(actionTargetGraphStatus.actionTargetGraph.name, GUILayout.Height(buttonHeight));
                     }
                     GUI.skin.label.normal.background = defaultback;
                     // <!!>毎回呼ぶのか..
@@ -304,9 +322,23 @@ namespace SprUnity {
                     actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
                     GUILayout.EndHorizontal();
                 }
-                if (GUILayout.Button("add")) {
-                    createGraphFromTemplate("Assets/Actions/KeyPoses/Template.asset");
+                if (GUILayout.Button("Add")) {
+                    CreateActionTargetGraphWindow.Open(position.center);
                 }
+                //if (GUILayout.Button("Play")) {
+                //    foreach (var obj in graph.nodes) {
+                //        ActionTargetOutputNode actionTargetOutputNode = obj as ActionTargetOutputNode;
+                //        if (actionTargetOutputNode != null) {
+                //            // ここでActionを呼びたい
+                //            KeyPose keyPose = new KeyPose();
+                //            keyPose.boneKeyPoses.Add(actionTargetOutputNode.GetBoneKeyPose());
+                //            var actionTargetGraph = graph as ActionTargetGraph;
+                //            if (actionTargetGraph != null) {
+                //                keyPose.Action(actionTargetGraph.body);
+                //            }
+                //        }
+                //    }
+                //}
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.EndScrollView();
@@ -322,62 +354,11 @@ namespace SprUnity {
             GUI.skin = defaultSkin; // 他のwindowに影響が出ないように元に戻す
             EditorStyles.foldout.onNormal.textColor = defaultFoldoutTextColor;
         }
-        // Addする機能はいらない
-        void createGraphFromTemplate(string templatePath) {
-            //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
-            // Asset全検索
-            var guids = AssetDatabase.FindAssets("*").Distinct();
-            List<string> nameList = new List<string>();
-            ActionTargetGraph templateActionTargetGraph = null;
-            var templateObject = AssetDatabase.LoadAssetAtPath<Object>(templatePath);
-            templateActionTargetGraph = templateObject as ActionTargetGraph;
-            if (templateActionTargetGraph != null) {
-                bool exist = false;
-                int index = 0;
-                for (; index < 100; index++) {
-                    exist = false;
-                    foreach (var guid in guids) {
-                        var path = AssetDatabase.GUIDToAssetPath(guid);
-                        var obj = AssetDatabase.LoadAssetAtPath<Object>(path);
-                        var actionTargetGraph = obj as ActionTargetGraph;
-                        if (actionTargetGraph != null) {
-                            if (actionTargetGraph.name == "Graph" + index) {
-                                exist = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!exist) {
-                        break;
-                    }
-                }
-                if (!exist) {
-                    var newActionTargetGraph = templateActionTargetGraph.Copy();
-                    // この処理がなくても描画されるがProjectWindowでnodeが見えなくなる
-                    //AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "testtest.asset");
-                    AssetDatabase.CreateAsset(newActionTargetGraph, "Assets/Actions/KeyPoses/" + "Graph" + index + ".asset");
-                    foreach (var node in newActionTargetGraph.nodes) {
-                        node.name = node.name.Replace("(Clone)", "");
-                        node.name = node.name.Replace("Template", "Graph" + index);
-                        AssetDatabase.AddObjectToAsset(node, newActionTargetGraph);
-                    }
-
-                    AssetDatabase.Refresh();
-                    ReloadActionList();
-                    Repaint();
-                }
-            }
-        }
         void LeftClick(Rect rect, ActionTargetGraph actionTargetGraph) {
             if (rect.Contains(Event.current.mousePosition) &&
                 Event.current.type == EventType.MouseDown &&
                 Event.current.button == 0) {
                 this.graph = actionTargetGraph;
-                for (int i = 0; i < actionTargetGraphNames.Count; i++) {
-                    if (actionTargetGraphNames[i] == this.graph.name) {
-                        actionTargetGraphIndex = i;
-                    }
-                }
             }
         }
         void RightClickMenu(Rect rect, ActionTargetGraph actionTargetGraph) {
@@ -394,7 +375,6 @@ namespace SprUnity {
                 menu.AddItem(new GUIContent("Delete"), false,
                     () => {
                         RemoveActionTargetGraph(actionTargetGraph);
-                        ReloadActionList();
                         Repaint();
                         SceneView.RepaintAll();
                     });
@@ -402,13 +382,24 @@ namespace SprUnity {
             }
         }
         void RemoveActionTargetGraph(ActionTargetGraph actionTargetGraph) {
-            //Debug.Log(Event.current.type);
             if (actionTargetGraph == null) {
-                Debug.LogWarning("No sub asset.");
+                Debug.LogWarning("No asset.");
                 return;
+            }
+            bool removeSelectedGraph = false;
+            if (actionTargetGraph == this.graph) {
+                removeSelectedGraph = true;
             }
             string path = AssetDatabase.GetAssetPath(actionTargetGraph);
             AssetDatabase.MoveAssetToTrash(path);
+            ReloadActionList();
+            if (removeSelectedGraph) {
+                if (ActionEditorWindowManager.instance.actionTargetGraphStatuses.Count != 0) {
+                    this.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
+                } else {
+                    this.graph = null;
+                }
+            }
         }
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
@@ -428,6 +419,7 @@ namespace SprUnity {
                 DrawHumanBone(editableBoneKeyPoseNode);
             }
         }
+        // nodeの次のノードを見てそれがOutPutNodeならAddする
         void AddBoneKeyPoseNode(Node node, List<ActionTargetOutputNode> boneKeyPoseNodes) {
             foreach (var output in node.Outputs) {
                 foreach (var connection in output.GetConnections()) {

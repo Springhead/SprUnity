@@ -25,7 +25,6 @@ namespace SprUnity {
         // GUI
         //private Vector2 scrollPos;
         private static List<string> actionNames;
-        private static int actionIndex = 0;
 
         private float zoom = 1.0f;
         private Vector2 panOffset;
@@ -59,7 +58,7 @@ namespace SprUnity {
             if (nodeGraph != null) {
                 Open();
                 ActionEditorWindowManager.instance.selectedAction = nodeGraph;
-                actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(nodeGraph);
+                ActionEditorWindowManager.instance.actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(nodeGraph);
                 return true;
             }
             return false;
@@ -173,12 +172,11 @@ namespace SprUnity {
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Current Action", toolbarLabel, GUILayout.Width(100));
-            var currentActionName = ActionEditorWindowManager.instance.selectedAction.name;
 
             //actionIndex = ActionEditorWindowManager.instance.actions.IndexOf(ActionEditorWindowManager.instance.selectedAction);
-            actionIndex = EditorGUILayout.Popup(actionIndex, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
+            ActionEditorWindowManager.instance.actionIndex = EditorGUILayout.Popup(ActionEditorWindowManager.instance.actionIndex, actionNames.ToArray(), toolbarPopup, GUILayout.Width(120));
             foreach (var act in ActionEditorWindowManager.instance.actions) {
-                if (act.name == actionNames[actionIndex]) {
+                if (act.name == actionNames[ActionEditorWindowManager.instance.actionIndex]) {
                     if (ActionEditorWindowManager.instance.selectedAction != act) ActionEditorWindowManager.instance.actionSelectChanged = true;
                     ActionEditorWindowManager.instance.selectedAction = act;
                 }
