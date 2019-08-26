@@ -285,13 +285,15 @@ namespace SprUnity {
                             foreach (var obj in actionTargetGraphStatus.actionTargetGraph.nodes) {
                                 ActionTargetOutputNode actionTargetOutputNode = obj as ActionTargetOutputNode;
                                 if (actionTargetOutputNode != null) {
-                                    // ここでActionを呼びたい
-                                    foreach (var boneKeyPose in keyPose.boneKeyPoses) {
-                                        if (boneKeyPose.boneId == actionTargetOutputNode.boneKeyPose.boneId) {
-                                            continue;
+                                    if (actionTargetOutputNode.enablePlay) {
+                                        // ここでActionを呼びたい
+                                        foreach (var boneKeyPose in keyPose.boneKeyPoses) {
+                                            if (boneKeyPose.boneId == actionTargetOutputNode.boneKeyPose.boneId) {
+                                                continue;
+                                            }
                                         }
+                                        keyPose.boneKeyPoses.Add(actionTargetOutputNode.GetBoneKeyPose());
                                     }
-                                    keyPose.boneKeyPoses.Add(actionTargetOutputNode.GetBoneKeyPose());
                                 }
                             }
                             keyPose.Action(actionTargetGraphStatus.actionTargetGraph.body);
