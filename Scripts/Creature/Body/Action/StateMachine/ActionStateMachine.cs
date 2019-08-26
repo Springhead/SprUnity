@@ -453,8 +453,8 @@ namespace SprUnity {
         }
 
         // Update StateMachine if it's enabled
-        public void UpdateStateMachine() {
-            if (!enabled) return;
+        public bool UpdateStateMachine() {
+            if (!enabled) return true;
             // Update timer
             stateMachineTime += Time.fixedDeltaTime;
             currentStateTime += Time.fixedDeltaTime;
@@ -469,8 +469,10 @@ namespace SprUnity {
                     currentStateTime = 0.0f;
                     if (currentState == null) {
                         End();
+                        return true;
                     } else {
                         var logs = currentState.OnEnter(this, out currentDuration);
+                        return false;
                     }
                     break;
                 }
@@ -478,7 +480,9 @@ namespace SprUnity {
             if (nTransition == 0) {
                 currentState.OnExit();
                 End();
+                return true;
             }
+            return false;
         }
 
         // 
