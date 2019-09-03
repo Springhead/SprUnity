@@ -447,7 +447,15 @@ namespace SprUnity {
             stateMachineTime = 0;
             currentStateTime = 0.0f;
 
-            currentState = entryTransitions[0].toState;
+            foreach (var transition in entryTransitions) {
+                if (transition.IsTransitable(0, 0, this)) {
+                    currentState = transition.toState;
+                    break;
+                }
+            }
+
+            if (currentState == null) { End(); return; }
+
             var logs = currentState.OnEnter(this, out currentDuration);
             Debug.Log("Begin:" + currentState.name);
         }
