@@ -448,9 +448,9 @@ namespace SprUnity {
                 // 調整用の手などを表示
                 editableMat.SetPass(0); // 1だと影しか見えない？ 
                 if (boneKeyPoseNode.boneId == HumanBodyBones.LeftHand) {
-                    Graphics.DrawMeshNow(leftHand, r.position, r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(leftHand, r.position + r.rotation * new Vector3(0.05f, 0, 0), r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.RightHand) {
-                    Graphics.DrawMeshNow(rightHand, r.position, r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(rightHand, r.position + r.rotation * new Vector3(-0.05f, 0, 0), r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.Head) {
                     Graphics.DrawMeshNow(head, r.position, r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.LeftFoot) {

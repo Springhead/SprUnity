@@ -12,7 +12,7 @@ namespace SprUnity {
             RelativePosRotScaleNode node = (RelativePosRotScaleNode)target;
             PosRotScale tempOrigin = node.GetInputValue<PosRotScale>("origin");
             if (node.GetPort("origin").IsConnected) {
-                Handles.PositionHandle(tempOrigin.position, tempOrigin.rotation);
+                //Handles.PositionHandle(tempOrigin.position, tempOrigin.rotation);
             }
             PosRotScale tempRelative = node.GetInputValue<PosRotScale>("relative", node.relative);
             PosRotScale r = tempOrigin.TransformPosRotScale(tempRelative);
