@@ -360,7 +360,11 @@ namespace SprUnity {
             if (rect.Contains(Event.current.mousePosition) &&
                 Event.current.type == EventType.MouseDown &&
                 Event.current.button == 0) {
-                this.graph = actionTargetGraph;
+                if (this.graph == actionTargetGraph) {
+                    this.graph = null;
+                } else {
+                    this.graph = actionTargetGraph;
+                }
             }
         }
         void RightClickMenu(Rect rect, ActionTargetGraph actionTargetGraph) {
@@ -406,15 +410,17 @@ namespace SprUnity {
         private void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
-            foreach (var obj in graph.nodes) {
-                ActionTargetNodeBase node = obj as ActionTargetNodeBase;
-                if (node != null && node.visualizable) {
-                    var editor = NodeEditor.GetEditor(node, this) as ActionTargetNodeBaseEditor;
-                    if (editor != null) {
-                        editor.OnSceneGUI(body);
+            if (graph != null) {
+                foreach (var obj in graph.nodes) {
+                    ActionTargetNodeBase node = obj as ActionTargetNodeBase;
+                    if (node != null && node.visualizable) {
+                        var editor = NodeEditor.GetEditor(node, this) as ActionTargetNodeBaseEditor;
+                        if (editor != null) {
+                            editor.OnSceneGUI(body);
+                        }
+                        //node.OnSceneGUI(body);
+                        AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);
                     }
-                    //node.OnSceneGUI(body);
-                    AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);
                 }
             }
             foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
