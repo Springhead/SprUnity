@@ -118,6 +118,15 @@ namespace SprUnity {
             AddMentalAttribute(attribute);
             return attribute;
         }
+        // AttributeをStartでmentalAttributeListOnPlayingに追加すると二つ付いてしまうことがある
+        public Type GetAttributeNotAttach<Type>() where Type : MentalAttribute, new() {
+            foreach(var mentalAttribute in mentalAttributeList) {
+                if(mentalAttribute.GetType() == typeof(Type)) {
+                    return mentalAttribute as Type;
+                }
+            }
+            return null;
+        }
 
         public Type GetParts<Type>() where Type : MentalParts, new() {
             foreach(var mentalParts in mentalPartsList) {
