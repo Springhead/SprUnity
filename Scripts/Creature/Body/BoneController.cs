@@ -100,6 +100,8 @@ public class BoneController : MonoBehaviour {
 
     public List<Bone> changeSpringDamperBones = new List<Bone>();
 
+    public ActionErrata eratta;
+
     public bool debugLog = false;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -238,6 +240,27 @@ public class BoneController : MonoBehaviour {
             subTrajectory.Enqueue(subMov);
             return subMov;
         }
+    }
+
+    public SubMovement AddSubMovementWithEratta(Pose pose, Vector2 spring, float completeTime, float duration, bool toSubTrajectory = false, bool usePos = true, bool useRot = true) {
+        Pose from = new Pose(posTrajectory.Last().p1, rotTrajectory.Last().q1);
+        if (eratta != null) {
+            foreach (var erattaData in eratta.erattas) {
+                if (erattaData.IsInside(from, pose)) {
+                    float waitTime = completeTime - duration;
+                    float extendedDuration = duration * erattaData.extensionRate;
+                    float firstDuration = extendedDuration * erattaData.firstStartTimeRate;
+                    float firstCompleteTime = waitTime + firstDuration;
+                    float secondDuration = extendedDuration * (1 - erattaData.secondEndTimeRate);
+                    float secondCompleteTime = waitTime + extendedDuration;
+                    ActionTarget erattaTarget = erattaData.insertedNode.GetBoneKeyPose();
+                    AddSubMovement(new Pose(erattaTarget.position, erattaTarget.rotation), erattaData.springDamper, firstCompleteTime, firstDuration, toSubTrajectory, usePos, useRot);
+                    AddSubMovement(pose, spring, secondCompleteTime, secondDuration, toSubTrajectory, usePos, useRot);
+                    return null;
+                }
+            }
+        }
+        return AddSubMovement(pose, spring, completeTime, duration, toSubTrajectory, usePos, useRot);
     }
 
     public void FixedUpdate() {

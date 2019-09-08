@@ -36,6 +36,7 @@ namespace SprUnity {
         // public ActionSelectWindow関係
         public List<ActionStateMachine> actions;
         public ActionStateMachine selectedAction;
+        public int actionIndex = 0;
 
         public ActionStateMachine lastSelectedStateMachine;
 

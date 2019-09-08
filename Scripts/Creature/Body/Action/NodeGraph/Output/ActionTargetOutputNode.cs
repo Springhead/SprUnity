@@ -15,6 +15,7 @@ namespace SprUnity {
         [Input] public PosRotScale posRotScale;
         [Input] public bool usePosition;
         [Input] public bool useRotation;
+        public bool enablePlay = true;
 
         // Use this for initialization
         protected override void Init() {

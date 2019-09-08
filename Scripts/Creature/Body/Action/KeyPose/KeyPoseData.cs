@@ -327,9 +327,9 @@ namespace SprUnity {
                         Bone bone = (boneKeyPose.boneIdString != "") ? body[boneKeyPose.boneIdString] : body[boneKeyPose.boneId];
                         var pose = new Pose(boneKeyPose.position, boneKeyPose.rotation);
                         var springDamper = new Vector2(spring, damper);
-                        var sub = bone.controller.AddSubMovement(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
-                        BoneSubMovementPair log = new BoneSubMovementPair(bone, sub.Clone());
-                        logs.Add(log);
+                        var sub = bone.controller.AddSubMovementWithEratta(pose, springDamper, startTime + duration, duration, usePos: boneKeyPose.usePosition, useRot: boneKeyPose.useRotation);
+                        //BoneSubMovementPair log = new BoneSubMovementPair(bone, sub.Clone());
+                        //logs.Add(log);
                     }
                 }
             }

@@ -117,7 +117,10 @@ namespace SprUnity {
 
         private void FixedUpdate() {
             if (body != null && inAction != null) {
-                inAction.UpdateStateMachine();
+                var stop = inAction.UpdateStateMachine();
+                if (stop) {
+                    QuitAction();
+                }
             }
         }
 

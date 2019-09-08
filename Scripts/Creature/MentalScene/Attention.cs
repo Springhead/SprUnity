@@ -173,16 +173,20 @@ public class Attention : MonoBehaviour {
             foreach (var mentalGroup in mentalScene.mentalGroups) {
                 if (mentalGroup != agent && mentalGroup.GetParts<PersonParts>() != null) {
                     var person = mentalGroup;
+                    var personParts = mentalGroup.GetParts<PersonParts>();
                     if (!person.gameObject.activeInHierarchy) { continue; }
                     if (person != currentAttentionTarget) {
+                        // 頭がなければスキップする
+                        if (personParts.Head == null) { continue; }
+
                         // 位置のおかしな対象はスキップする
-                        if (person.transform.position.z < 0.3f || person.transform.position.y > 2.0f) { continue; }
+                        if (personParts.Head.Position().z < 0.3f || personParts.Head.Position().y > 2.0f) { continue; }
 
                         // 注意量が小さすぎる対象はスキップする
                         if (person.GetAttribute<AttentionAttribute>().attention < 1e-5) { continue; }
 
                         // 現在の注視対象とのなす角を求める
-                        Vector3 candDir = (person.transform.position - headPos);
+                        Vector3 candDir = (personParts.Head.Position() - headPos);
                         float angleDistance = Vector3.Angle(currDir, candDir);
 
                         // 角度に従って遷移確率を求める（角度が小さいほど高確率で遷移する）
@@ -257,7 +261,12 @@ public class Attention : MonoBehaviour {
         if (newAttentionTarget != null) {
             // 目を動かす
             var attention = newAttentionTarget.GetAttribute<AttentionAttribute>().attention;
-            lookController.target = newAttentionTarget.gameObject;
+            var head = newAttentionTarget.GetParts<PersonParts>()?.Head?.gameObject;
+            if (head != null) {
+                lookController.target = head;
+            } else {
+                lookController.target = newAttentionTarget.gameObject;
+            }
             lookController.speed = 0.3f;
             if (forceStraight || (newAttentionTarget.GetParts<PersonParts>() != null && lookController.straight == false)) {
                 lookController.straight = true;
