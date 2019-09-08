@@ -88,7 +88,8 @@ namespace XNodeEditor {
         /// <summary> Make sure the graph editor is assigned and to the right object </summary>
         private void ValidateGraphEditor() {
             NodeGraphEditor graphEditor = NodeGraphEditor.GetEditor(graph, this);
-            if (this.graphEditor != graphEditor) {
+            // <!!> graphEditor can be null
+            if (graphEditor != null && this.graphEditor != graphEditor) {
                 this.graphEditor = graphEditor;
                 graphEditor.OnOpen();
             }
