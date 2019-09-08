@@ -249,9 +249,9 @@ public class BoneController : MonoBehaviour {
                 if (erattaData.IsInside(from, pose)) {
                     float waitTime = completeTime - duration;
                     float extendedDuration = duration * erattaData.extensionRate;
-                    float firstDuration = extendedDuration * erattaData.firstStartTimeRate;
+                    float firstDuration = extendedDuration * erattaData.firstEndTimeRate;
                     float firstCompleteTime = waitTime + firstDuration;
-                    float secondDuration = extendedDuration * (1 - erattaData.secondEndTimeRate);
+                    float secondDuration = extendedDuration * (1 - erattaData.secondStartTimeRate);
                     float secondCompleteTime = waitTime + extendedDuration;
                     ActionTarget erattaTarget = erattaData.insertedNode.GetBoneKeyPose();
                     AddSubMovement(new Pose(erattaTarget.position, erattaTarget.rotation), erattaData.springDamper, firstCompleteTime, firstDuration, toSubTrajectory, usePos, useRot);

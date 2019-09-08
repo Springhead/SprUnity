@@ -49,8 +49,8 @@ namespace SprUnity {
         public float timeCoefficient = 1.0f;
         public bool intervalNoise;
         public string floatParam;
-        public float minInterval;
-        public float maxInterval;
+        public float minInterval = 0.2f;
+        public float maxInterval = 0.5f;
         [HideInInspector]
         public TransitionCondition[] conditions;
 
@@ -119,6 +119,9 @@ namespace SprUnity {
                     break;
                 case IntervalMode.OuterTrigger:
                     intervalTime = time;
+                    break;
+                case IntervalMode.Random:
+                    intervalTime = Random.Range(minInterval, maxInterval);
                     break;
                 case IntervalMode.ProportionalToFloatParam:
                     float p = (float)aStateMachine.parameter(floatParam)?.value;
