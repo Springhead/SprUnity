@@ -4,27 +4,39 @@ using UnityEngine;
 
 namespace SprUnity {
 
-    public class ActionErrata {
+    [CreateAssetMenu()]
+    public class ActionErrata : MonoBehaviour{
 
+        [System.Serializable]
         public class FromToPair {
+
+            public string parentBoneLabel;
+            private Bone parentBone = null;
+
+            public bool considerPosition = true;
+            public bool considerRotation = false;
+
             public Vector3 fromPos;
-            public Quaternion fromRot;
             public Collider fromPosRange;
-            public float fromRotRange;
 
             public Vector3 toPos;
-            public Quaternion toRot;
             public Collider toPosRange;
-            public float toRotRange;  //姿勢差分角
 
-            public Vector3 delta;
+            public ActionTargetOutputNode insertedNode;
 
-            public float delay; // 発行済みのサブムーブメントの遅延量
+            public Vector2 springDamper = Vector2.one;
+
+            public float extensionRate = 1.0f; // 発行済みのサブムーブメントの倍率
+            public float firstStartTimeRate = 0.6f;
+            public float secondEndTimeRate = 0.4f;
+
+            public bool IsInside(Pose from, Pose to) {
+                if (fromPosRange.ClosestPoint(from.position) == from.position && toPosRange.ClosestPoint(to.position) == to.position) return true;
+                else return false;
+            }
         }
 
-        public void InsertErrataSubMovement(SubMovement sub) {
-            
-        }
+        public FromToPair[] erattas;
     }
 
 }
