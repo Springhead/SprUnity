@@ -27,8 +27,8 @@ namespace SprUnity {
             public Vector2 springDamper = Vector2.one;
 
             public float extensionRate = 1.0f; // 発行済みのサブムーブメントの倍率
-            public float firstStartTimeRate = 0.6f;
-            public float secondEndTimeRate = 0.4f;
+            public float firstEndTimeRate = 0.6f;
+            public float secondStartTimeRate = 0.4f;
 
             public bool IsInside(Pose from, Pose to) {
                 if (fromPosRange.ClosestPoint(from.position) == from.position && toPosRange.ClosestPoint(to.position) == to.position) return true;
