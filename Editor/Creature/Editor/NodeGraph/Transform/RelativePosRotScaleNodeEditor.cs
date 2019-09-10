@@ -25,12 +25,13 @@ namespace SprUnity {
                     node.relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, rot, r.scale));
                 }
             } else {
+                /*
                 EditorGUI.BeginChangeCheck();
                 Vector3 pos = Handles.PositionHandle(r.position, Quaternion.identity);
                 if (EditorGUI.EndChangeCheck() && !node.GetPort("relative").IsConnected) {
                     Undo.RecordObject(node, "Change RelativePosRotScaleNode");
                     node.relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, r.rotation, r.scale));
-                }
+                }*/
             }
         }
 

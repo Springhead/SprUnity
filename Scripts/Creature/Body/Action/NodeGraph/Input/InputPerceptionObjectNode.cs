@@ -10,6 +10,7 @@ namespace SprUnity {
     [CreateNodeMenu("Input/PerceptionObject")]
     public class InputPerceptionObjectNode : ActionTargetInputNodeBase {
         public GameObject perceptionObj;
+        public PosRotScale dummyPosRotScale = new PosRotScale();
         [Output] public PosRotScale posRotScale;
         [Output] public Vector3 pos;
         [Output] public Quaternion rot;
@@ -25,7 +26,7 @@ namespace SprUnity {
             if (perceptionObj != null) {
                 tempPosRotScale = new PosRotScale(perceptionObj.transform);
             } else {
-                tempPosRotScale = posRotScale;
+                tempPosRotScale = posRotScale = dummyPosRotScale;
             }
             switch (port.fieldName){
                 case "posRotScale":
@@ -52,8 +53,8 @@ namespace SprUnity {
                 Vector3 pos = Handles.PositionHandle(posRotScale.position, posRotScale.rotation);
                 Quaternion rot = Handles.RotationHandle(posRotScale.rotation, posRotScale.position);
                 if (EditorGUI.EndChangeCheck()) {
-                    posRotScale.position = pos;
-                    posRotScale.rotation = rot;
+                    posRotScale.position = dummyPosRotScale.position = pos;
+                    posRotScale.rotation = dummyPosRotScale.rotation = rot;
                 }
             }
 #endif

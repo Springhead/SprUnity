@@ -104,6 +104,8 @@ public class BoneController : MonoBehaviour {
 
     public bool debugLog = false;
 
+    public GameObject trajectoryVisualizeObj = null;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     [HideInInspector]
@@ -378,6 +380,9 @@ public class BoneController : MonoBehaviour {
                 } else if (ikEndEffector.phIKEndEffector.IsPositionControlEnabled()) {
                     ikEndEffector.phIKEndEffector.SetTargetPosition(targPos.ToVec3d());
                     ikEndEffector.desc.targetPosition = targPos.ToVec3d();
+                    if(trajectoryVisualizeObj != null) {
+                        trajectoryVisualizeObj.transform.position = targPos;
+                    }
                 }
             }
 
@@ -394,6 +399,9 @@ public class BoneController : MonoBehaviour {
             } else if (ikEndEffector.phIKEndEffector.IsOrientationControlEnabled()) {
                 ikEndEffector.phIKEndEffector.SetTargetOrientation(targOri.ToQuaterniond());
                 ikEndEffector.desc.targetOrientation = targOri.ToQuaterniond();
+                if (trajectoryVisualizeObj != null) {
+                    trajectoryVisualizeObj.transform.rotation = targOri;
+                }
             }
         }
 
