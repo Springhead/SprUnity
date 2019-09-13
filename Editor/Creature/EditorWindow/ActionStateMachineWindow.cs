@@ -50,6 +50,7 @@ namespace SprUnity {
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>();
             window.titleContent = new GUIContent("ActionStateMachine");
+            ReloadActionList();
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
             ActionEditorWindowManager.instance.selectedAction = ActionEditorWindowManager.instance.actions[0];
         }
@@ -65,7 +66,9 @@ namespace SprUnity {
             }
             return false;
         }
-
+        private void OnEnable() {
+            actionNames = GetActionNames();
+        }
         void OnDisable() {
             window = null;
             ActionEditorWindowManager.instance.stateMachineWindow = null;
@@ -80,11 +83,10 @@ namespace SprUnity {
         }
 
         void OnGUI() {
-            if (window == null) {
-                Open();
-            }
+            //if (window == null) {
+            //    Open();
+            //}
             if (!guiInitialized) {
-                ReloadActionList();
                 Init();
             }
 
@@ -316,12 +318,10 @@ namespace SprUnity {
         }
 
         public static void ReloadActionList() {
-            actionNames = new List<string>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
 
             ActionEditorWindowManager.instance.actions.Clear();
-            actionNames.Clear();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -329,9 +329,15 @@ namespace SprUnity {
                 var action = obj as ActionStateMachine;
                 if (action != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actions.Add(action);
-                    actionNames.Add(action.name);
                 }
             }
+        }
+        public List<string> GetActionNames() {
+            actionNames = new List<string>();
+            foreach (var action in ActionEditorWindowManager.instance.actions) {
+                actionNames.Add(action.name);
+            }
+            return actionNames;
         }
     }
 

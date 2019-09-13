@@ -42,7 +42,7 @@ namespace SprUnity{
     /// <summary>
     /// シリアル化できる、KeyValuePair
     /// </summary>
-    //[System.Serializable]
+    [System.Serializable]
     public class KeyAndValue<TKey, TValue> {
         public TKey Key;
         public TValue Value;

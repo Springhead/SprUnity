@@ -12,6 +12,7 @@ using System.Reflection;
 
 namespace VGent{
     [CreateAssetMenu]
+    [System.Serializable]
     public class ActionTargetGraph : NodeGraph {
 
         private bool isKeyPoseData = false;

@@ -9,16 +9,9 @@ using XNodeEditor;
 using SprUnity;
 using System.Linq;
 
-namespace VGent{
+namespace VGent {
 
     public class ActionTargetGraphEditorWindow : XNodeEditor.NodeEditorWindow, IHasCustomMenu {
-        private Material editableMat, visibleMat;
-        private Mesh leftHand;
-        private Mesh rightHand;
-        private Mesh head;
-        private Mesh leftFoot;
-        private Mesh rightFoot;
-
         private float handleSize = 0.05f;
         private float selectedHandleSize = 0.15f;
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
@@ -31,15 +24,13 @@ namespace VGent{
         public static GUIStyle toolbarDropdown;
         public static GUIStyle toolbarPopup;
 
+        private static List<string> actionTargetGraphNames;
 
         // SubWindow
         private bool showSubWindow = false;
         private float subWindowFirstSpaceNum = 8;
         private float subWindowWidth = 200;
-        static Texture2D noneButtonTexture;
-        static Texture2D visibleButtonTexture;
-        static Texture2D editableButtonTexture;
-        static Texture2D editableLabelTexture;
+        static Texture2D noneButtonTexture = null;
 
         private GUISkin myskin;
         private string skinpath = "GUISkins/SprGUISkin.guiskin";
@@ -56,8 +47,9 @@ namespace VGent{
 
         private ActionTargetGraph latestEditableKeyPose;
         private ActionTargetGraph latestVisibleKeyPose;
+        private static Dictionary<ActionTargetGraphStatus, Rect> actionTargetGraphRectDict;
+        private static Dictionary<ActionTargetGraphStatus, Rect> tempActionTargetGraphRectDict;
 
-        private Dictionary<ActionTargetGraphStatus,Rect> temporaryActionTargetGraphRectDict;
         private static ActionTargetGraph renameActionTargetGraph;
         private string renaming;
 
@@ -68,45 +60,37 @@ namespace VGent{
 
             var modelpath = "Assets/Libraries/SprUnity/Editor/Creature/Models/";
 
-            if (editableMat == null) {
-                editableMat = AssetDatabase.LoadAssetAtPath(modelpath + "editable.mat", typeof(Material)) as Material;
-                Debug.Log("mat null");
+            if (ActionEditorWindowManager.instance.editableMat == null) {
+                ActionEditorWindowManager.instance.editableMat = AssetDatabase.LoadAssetAtPath(modelpath + "editable.mat", typeof(Material)) as Material;
             }
-            if (visibleMat == null) {
-                visibleMat = AssetDatabase.LoadAssetAtPath(modelpath + "visible.mat", typeof(Material)) as Material;
-                Debug.Log("mat null");
+            if (ActionEditorWindowManager.instance.visibleMat == null) {
+                ActionEditorWindowManager.instance.visibleMat = AssetDatabase.LoadAssetAtPath(modelpath + "visible.mat", typeof(Material)) as Material;
             }
 
-            leftHand = AssetDatabase.LoadAssetAtPath(
-                modelpath + "LeftHand.fbx", typeof(Mesh)) as Mesh;
-            if (leftHand == null) {
-                Debug.Log("fbx null");
+            if (ActionEditorWindowManager.instance.leftHand == null) {
+                ActionEditorWindowManager.instance.leftHand = AssetDatabase.LoadAssetAtPath(
+                    modelpath + "LeftHand.fbx", typeof(Mesh)) as Mesh;
             }
 
-            rightHand = AssetDatabase.LoadAssetAtPath(
-                modelpath + "RightHand.fbx", typeof(Mesh)) as Mesh;
-            if (rightHand == null) {
-                Debug.Log("fbx null");
+            if (ActionEditorWindowManager.instance.rightHand == null) {
+                ActionEditorWindowManager.instance.rightHand = AssetDatabase.LoadAssetAtPath(
+                    modelpath + "RightHand.fbx", typeof(Mesh)) as Mesh;
             }
 
-            head = AssetDatabase.LoadAssetAtPath(
-                modelpath + "Head.fbx", typeof(Mesh)) as Mesh;
-            if (head == null) {
-                Debug.Log("fbx null");
+            if (ActionEditorWindowManager.instance.head == null) {
+                ActionEditorWindowManager.instance.head = AssetDatabase.LoadAssetAtPath(
+                    modelpath + "Head.fbx", typeof(Mesh)) as Mesh;
             }
 
-            leftFoot = AssetDatabase.LoadAssetAtPath(
-                modelpath + "LeftFoot.fbx", typeof(Mesh)) as Mesh;
-            if (leftFoot == null) {
-                Debug.Log("fbx null");
+            if (ActionEditorWindowManager.instance.leftFoot == null) {
+                ActionEditorWindowManager.instance.leftFoot = AssetDatabase.LoadAssetAtPath(
+                    modelpath + "LeftFoot.fbx", typeof(Mesh)) as Mesh;
             }
 
-            rightFoot = AssetDatabase.LoadAssetAtPath(
-                modelpath + "RightFoot.fbx", typeof(Mesh)) as Mesh;
-            if (rightFoot == null) {
-                Debug.Log("fbx null");
+            if (ActionEditorWindowManager.instance.rightFoot == null) {
+                ActionEditorWindowManager.instance.rightFoot = AssetDatabase.LoadAssetAtPath(
+                    modelpath + "RightFoot.fbx", typeof(Mesh)) as Mesh;
             }
-
             // SubWindow
             if (myskin == null) {
                 var mono = MonoScript.FromScriptableObject(this);
@@ -114,9 +98,15 @@ namespace VGent{
                 scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
                 myskin = AssetDatabase.LoadAssetAtPath<GUISkin>(scriptpath + skinpath);
             }
-            visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
+            if (ActionEditorWindowManager.instance.visibleButtonTexture == null) {
+                ActionEditorWindowManager.instance.visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
+            }
+            if (ActionEditorWindowManager.instance.editableLabelTexture == null) {
+                ActionEditorWindowManager.instance.editableLabelTexture = GetEditableLabelTexture();
+            }
+            tempActionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
 
-            temporaryActionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            InitAtionTargetGraphRectDict();
 
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
@@ -143,10 +133,10 @@ namespace VGent{
         [MenuItem("Window/SprUnity Action/Action Target Graph Editor Window")]
         static void Open() {
             ReloadActionList();
-            if (ActionEditorWindowManager.instance.actionTargetGraphRectDict != null) {
+            if (ActionEditorWindowManager.instance.actionTargetGraphStatuses != null) {
                 ActionTargetGraphEditorWindow w = GetWindow(typeof(ActionTargetGraphEditorWindow), false, "ActionTargetGraph", true) as ActionTargetGraphEditorWindow;
                 w.wantsMouseMove = true;
-                w.graph = ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().First().Key.actionTargetGraph;
+                w.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
             }
         }
         public static void Open(ActionTargetGraph graph) {
@@ -170,7 +160,6 @@ namespace VGent{
             base.OnGUI();
 
             if (!guiInitialized) {
-                //ReloadActionList();
                 toolbarBase = GUI.skin.FindStyle("toolbar");
                 toolbarButton = GUI.skin.FindStyle("toolbarButton");
                 toolbarLabel = GUI.skin.FindStyle("toolbarButton");
@@ -236,7 +225,7 @@ namespace VGent{
             if (!showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterHeight));
 
-                var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphRectDict;
+                var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphStatuses;
 
                 GUILayout.Label("ActionTargetGraphs", GUILayout.Width(subWindowWidth - scrollWidth));
                 //if (window == null) {
@@ -253,14 +242,14 @@ namespace VGent{
                 //    }
                 //}
                 EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollWidth));
-                temporaryActionTargetGraphRectDict.Clear();
-                foreach (var actionTargetGraphStatus in actionTargetGraphStatuses.GetTable().Keys) {
+                tempActionTargetGraphRectDict.Clear();
+                foreach (var actionTargetGraphStatus in actionTargetGraphStatuses) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
                     //GUILayout.BeginArea(singleRect);
                     GUILayout.BeginHorizontal();
                     Texture2D currentTexture = noneButtonTexture;
                     if (actionTargetGraphStatus.isVisible) {
-                        currentTexture = visibleButtonTexture;
+                        currentTexture = ActionEditorWindowManager.instance.visibleButtonTexture;
                     } else {
                         currentTexture = noneButtonTexture;
                     }
@@ -268,7 +257,7 @@ namespace VGent{
                         if (!actionTargetGraphStatus.isVisible) {
                             actionTargetGraphStatus.isVisible = true;
                             latestVisibleKeyPose = actionTargetGraphStatus.actionTargetGraph;
-                            foreach (var keyPoseStatus2 in actionTargetGraphStatuses.GetTable().Keys) {
+                            foreach (var keyPoseStatus2 in actionTargetGraphStatuses) {
                                 if (keyPoseStatus2.isVisible && keyPoseStatus2.actionTargetGraph != latestVisibleKeyPose) {
                                     keyPoseStatus2.isVisible = false;
                                 }
@@ -304,7 +293,7 @@ namespace VGent{
                     }
                     var defaultback = GUI.skin.label.normal.background;
                     if (actionTargetGraphStatus.actionTargetGraph == this.graph) {
-                        GUI.skin.label.normal.background = GetEditableTexture();
+                        GUI.skin.label.normal.background = ActionEditorWindowManager.instance.editableLabelTexture;
                     }
                     if (actionTargetGraphStatus.actionTargetGraph == renameActionTargetGraph) {
                         renaming = GUILayout.TextField(renaming, GUILayout.Height(buttonHeight));
@@ -322,11 +311,10 @@ namespace VGent{
                     }
                     GUI.skin.label.normal.background = defaultback;
                     // <!!>毎回呼ぶのか..
+                    //GUI.Box(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph.name);
                     LeftClick(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
-                    // ここでactionTargetGraphRectDictを変更するとforeachがエラーで動かない
-                    temporaryActionTargetGraphRectDict.Add(actionTargetGraphStatus,GUILayoutUtility.GetLastRect());
-                    //ActionEditorWindowManager.instance.actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
-                    
+
+                    tempActionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
                     GUILayout.EndHorizontal();
                 }
                 if (GUILayout.Button("Add")) {
@@ -351,13 +339,13 @@ namespace VGent{
                 EditorGUILayout.EndScrollView();
             }
 
-            foreach(var temporaryActionTargetGraphRect in temporaryActionTargetGraphRectDict) {
-                if (ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().ContainsKey(temporaryActionTargetGraphRect.Key)) {
-                    ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable()[temporaryActionTargetGraphRect.Key] = temporaryActionTargetGraphRect.Value;
+            foreach (var temp in tempActionTargetGraphRectDict) {
+                if (actionTargetGraphRectDict.ContainsKey(temp.Key)) {
+                    actionTargetGraphRectDict[temp.Key] = temp.Value;
                 }
             }
             // Foldoutによる描画のずれを修正
-            foreach (var actionTargetGraphRect in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable()) {
+            foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
                 var rect = actionTargetGraphRect.Value;
                 rect.y += showSubWindowRect.y + showSubWindowRect.height;
                 //GUI.Box(rect, actionTargetGraphRect.Key.actionTargetGraph.name);
@@ -410,8 +398,8 @@ namespace VGent{
             AssetDatabase.MoveAssetToTrash(path);
             ReloadActionList();
             if (removeSelectedGraph) {
-                if (ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Count != 0) {
-                    this.graph = ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().First().Key.actionTargetGraph;
+                if (ActionEditorWindowManager.instance.actionTargetGraphStatuses.Count != 0) {
+                    this.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
                 } else {
                     this.graph = null;
                 }
@@ -456,17 +444,17 @@ namespace VGent{
             PosRotScale r = boneKeyPoseNode.GetInputValue<PosRotScale>("posRotScale");
             if (boneKeyPoseNode.usePosition || boneKeyPoseNode.useRotation) {
                 // 調整用の手などを表示
-                editableMat.SetPass(0); // 1だと影しか見えない？ 
+                ActionEditorWindowManager.instance.editableMat.SetPass(0); // 1だと影しか見えない？ 
                 if (boneKeyPoseNode.boneId == HumanBodyBones.LeftHand) {
-                    Graphics.DrawMeshNow(leftHand, r.position + r.rotation * new Vector3(0.05f, 0, 0), r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(ActionEditorWindowManager.instance.leftHand, r.position + r.rotation * new Vector3(0.05f, 0, 0), r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.RightHand) {
-                    Graphics.DrawMeshNow(rightHand, r.position + r.rotation * new Vector3(-0.05f, 0, 0), r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(ActionEditorWindowManager.instance.rightHand, r.position + r.rotation * new Vector3(-0.05f, 0, 0), r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.Head) {
-                    Graphics.DrawMeshNow(head, r.position, r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(ActionEditorWindowManager.instance.head, r.position, r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.LeftFoot) {
-                    Graphics.DrawMeshNow(leftFoot, r.position, r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(ActionEditorWindowManager.instance.leftFoot, r.position, r.rotation.normalized, 0);
                 } else if (boneKeyPoseNode.boneId == HumanBodyBones.RightFoot) {
-                    Graphics.DrawMeshNow(rightFoot, r.position, r.rotation.normalized, 0);
+                    Graphics.DrawMeshNow(ActionEditorWindowManager.instance.rightFoot, r.position, r.rotation.normalized, 0);
                 }
             }
             // visible
@@ -488,13 +476,14 @@ namespace VGent{
         }
 
         public static void ReloadActionList() {
-            Debug.Log("ReloadActionList");
+            actionTargetGraphNames = new List<string>();
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
+            actionTargetGraphNames.Clear();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -502,25 +491,26 @@ namespace VGent{
                 var actionTargetGraph = obj as ActionTargetGraph;
                 if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
+                    actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);
                     // ActionEditorWindowManagerにない場合のみ追加
                     actionTargetGraphsInAsset.Add(actionTargetGraph);
                     bool isExist = false;
-                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Keys) {
+                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
                         if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                             isExist = true;
                             break;
                         }
                     }
                     if (!isExist) {
-                        ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Add(actionTargetGraphStatus,new Rect());
+                        ActionEditorWindowManager.instance.actionTargetGraphStatuses.Add(actionTargetGraphStatus);
                     }
                 }
             }
 
             // 残っているものを削除
             List<ActionTargetGraphStatus> deleteList = new List<ActionTargetGraphStatus>();
-            foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Keys) {
+            foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
                 bool isExist = false;
                 foreach (var actionTargetGraph in actionTargetGraphsInAsset) {
                     if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
@@ -532,14 +522,20 @@ namespace VGent{
                 }
             }
             foreach (var delete in deleteList) {
-                ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Remove(delete);
+                ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
             }
 
             //ソート
-            //ActionEditorWindowManager.instance.actionTargetGraphDictRect.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
-            ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().OrderBy(selecter => selecter.Key.actionTargetGraph.name);
-        }
+            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
 
+            InitAtionTargetGraphRectDict();
+        }
+        public static void InitAtionTargetGraphRectDict() {
+            actionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            foreach (var actionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                actionTargetGraphRectDict.Add(actionTargetGraphStatus, new Rect());
+            }
+        }
         public void ReloadActionTargetGraphs() {
             var guids = AssetDatabase.FindAssets("*").Distinct();
             Debug.Log(guids.Count());
@@ -556,23 +552,23 @@ namespace VGent{
             }
         }
 
-        Texture2D GetEditableTexture() {
-            if (editableLabelTexture == null) {
-                var mono = MonoScript.FromScriptableObject(this);
-                var scriptpath = AssetDatabase.GetAssetPath(mono);
-                scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
-                var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
-                if (bytes != null) {
-                    editableLabelTexture = new Texture2D(1, 1);
-                    editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
-                    editableLabelTexture.filterMode = FilterMode.Bilinear;
-                } else {
-                    Debug.Log("picture null");
-                }
+        Texture2D GetEditableLabelTexture() {
+            Texture2D editableLabelTexture = null;
+            var mono = MonoScript.FromScriptableObject(this);
+            var scriptpath = AssetDatabase.GetAssetPath(mono);
+            scriptpath = scriptpath.Replace("EditorWindow/ActionTargetGraphEditorWindow.cs", "");
+            var bytes = System.IO.File.ReadAllBytes(scriptpath + editableLabelpath);
+            if (bytes != null) {
+                editableLabelTexture = new Texture2D(1, 1);
+                editableLabelTexture.LoadImage(System.IO.File.ReadAllBytes(scriptpath + editableLabelpath));
+                editableLabelTexture.filterMode = FilterMode.Bilinear;
+            } else {
+                Debug.Log("picture null");
             }
             return editableLabelTexture;
         }
     }
+    [System.Serializable]
     public class ActionTargetGraphStatus {
         public ActionTargetGraph actionTargetGraph;
         public bool isVisible;
