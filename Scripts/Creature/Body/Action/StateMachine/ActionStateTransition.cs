@@ -1,13 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SprUnity;
 
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditorInternal;
 #endif
 
-namespace SprUnity {
+namespace VGent{
 
     [System.Serializable]
     public class TransitionCondition {

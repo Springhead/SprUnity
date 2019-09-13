@@ -6,7 +6,7 @@ using UnityEditorInternal;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace SprUnity {
+namespace VGent{
     [CustomEditor(typeof(ActionStateTransition))]
     public class ActionStateTransitionEditor : Editor {
 

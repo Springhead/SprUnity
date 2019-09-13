@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-
-namespace SprUnity {
+namespace VGent{
     [CustomEditor(typeof(ActionState))]
     public class ActionStateEditor : Editor {
         public override void OnInspectorGUI() {

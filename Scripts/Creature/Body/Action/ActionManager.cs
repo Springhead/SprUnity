@@ -4,12 +4,14 @@ using System.Linq;
 using System;
 using System.Reflection;
 using UnityEngine;
+using SprUnity;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 using SprCs;
 
-namespace SprUnity {
+namespace VGent {
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(ActionManager))]

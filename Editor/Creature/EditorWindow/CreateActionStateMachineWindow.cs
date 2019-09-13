@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace SprUnity {
+namespace VGent{
     public class CreateActionStateMachineWindow : EditorWindow {
         public static CreateActionStateMachineWindow window;
         private string newName = "";

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEditor;
+using VGent;
 
 namespace SprUnity {
     public class ActionEditorWindowManager : ScriptableSingleton<ActionEditorWindowManager> {

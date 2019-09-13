@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
+using SprUnity;
 
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
 #endif
 
-namespace SprUnity {
+namespace VGent{
     /*
     [CustomPropertyDrawer(typeof(ActionStateMachineParameter))]
     public class ActionParameterPropertyDrawer : PropertyDrawer {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SprUnity;
 using System.Linq;
+using VGent;
 
 public class BlendShapeMovement {
     public string name;

@@ -7,7 +7,7 @@ using SprUnity;
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
 
     public class ActionState : ScriptableObject {
         // ----- ----- ----- ----- -----
