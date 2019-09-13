@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace SprUnity {
+namespace VGent{
     [CustomEditor(typeof(MentalScene))]
     public partial class MentalSceneEditor : Editor {
         public override void OnInspectorGUI() {

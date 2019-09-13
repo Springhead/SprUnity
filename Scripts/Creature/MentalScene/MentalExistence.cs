@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SprUnity {
+namespace VGent{
     public abstract class MentalExistence : MonoBehaviour {
         public abstract Type GetAttribute<Type>() where Type : MentalAttribute;
     }

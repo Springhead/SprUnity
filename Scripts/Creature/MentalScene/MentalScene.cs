@@ -9,7 +9,7 @@ using System.Reflection;
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
     [DefaultExecutionOrder(1)]
     public class MentalScene : MonoBehaviour {
         // MentalScene関連はプレイ中以外でも見れるようにするために二つ実装する 

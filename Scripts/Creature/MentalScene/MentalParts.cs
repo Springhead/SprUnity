@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
 #if UNITY_EDITOR
     [CustomEditor(typeof(MentalParts), true)]
     public class MentalPartsEditor : Editor {

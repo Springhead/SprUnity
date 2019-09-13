@@ -9,7 +9,7 @@ using System.Linq;
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent {
 #if UNITY_EDITOR
     [CustomEditor(typeof(MentalGroup))]
     public class MentalGroupEditor : Editor {
