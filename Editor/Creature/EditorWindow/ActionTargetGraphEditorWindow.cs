@@ -31,7 +31,6 @@ namespace VGent{
         public static GUIStyle toolbarDropdown;
         public static GUIStyle toolbarPopup;
 
-        private static List<string> actionTargetGraphNames;
 
         // SubWindow
         private bool showSubWindow = false;
@@ -57,8 +56,8 @@ namespace VGent{
 
         private ActionTargetGraph latestEditableKeyPose;
         private ActionTargetGraph latestVisibleKeyPose;
-        private static Dictionary<ActionTargetGraphStatus, Rect> actionTargetGraphRectDict;
 
+        private Dictionary<ActionTargetGraphStatus,Rect> temporaryActionTargetGraphRectDict;
         private static ActionTargetGraph renameActionTargetGraph;
         private string renaming;
 
@@ -117,6 +116,8 @@ namespace VGent{
             }
             visibleButtonTexture = EditorGUIUtility.Load("ViewToolOrbit On") as Texture2D;
 
+            temporaryActionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
         }
@@ -142,10 +143,10 @@ namespace VGent{
         [MenuItem("Window/SprUnity Action/Action Target Graph Editor Window")]
         static void Open() {
             ReloadActionList();
-            if (ActionEditorWindowManager.instance.actionTargetGraphStatuses != null) {
+            if (ActionEditorWindowManager.instance.actionTargetGraphRectDict != null) {
                 ActionTargetGraphEditorWindow w = GetWindow(typeof(ActionTargetGraphEditorWindow), false, "ActionTargetGraph", true) as ActionTargetGraphEditorWindow;
                 w.wantsMouseMove = true;
-                w.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
+                w.graph = ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().First().Key.actionTargetGraph;
             }
         }
         public static void Open(ActionTargetGraph graph) {
@@ -169,7 +170,7 @@ namespace VGent{
             base.OnGUI();
 
             if (!guiInitialized) {
-                ReloadActionList();
+                //ReloadActionList();
                 toolbarBase = GUI.skin.FindStyle("toolbar");
                 toolbarButton = GUI.skin.FindStyle("toolbarButton");
                 toolbarLabel = GUI.skin.FindStyle("toolbarButton");
@@ -235,7 +236,7 @@ namespace VGent{
             if (!showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterHeight));
 
-                var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphStatuses;
+                var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphRectDict;
 
                 GUILayout.Label("ActionTargetGraphs", GUILayout.Width(subWindowWidth - scrollWidth));
                 //if (window == null) {
@@ -252,7 +253,8 @@ namespace VGent{
                 //    }
                 //}
                 EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(subWindowWidth - scrollWidth));
-                foreach (var actionTargetGraphStatus in actionTargetGraphStatuses) {
+                temporaryActionTargetGraphRectDict.Clear();
+                foreach (var actionTargetGraphStatus in actionTargetGraphStatuses.GetTable().Keys) {
                     //Rect singleRect = GUILayoutUtility.GetRect(windowWidth, 30);
                     //GUILayout.BeginArea(singleRect);
                     GUILayout.BeginHorizontal();
@@ -266,7 +268,7 @@ namespace VGent{
                         if (!actionTargetGraphStatus.isVisible) {
                             actionTargetGraphStatus.isVisible = true;
                             latestVisibleKeyPose = actionTargetGraphStatus.actionTargetGraph;
-                            foreach (var keyPoseStatus2 in actionTargetGraphStatuses) {
+                            foreach (var keyPoseStatus2 in actionTargetGraphStatuses.GetTable().Keys) {
                                 if (keyPoseStatus2.isVisible && keyPoseStatus2.actionTargetGraph != latestVisibleKeyPose) {
                                     keyPoseStatus2.isVisible = false;
                                 }
@@ -320,9 +322,11 @@ namespace VGent{
                     }
                     GUI.skin.label.normal.background = defaultback;
                     // <!!>毎回呼ぶのか..
-                    //GUI.Box(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph.name);
                     LeftClick(GUILayoutUtility.GetLastRect(), actionTargetGraphStatus.actionTargetGraph);
-                    actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
+                    // ここでactionTargetGraphRectDictを変更するとforeachがエラーで動かない
+                    temporaryActionTargetGraphRectDict.Add(actionTargetGraphStatus,GUILayoutUtility.GetLastRect());
+                    //ActionEditorWindowManager.instance.actionTargetGraphRectDict[actionTargetGraphStatus] = GUILayoutUtility.GetLastRect();
+                    
                     GUILayout.EndHorizontal();
                 }
                 if (GUILayout.Button("Add")) {
@@ -347,8 +351,13 @@ namespace VGent{
                 EditorGUILayout.EndScrollView();
             }
 
+            foreach(var temporaryActionTargetGraphRect in temporaryActionTargetGraphRectDict) {
+                if (ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().ContainsKey(temporaryActionTargetGraphRect.Key)) {
+                    ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable()[temporaryActionTargetGraphRect.Key] = temporaryActionTargetGraphRect.Value;
+                }
+            }
             // Foldoutによる描画のずれを修正
-            foreach (var actionTargetGraphRect in actionTargetGraphRectDict) {
+            foreach (var actionTargetGraphRect in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable()) {
                 var rect = actionTargetGraphRect.Value;
                 rect.y += showSubWindowRect.y + showSubWindowRect.height;
                 //GUI.Box(rect, actionTargetGraphRect.Key.actionTargetGraph.name);
@@ -401,8 +410,8 @@ namespace VGent{
             AssetDatabase.MoveAssetToTrash(path);
             ReloadActionList();
             if (removeSelectedGraph) {
-                if (ActionEditorWindowManager.instance.actionTargetGraphStatuses.Count != 0) {
-                    this.graph = ActionEditorWindowManager.instance.actionTargetGraphStatuses[0].actionTargetGraph;
+                if (ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Count != 0) {
+                    this.graph = ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().First().Key.actionTargetGraph;
                 } else {
                     this.graph = null;
                 }
@@ -479,15 +488,13 @@ namespace VGent{
         }
 
         public static void ReloadActionList() {
-            actionTargetGraphNames = new List<string>();
-            actionTargetGraphRectDict = new Dictionary<ActionTargetGraphStatus, Rect>();
+            Debug.Log("ReloadActionList");
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
-            actionTargetGraphNames.Clear();
 
             foreach (var guid in guids) {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -495,27 +502,25 @@ namespace VGent{
                 var actionTargetGraph = obj as ActionTargetGraph;
                 if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
-                    actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);
-                    actionTargetGraphRectDict.Add(actionTargetGraphStatus, new Rect());
                     // ActionEditorWindowManagerにない場合のみ追加
                     actionTargetGraphsInAsset.Add(actionTargetGraph);
                     bool isExist = false;
-                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+                    foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Keys) {
                         if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
                             isExist = true;
                             break;
                         }
                     }
                     if (!isExist) {
-                        ActionEditorWindowManager.instance.actionTargetGraphStatuses.Add(actionTargetGraphStatus);
+                        ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Add(actionTargetGraphStatus,new Rect());
                     }
                 }
             }
 
             // 残っているものを削除
             List<ActionTargetGraphStatus> deleteList = new List<ActionTargetGraphStatus>();
-            foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphStatuses) {
+            foreach (var existActionTargetGraphStatus in ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Keys) {
                 bool isExist = false;
                 foreach (var actionTargetGraph in actionTargetGraphsInAsset) {
                     if (actionTargetGraph == existActionTargetGraphStatus.actionTargetGraph) {
@@ -527,11 +532,12 @@ namespace VGent{
                 }
             }
             foreach (var delete in deleteList) {
-                ActionEditorWindowManager.instance.actionTargetGraphStatuses.Remove(delete);
+                ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().Remove(delete);
             }
 
             //ソート
-            ActionEditorWindowManager.instance.actionTargetGraphStatuses.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
+            //ActionEditorWindowManager.instance.actionTargetGraphDictRect.Sort((a, b) => a.actionTargetGraph.name.CompareTo(b.actionTargetGraph.name));
+            ActionEditorWindowManager.instance.actionTargetGraphRectDict.GetTable().OrderBy(selecter => selecter.Key.actionTargetGraph.name);
         }
 
         public void ReloadActionTargetGraphs() {

@@ -13,7 +13,7 @@ namespace SprUnity {
         //ActionEditorWindowManager instance;
 
         // 
-        public Body[] bodiesInScene; 
+        public Body[] bodiesInScene;
         public Body body;
 
         //
@@ -29,8 +29,8 @@ namespace SprUnity {
 
         //
         public BodyParameterWindow bodyParameterWindow;
-        
-        
+
+
         // KeyPoseWindow関係
         public List<KeyPoseStatus> keyPoseStatuses;
 
@@ -52,14 +52,14 @@ namespace SprUnity {
         public List<ActionTargetGraph> actionTargetGraphs;
         public ActionTargetGraph selectedActionTargetGraph;
 
-        public List<ActionTargetGraphStatus> actionTargetGraphStatuses;
+        public SampleTable actionTargetGraphRectDict;
         // Log data
 
         ActionEditorWindowManager() {
             keyPoseStatuses = new List<KeyPoseStatus>();
             actions = new List<ActionStateMachine>();
             actionTargetGraphs = new List<ActionTargetGraph>();
-            actionTargetGraphStatuses = new List<ActionTargetGraphStatus>();
+            actionTargetGraphRectDict = new SampleTable();
 
             EditorApplication.hierarchyChanged -= OnHierarchyChanged;
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
@@ -128,28 +128,28 @@ namespace SprUnity {
                 if (instance.stateMachineWindow != null) instance.stateMachineWindow.Repaint();
                 actionSelectChanged = false;
             }
-            if(instance.body == null) {
+            if (instance.body == null) {
                 bodiesInScene = GameObject.FindObjectsOfType<Body>();
                 body = GameObject.FindObjectOfType<Body>();
             }
         }
 
         void OnPlayModeChanged(PlayModeStateChange state) {
-            if(state == PlayModeStateChange.ExitingEditMode) {
+            if (state == PlayModeStateChange.ExitingEditMode) {
 
-            }else if(state == PlayModeStateChange.EnteredPlayMode) {
+            } else if (state == PlayModeStateChange.EnteredPlayMode) {
 
-            }else if(state == PlayModeStateChange.ExitingPlayMode) {
+            } else if (state == PlayModeStateChange.ExitingPlayMode) {
 
-            }else if(state == PlayModeStateChange.EnteredEditMode) {
+            } else if (state == PlayModeStateChange.EnteredEditMode) {
 
             }
         }
 
         void OnPauseChanged(PauseState state) {
-            if(state == PauseState.Paused) {
+            if (state == PauseState.Paused) {
 
-            }else if(state == PauseState.Unpaused) {
+            } else if (state == PauseState.Unpaused) {
 
             }
         }
@@ -166,7 +166,7 @@ namespace SprUnity {
             Handles.BeginGUI();
             GUILayout.BeginVertical();
             GUILayout.Label("Bodies:" + bodiesInScene.Length);
-            foreach(var bodyInScene in bodiesInScene) {
+            foreach (var bodyInScene in bodiesInScene) {
                 bool enable = !(bodyInScene == body);
                 if (bodyInScene) {
                     GUILayout.BeginHorizontal();
@@ -184,5 +184,16 @@ namespace SprUnity {
 
         #endregion // EventDelegates
     }
+    [System.Serializable]
+    public class SampleTable : TableBase<ActionTargetGraphStatus, Rect, SamplePair> {
 
+
+    }
+    [System.Serializable]
+    public class SamplePair : KeyAndValue<ActionTargetGraphStatus, Rect> {
+
+        public SamplePair(ActionTargetGraphStatus key, Rect value) : base(key, value) {
+
+        }
+    }
 }
