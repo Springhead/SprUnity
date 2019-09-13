@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-
-namespace SprUnity {
+using SprUnity;
+namespace VGent{
     [CustomNodeEditor(typeof(QuaternionNode))]
     public class QuaternionNodeEditor : ActionTargetNodeBaseEditor { 
         public override void OnSceneGUI(Body body = null) {

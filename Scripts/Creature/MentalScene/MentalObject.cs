@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VGent;
 
 namespace SprUnity {
     public class MentalObject : MentalExistence {

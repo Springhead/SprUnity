@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Value/Int")]
     public class IntNode : ActionTargetInputNodeBase {
         [Output] public int output;

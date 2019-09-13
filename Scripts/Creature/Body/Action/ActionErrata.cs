@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
 
     [CreateAssetMenu()]
     public class ActionErrata : MonoBehaviour{

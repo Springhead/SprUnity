@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
-
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Converter/DecomposeTransform")]
     public class DecomposeTransformNode : ActionTargetTransformNodeBase {
 

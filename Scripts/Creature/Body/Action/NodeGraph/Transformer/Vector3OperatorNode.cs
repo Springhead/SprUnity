@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Transform/Vector3Operator")]
     public class Vector3OperatorNode : ActionTargetTransformNodeBase {
         [Output] public Vector3 result;

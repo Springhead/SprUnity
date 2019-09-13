@@ -5,7 +5,7 @@ using UnityEditor;
 using XNode;
 using XNodeEditor;
 
-namespace SprUnity {
+namespace VGent{
     [CustomNodeEditor(typeof(FromToRotQuaternionNode))]
     public class FromToRotQuaternionNodeEditor : ActionTargetNodeBaseEditor {
 

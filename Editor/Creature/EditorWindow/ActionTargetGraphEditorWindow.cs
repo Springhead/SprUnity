@@ -6,9 +6,10 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using XNode;
 using XNodeEditor;
+using SprUnity;
 using System.Linq;
 
-namespace SprUnity {
+namespace VGent{
 
     public class ActionTargetGraphEditorWindow : XNodeEditor.NodeEditorWindow, IHasCustomMenu {
         private Material editableMat, visibleMat;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Converter/DecomposePose")]
     public class DecomposePoseNode : ActionTargetTransformNodeBase {
         [Input] public Pose pose = new Pose();

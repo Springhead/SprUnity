@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
 
     public class BoneSubMovementPair {
         public Bone bone;

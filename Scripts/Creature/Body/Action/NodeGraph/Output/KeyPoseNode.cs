@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Output/KeyPose")]
     public class KeyPoseNode : KeyPoseNodeBase {
         [Output] public KeyPose key;

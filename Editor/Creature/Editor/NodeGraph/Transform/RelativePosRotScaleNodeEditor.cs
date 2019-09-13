@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using XNode;
 using XNodeEditor;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
     [CustomNodeEditor(typeof(RelativePosRotScaleNode))]
     public class RelativePosRotScaleNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body = null) {

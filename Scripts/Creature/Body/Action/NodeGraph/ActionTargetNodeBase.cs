@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent {
     public abstract class ActionTargetNodeBase : Node {
 
         public bool visualizable = false;

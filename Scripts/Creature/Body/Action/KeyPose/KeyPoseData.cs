@@ -9,7 +9,7 @@ using SprUnity;
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
 
     [Serializable]
     public class ActionTarget {

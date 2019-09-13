@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
+using SprUnity;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Transform/Blend")]
     public class BlendPosRotScaleNode : ActionTargetTransformNodeBase {
         [Output] public PosRotScale output;

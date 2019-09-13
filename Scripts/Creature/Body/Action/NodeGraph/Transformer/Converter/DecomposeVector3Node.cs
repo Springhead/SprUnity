@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Converter/DecomposeVector3")]
     public class DecomposeVector3Node : ActionTargetTransformNodeBase {
         [Input] public Vector3 vec = Vector3.zero;

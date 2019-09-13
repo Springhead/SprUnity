@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEditor;
 using XNode;
 using XNodeEditor;
-
-namespace SprUnity {
+using SprUnity;
+namespace VGent {
     [CustomNodeEditor(typeof(BlendPosRotScaleNode))]
     public class BlendPosRotScaleNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body) {

@@ -5,8 +5,9 @@ using UnityEngine;
 using UnityEditor;
 using XNode;
 using XNodeEditor;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
     [CustomNodeEditor(typeof(BodyCoordinateNode))]
     public class BodyCoordinateNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body) {

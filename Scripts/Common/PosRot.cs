@@ -2,7 +2,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace SprUnity {
+namespace VGent{
     [System.Serializable]
     public class PosRot {
         public PosRot() { }

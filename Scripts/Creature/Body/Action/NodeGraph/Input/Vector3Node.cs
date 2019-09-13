@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Value/Vector3")]
     public class Vector3Node : ActionTargetInputNodeBase {
         [Output] public Vector3 output;

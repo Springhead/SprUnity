@@ -4,8 +4,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using SprCs;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
 
     public class KeyPoseStatus {
         public ActionTargetGraph keyPose;

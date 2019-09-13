@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XNode;
+using SprUnity;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Coordinate/Body")]
     public class BodyCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();

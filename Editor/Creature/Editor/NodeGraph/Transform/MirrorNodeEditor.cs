@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using XNode;
 using XNodeEditor;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent {
     [CustomNodeEditor(typeof(MirrorNode))]
     public class MirrorNodeEditor : ActionTargetNodeBaseEditor {
         static Color mirrorColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);

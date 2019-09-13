@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace SprUnity {
+namespace VGent {
 
     public class KeyPoseDataGroup : ScriptableObject {
         public static string path = "Assets/Actions/KeyPoses/";

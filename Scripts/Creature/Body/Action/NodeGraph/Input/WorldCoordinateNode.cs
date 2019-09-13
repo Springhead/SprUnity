@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Coordinate/World")]
     public class WorldCoordinateNode : ActionTargetInputNodeBase {
         [Output] public PosRotScale posRotScale = new PosRotScale();

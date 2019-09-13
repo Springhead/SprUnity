@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
 
     public abstract class KeyPoseNodeBase : ActionTargetNodeBase {
 

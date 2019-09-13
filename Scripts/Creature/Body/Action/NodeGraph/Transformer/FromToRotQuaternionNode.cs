@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Transform/FromToRot")]
     public class FromToRotQuaternionNode : ActionTargetTransformNodeBase {
         [Output] public Quaternion output;

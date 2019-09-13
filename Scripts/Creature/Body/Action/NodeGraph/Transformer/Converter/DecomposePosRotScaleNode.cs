@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace SprUnity {
+namespace VGent{
     [CreateNodeMenu("Converter/DecomposePosRotScale")]
     public class DecomposePosRotScaleNode : ActionTargetTransformNodeBase {
         [Input] public PosRotScale posRotScale = new PosRotScale();

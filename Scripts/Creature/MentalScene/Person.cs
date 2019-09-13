@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System;
 using UnityEngine;
-
+using VGent;
 namespace SprUnity {
 
     public class BodyInfo : Person.Attribute {

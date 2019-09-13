@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using XNode;
 using XNodeEditor;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent{
     [CustomNodeEditor(typeof(InputPerceptionObjectNode))]
     public class InputPerceptionObjectNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body = null) {

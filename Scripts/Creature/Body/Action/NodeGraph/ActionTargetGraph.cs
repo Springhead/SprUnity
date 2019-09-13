@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 using System.Linq;
-using VGent;
+using SprUnity;
+
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
 #endif
 
-namespace SprUnity {
+namespace VGent{
     [CreateAssetMenu]
     public class ActionTargetGraph : NodeGraph {
 

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-
-namespace SprUnity {
+namespace VGent{
     public class CreateActionTargetGraphWindow : EditorWindow {
         public static CreateActionTargetGraphWindow window;
         private string newName = "";

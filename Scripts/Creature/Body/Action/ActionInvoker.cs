@@ -4,8 +4,9 @@ using System.Linq;
 using System;
 using UnityEngine;
 using SprCs;
+using SprUnity;
 
-namespace SprUnity {
+namespace VGent {
 
     [Serializable]
     public class KeyPoseTiming {
