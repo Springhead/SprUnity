@@ -51,6 +51,7 @@ namespace SprUnity {
             window = GetWindow<ActionStateMachineWindow>();
             window.titleContent = new GUIContent("ActionStateMachine");
             ReloadActionList();
+            actionNames = GetActionNames();
             ActionEditorWindowManager.instance.stateMachineWindow = ActionStateMachineWindow.window;
             ActionEditorWindowManager.instance.selectedAction = ActionEditorWindowManager.instance.actions[0];
         }
@@ -332,7 +333,7 @@ namespace SprUnity {
                 }
             }
         }
-        public List<string> GetActionNames() {
+        public static List<string> GetActionNames() {
             actionNames = new List<string>();
             foreach (var action in ActionEditorWindowManager.instance.actions) {
                 actionNames.Add(action.name);
