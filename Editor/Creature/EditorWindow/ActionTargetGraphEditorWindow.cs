@@ -417,7 +417,7 @@ namespace VGent {
                             editor.OnSceneGUI(body);
                         }
                         //node.OnSceneGUI(body);
-                        AddBoneKeyPoseNode(node, editableBoneKeyPoseNodes);
+                        AddBoneKeyPoseNodeIfOutput(node, editableBoneKeyPoseNodes);
                     }
                 }
             }
@@ -425,17 +425,17 @@ namespace VGent {
                 DrawHumanBone(editableBoneKeyPoseNode);
             }
         }
-        // nodeの次のノードを見てそれがOutPutNodeならAddする
-        void AddBoneKeyPoseNode(Node node, List<ActionTargetOutputNode> boneKeyPoseNodes) {
+        // nodeの次のノードを見てそれがOutputNodeならAddする
+        void AddBoneKeyPoseNodeIfOutput(Node node, List<ActionTargetOutputNode> boneKeyPoseNodes) {
             foreach (var output in node.Outputs) {
                 foreach (var connection in output.GetConnections()) {
                     var newBoneKeyPoseNode = connection.node as ActionTargetOutputNode;
                     if (newBoneKeyPoseNode != null) {
-                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode)) {
+                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode) && newBoneKeyPoseNode.visualizable) {
                             boneKeyPoseNodes.Add(newBoneKeyPoseNode);
                         }
                     } else {
-                        AddBoneKeyPoseNode(connection.node, boneKeyPoseNodes);
+                        AddBoneKeyPoseNodeIfOutput(connection.node, boneKeyPoseNodes);
                     }
                 }
             }
