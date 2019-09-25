@@ -18,7 +18,7 @@ public class PHSceneBehaviourEditor : Editor {
 
         DrawDefaultInspector();
 
-                    EditorGUI.BeginChangeCheck();
+        EditorGUI.BeginChangeCheck();
         showCollision = EditorGUILayout.Foldout(showCollision, "Collision Setting");
         if (showCollision) {
             int i = 0;
@@ -92,6 +92,7 @@ public class PHSceneBehaviour : SprBehaviour {
     protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
     private static PHSdkIf phSdk = null;
+    protected static FWApp fwApp = null;
 
     public PHSceneDescStruct desc = null;
     public PHIKEngineDescStruct descIK = null;
@@ -99,6 +100,8 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableIK = true;
     public bool enableStep = true;
     public bool enableUpdate = true;
+
+    public bool enableDebugWindow = false;
 
     [Serializable]
     public class CollisionSetting {
@@ -153,15 +156,19 @@ public class PHSceneBehaviour : SprBehaviour {
     public override ObjectIf Build() {
         SEH_Exception.init();
 
-        FWAppBehaviour appB = GetComponent<FWAppBehaviour>();
-
         PHSceneIf phScene;
-        if (appB != null) {
-            FWApp app = FWAppBehaviour.app;
-            phSdk   = app.GetSdk().GetPHSdk();
-            phScene = app.GetSdk().GetScene(0).GetPHScene();
+        if (enableDebugWindow) {
+            fwApp = new FWApp();
+            fwApp.InitInNewThread();
+
+            // FWAppの初期化が終わるまで待つ
+            while (fwApp.GetSdk() == null || fwApp.GetSdk().GetPHSdk() == null) { System.Threading.Thread.Sleep(10); }
+
+            phSdk   = fwApp.GetSdk().GetPHSdk();
+            phScene = fwApp.GetSdk().GetScene(0).GetPHScene();
             phScene.Clear();
             phScene.SetDesc((PHSceneDesc)desc);
+
         } else {
             phSdk = PHSdkIf.CreateSdk();
             phScene = phSdk.CreateScene((PHSceneDesc)desc);
@@ -201,8 +208,8 @@ public class PHSceneBehaviour : SprBehaviour {
                     }
                 }
             //}
-            if (FWAppBehaviour.app != null) {
-                FWAppBehaviour.app.PostRedisplay();
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
             }
         }
     }
@@ -239,6 +246,13 @@ public class PHSceneBehaviour : SprBehaviour {
         }
 
         ApplyCollisionList();
+    }
+
+    private void OnDestroy() {
+        if (fwApp != null) {
+            fwApp.EndThread();
+            fwApp = null;
+        }
     }
 
 
