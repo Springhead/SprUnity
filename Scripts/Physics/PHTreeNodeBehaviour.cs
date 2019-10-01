@@ -13,14 +13,10 @@ public class PHTreeNodeBehaviour : SprSceneObjBehaviour {
 
     public PHTreeNodeDescStruct desc = null;
 
-    public bool enableRootNode = false;
-        
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
     public PHTreeNodeIf phTreeNode { get { return sprObject as PHTreeNodeIf; } }
-
-    public PHRootNodeIf phRootNode = null;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // SprBehaviourの派生クラスで実装するメソッド
@@ -57,66 +53,68 @@ public class PHTreeNodeBehaviour : SprSceneObjBehaviour {
         if (jo != null && jo.sprObject != null) {
             // 次に、関節の親関節を探す。関節のソケット剛体を探し、それを基準に探す
             // （親関節　＝　この関節のソケット剛体をプラグ剛体として持つ関節）
-            // 親関節がないかどんどん上に行って探す
-            while (true) {
-                PHJointBehaviour joParent = null;
-                var jos = jo.socket.GetComponentsInChildren<PHJointBehaviour>(); //InChildrenで探す必要はない？
-                foreach (var j in jos) {
-                    if (j.plug == jo.socket) { joParent = j; break; }
-                }
+            PHJointBehaviour joParent = null;
+            var jos = jo.socket.GetComponentsInChildren<PHJointBehaviour>();
+            foreach (var j in jos) {
+                if (j.plug == jo.socket) { joParent = j; break; }
+            }
 
-                if (joParent != null && jo != joParent) {
-                    // 親関節のノードが存在していれば、そちらを先に構築する
-                    PHTreeNodeBehaviour parentNode = joParent.GetComponent<PHTreeNodeBehaviour>();
-                    if (parentNode != null && parentNode.isActiveAndEnabled) {
-                        if (parentNode.sprObject == null) { parentNode.Link(); }
-                    }
+            PHTreeNodeBehaviour parentTreeNode = null;
+            PHRootNodeBehaviour parentRootNode = null;
+
+            if (joParent != null && jo != joParent) {
+                // -- 親関節があった場合
+                parentTreeNode = joParent.GetComponent<PHTreeNodeBehaviour>();
+                parentRootNode = joParent.GetComponent<PHRootNodeBehaviour>();
+
+                if (parentTreeNode != null && parentTreeNode.isActiveAndEnabled) {
+                    // 親ノードを先に構築する
+                    if (parentTreeNode.sprObject == null) { parentTreeNode.Link(); }
 
                     // その後、親TreeNodeに接続する形で自分のTreeNodeを作成する
                     if (sprObject == null) {
-                        sprObject = phScene.CreateTreeNode(parentNode.phTreeNode, jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
-                        Debug.Log("CreateTreeNode[" + this.name + "] = Tree(" + parentNode.name + ") <= Solid(" + jo.plug.name + ")");
+                        sprObject = phScene.CreateTreeNode(parentTreeNode.phTreeNode,
+                            jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
+                        Debug.Log("CreateTreeNode[" + this.name + "] = Tree(" + parentTreeNode.name + ") <= Solid(" + jo.plug.name + ")");
+
+                        phTreeNode.Enable();
                     }
 
-                    break;
+                } else if (parentRootNode != null && parentRootNode.isActiveAndEnabled) {
+                    // 親ノードを先に構築する
+                    if (parentRootNode.sprObject == null) { parentRootNode.Link(); }
+
+                    // その後、親RootNodeに接続する形で自分のTreeNodeを作成する
+                    if (sprObject == null) {
+                        sprObject = phScene.CreateTreeNode(parentRootNode.phRootNode,
+                            jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
+                        Debug.Log("CreateTreeNode[" + this.name + "] = Root(" + parentRootNode.name + ") <= Solid(" + jo.plug.name + ")");
+
+                        phTreeNode.Enable();
+                    }
 
                 } else {
-                    // 親関節がない場合はまずRootNodeを作る
-                    if (phRootNode == null) {
-                        phRootNode = phScene.CreateRootNode(jo.socket.GetComponent<PHSolidBehaviour>().phSolid);
-                        Debug.Log("CreateRootNode[" + this.name + "] = " + jo.socket.name);
-                    }
-
-                    // その後、RootNodeに接続する形で自分のTreeNodeを作成する
-                    if (sprObject == null) {
-                        sprObject = phScene.CreateTreeNode(phRootNode, jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
-                        Debug.Log("CreateTreeNode[" + this.name + "] = Root(" + this.name + ") <= Solid(" + jo.plug.name + ")");
-                    }
-
-                    break;
+                    Debug.LogError("No Parent Node for " + this.name);
                 }
+
+            } else {
+                // -- 親関節がない場合：この関節のsocketにRootNodeがくっついているはず
+                parentRootNode = jo.socket.GetComponent<PHRootNodeBehaviour>();
+
+                // 親ノードを先に構築する
+                if (parentRootNode.sprObject == null) { parentRootNode.Link(); }
+
+                // その後、親RootNodeに接続する形で自分のTreeNodeを作成する
+                if (sprObject == null) {
+                    sprObject = phScene.CreateTreeNode(parentRootNode.phRootNode,
+                        jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
+                    Debug.Log("CreateTreeNode[" + this.name + "] = Root(" + parentRootNode.name + ") <= Solid(" + jo.plug.name + ")");
+
+                    phTreeNode.Enable();
+                }
+
             }
         }
     }
-
-    public override void OnValidate() {
-        if (phRootNode != null) {
-            phRootNode.Enable(enableRootNode);
-            Debug.Log("RootNode " + (enableRootNode ? "enabled" : "disabled") + ".");
-        }
-    }
-
-    /*
-    bool initialized = false, first = true;
-    void FixedUpdate() {
-        if (initialized && first) {
-            if (phRootNode != null) {
-                phRootNode.Enable(false);
-                // Debug.Log("RootNode enabled.");
-            }
-            first = false;
-        }
-    }
-    */
 
 }
