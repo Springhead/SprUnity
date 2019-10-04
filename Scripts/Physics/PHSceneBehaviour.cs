@@ -177,6 +177,7 @@ public class PHSceneBehaviour : SprBehaviour {
         }
         else {
             phSdk = PHSdkIf.CreateSdk();
+            Debug.Log(phSdk.GetName());
             phScene = phSdk.CreateScene((PHSceneDesc)desc);
         }
 
@@ -258,6 +259,10 @@ public class PHSceneBehaviour : SprBehaviour {
         if (fwApp != null) {
             fwApp.EndThread();
             fwApp = null;
+        }
+        if(phSdk != null) {
+            phSdk.Clear();
+            phSdk = null;
         }
     }
 
