@@ -13,8 +13,8 @@ namespace VGent {
         public override void OnSceneGUI(Body body) {
             BodyCoordinateNode node = (BodyCoordinateNode)target;
             Body graphBody = (node.graph as ActionTargetGraph)?.body;
-            Vector3 pos;
-            Quaternion rot;
+            Vector3 pos = Vector3.zero;
+            Quaternion rot = Quaternion.identity;
             if (graphBody == null) {
                 // Graph has No active body
                 if (body != null) {
