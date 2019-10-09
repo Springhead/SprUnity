@@ -24,6 +24,7 @@ namespace VGent{
         // Return the correct value of an output port when requested
         public override object GetValue(NodePort port) {
             PosRotScale tempPosRotScale;
+            if (!Application.isPlaying) perceptionObj = null;
             if (perceptionObj != null) {
                 tempPosRotScale = new PosRotScale(perceptionObj.transform);
             } else {

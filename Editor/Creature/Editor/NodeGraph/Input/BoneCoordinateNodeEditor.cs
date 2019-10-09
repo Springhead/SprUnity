@@ -10,6 +10,7 @@ namespace VGent{
     [CustomNodeEditor(typeof(BoneCoordinateNode))]
     public class BoneCoordinateNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body = null) {
+            // BoneID Only?
             BoneCoordinateNode node = (BoneCoordinateNode)target;
             PosRotScale tempPosRotScale = new PosRotScale();
             Body graphBody = (node.graph as ActionTargetGraph)?.body;
@@ -24,6 +25,7 @@ namespace VGent{
                 pos = bone.transform.position;
                 rot = bone.transform.rotation;
                 Handles.PositionHandle(pos, rot);
+                Handles.Label(pos, node.boneId.ToString());
             } 
         }
     }

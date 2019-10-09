@@ -25,6 +25,7 @@ namespace VGent{
                 rot = graphBody.transform.rotation;
             }
             Handles.PositionHandle(pos, rot);
+            Handles.Label(pos, "Body");
         }
     }
 }

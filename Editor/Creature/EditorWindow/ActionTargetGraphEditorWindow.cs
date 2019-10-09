@@ -17,6 +17,9 @@ namespace VGent {
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
         private List<ActionTargetOutputNode> editableBoneKeyPoseNodes = new List<ActionTargetOutputNode>();
 
+        private bool showHandles = true;
+        private bool showBones = true;
+
         private static bool guiInitialized = false;
         public static GUIStyle toolbarBase;
         public static GUIStyle toolbarButton;
@@ -334,6 +337,8 @@ namespace VGent {
                 //        }
                 //    }
                 //}
+                showHandles = GUILayout.Toggle(showHandles, "Show Handles");
+                showBones = GUILayout.Toggle(showBones, "Show Bone Meshes");
                 EditorGUILayout.EndVertical();
 
                 EditorGUILayout.EndScrollView();
@@ -413,7 +418,7 @@ namespace VGent {
                     ActionTargetNodeBase node = obj as ActionTargetNodeBase;
                     if (node != null && node.visualizable) {
                         var editor = NodeEditor.GetEditor(node, this) as ActionTargetNodeBaseEditor;
-                        if (editor != null) {
+                        if (editor != null && showHandles) {
                             editor.OnSceneGUI(body);
                         }
                         //node.OnSceneGUI(body);
@@ -421,8 +426,10 @@ namespace VGent {
                     }
                 }
             }
-            foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
-                DrawHumanBone(editableBoneKeyPoseNode);
+            if (showBones) {
+                foreach (var editableBoneKeyPoseNode in editableBoneKeyPoseNodes) {
+                    DrawHumanBone(editableBoneKeyPoseNode);
+                }
             }
         }
         // nodeの次のノードを見てそれがOutPutNodeならAddする
