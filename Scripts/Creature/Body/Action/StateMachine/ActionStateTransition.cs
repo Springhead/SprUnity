@@ -239,7 +239,7 @@ namespace VGent{
         private void OnContextMenu(Vector2 mousePosition) {
 #if UNITY_EDITOR
             GenericMenu genericMenu = new GenericMenu();
-            genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => OnDelete());
+            genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => { OnDelete(); stateMachine.isChanged = true; });
             genericMenu.ShowAsContext();
 #endif
         }

@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Callbacks;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEngine;
 using VGent;
-
-using UnityEditor.Graphs;
-using UnityEngine.EventSystems;
 
 namespace SprUnity {
 
@@ -134,6 +130,12 @@ namespace SprUnity {
             if (GUI.changed) {
                 Repaint();
             }
+
+            if (action.isChanged) {
+                initialized = false;
+            }
+            action.isChanged = false;
+
             EndWindows();
             
             DrawToolBar();

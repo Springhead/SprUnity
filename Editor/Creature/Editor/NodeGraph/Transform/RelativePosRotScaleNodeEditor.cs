@@ -13,7 +13,7 @@ namespace VGent{
             RelativePosRotScaleNode node = (RelativePosRotScaleNode)target;
             PosRotScale tempOrigin = node.GetInputValue<PosRotScale>("origin");
             if (node.GetPort("origin").IsConnected) {
-                //Handles.PositionHandle(tempOrigin.position, tempOrigin.rotation);
+                SceneViewHandles.Axis(tempOrigin.position, tempOrigin.rotation);
             }
             PosRotScale tempRelative = node.GetInputValue<PosRotScale>("relative", node.relative);
             PosRotScale r = tempOrigin.TransformPosRotScale(tempRelative);
@@ -25,6 +25,7 @@ namespace VGent{
                     Undo.RecordObject(node, "Change RelativePosRotScaleNode");
                     node.relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, rot, r.scale));
                 }
+                
             } else {
                 // <!!>いずれ実装する
                 EditorGUI.BeginChangeCheck();
