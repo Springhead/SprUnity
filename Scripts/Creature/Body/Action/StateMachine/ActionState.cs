@@ -252,16 +252,16 @@ namespace VGent{
             int nStates = states.Count;
             for (int i = 0; i < nStates; i++) {
                 ActionState state = states[i]; // 
-                genericMenu.AddItem(new GUIContent("Add Transition to../" + states[i].name), false, () => OnClickAddTransition(this, state));
+                genericMenu.AddItem(new GUIContent("Add Transition to../" + states[i].name), false, () => { OnClickAddTransition(this, state); stateMachine.isChanged = true; });
             }
-            genericMenu.AddItem(new GUIContent("Add Transition to../" + "Exit"), false, () => OnClickAddTransition(this, null));
-            genericMenu.AddItem(new GUIContent("Add Transition from../" + "Entry"), false, () => OnClickAddTransition(null, this));
+            genericMenu.AddItem(new GUIContent("Add Transition to../" + "Exit"), false, () => { OnClickAddTransition(this, null); stateMachine.isChanged = true; });
+            genericMenu.AddItem(new GUIContent("Add Transition from../" + "Entry"), false, () => { OnClickAddTransition(null, this); stateMachine.isChanged = true; });
             int nTransitions = transitions.Count;
             for (int i = 0; i < nTransitions; i++) {
                 ActionStateTransition transition = transitions[i]; // 
-                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => OnRemoveTransition(transition));
+                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => { OnRemoveTransition(transition); stateMachine.isChanged = true; });
             }
-            genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
+            genericMenu.AddItem(new GUIContent("Remove State"), false, () => { OnRemoveState(); stateMachine.isChanged = true; });
             genericMenu.ShowAsContext();
 #endif
         }

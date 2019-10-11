@@ -15,8 +15,8 @@ namespace VGent{
             PosRotScale tempPosRotScale = new PosRotScale();
             Body graphBody = (node.graph as ActionTargetGraph)?.body;
             Bone bone = graphBody == null ? body?[node.boneId] : graphBody[node.boneId];
-            Vector3 pos;
-            Quaternion rot;
+            Vector3 pos = Vector3.zero;
+            Quaternion rot = Quaternion.identity;
             if(bone != null) {
                 if (graphBody == null) {
                     // Graph has No active body
