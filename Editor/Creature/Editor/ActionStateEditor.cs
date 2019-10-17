@@ -18,14 +18,12 @@ namespace VGent{
             //base.OnInspectorGUI();
             var serializedObject = new SerializedObject(target);
             var nodeProperty = serializedObject.FindProperty("nodes");
-            var paramProperty = serializedObject.FindProperty("useParams");
             serializedObject.Update();
             EditorGUILayout.PropertyField(nodeProperty, true);
-            EditorGUILayout.PropertyField(paramProperty, true);
             state.durationMode = (ActionState.DurationMode)EditorGUILayout.EnumPopup("Duration Mode", state.durationMode);
             switch (state.durationMode) {
                 case ActionState.DurationMode.Static:
-                    state.duration = EditorGUILayout.FloatField("Duration", state.duration);
+                    state.duration = EditorGUILayout.FloatField(new GUIContent("Duration", "static duration value"), state.duration);
                     break;
                 case ActionState.DurationMode.VelocityBase:
                     EditorGUILayout.LabelField("sorry, this mode isn't implemented yet.");
@@ -36,8 +34,8 @@ namespace VGent{
                     state.accuracy = EditorGUILayout.FloatField("Acuracy", state.accuracy);
                     break;
             }
-            state.spring = EditorGUILayout.FloatField("Spring", state.spring);
-            state.damper = EditorGUILayout.FloatField("Damper", state.damper);
+            state.spring = EditorGUILayout.FloatField(new GUIContent("Spring", "Spring activation rate in end of submovement"), state.spring);
+            state.damper = EditorGUILayout.FloatField(new GUIContent("Damper", "Damper activation rate in end of submovement"), state.damper);
             state.useFace = EditorGUILayout.Toggle("Use Face", state.useFace);
             if (state.useFace) {
                 state.blend = EditorGUILayout.TextField("Blend", state.blend);

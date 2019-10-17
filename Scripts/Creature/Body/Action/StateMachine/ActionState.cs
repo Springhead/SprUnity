@@ -14,23 +14,28 @@ namespace VGent{
 
         [HideInInspector]
         public ActionStateMachine stateMachine;
+        [Tooltip("Movement target activated in this state")]
         public ActionTargetOutputNode[] nodes;
         [HideInInspector]
         public List<ActionStateTransition> transitions = new List<ActionStateTransition>();
-        public List<string> useParams;
 
         public enum DurationMode {
             Static,           // 一定
             VelocityBase,     // 平均速度と距離から決定
             Fitts,            // フィッツ則による決定
         };
+        [Tooltip("Submovement duration mode")]
         public DurationMode durationMode;
+        [Tooltip("static duration value")]
         public float duration = 0.5f;
         public float fittsA = 0.5f;
         public float fittsB;
         public float accuracy = 0.01f;
+        [Tooltip("Spring activation rate in end of submovement")]
         public float spring = 1.0f;
+        [Tooltip("Damper activation rate in end of submovement")]
         public float damper = 1.0f;
+        [Tooltip("Add noise to the duration")]
         public bool durationNoise;
 
         public bool useFace = false;
