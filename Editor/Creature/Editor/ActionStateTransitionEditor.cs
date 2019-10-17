@@ -25,10 +25,38 @@ namespace VGent{
                 Event.current.Use();
             }
             target.name = EditorGUILayout.TextField("Name", target.name);
-            base.OnInspectorGUI();
             ActionStateTransition transition = (ActionStateTransition)target;
-            conditionList.DoLayoutList();
+            //base.OnInspectorGUI();
+            var serializedObject = new SerializedObject(target);
+            var flagProperty = serializedObject.FindProperty("flags");
+            serializedObject.Update();
+            EditorGUILayout.PropertyField(flagProperty, true);
+            transition.intervalMode = (ActionStateTransition.IntervalMode)EditorGUILayout.EnumPopup("Interval Mode", transition.intervalMode);
+            switch (transition.intervalMode) {
+                case ActionStateTransition.IntervalMode.StaticTimeFromPreviousSubMovementStart:
+                case ActionStateTransition.IntervalMode.StaticTimeFromPreviousSubMovementEnd:
+                    transition.time = EditorGUILayout.FloatField(new GUIContent("Time", "Static time interval value"), transition.time);
+                    break;
+                case ActionStateTransition.IntervalMode.RelativeTimeFromPreviousSubMovementStart:
+                    transition.timeCoefficient = EditorGUILayout.FloatField(new GUIContent("Time Coefficient", "(For Relative mode) set interval time = last submovement duration * coefficient(this value)"), transition.timeCoefficient);
+                    break;
+                case ActionStateTransition.IntervalMode.ProportionalToFloatParam:
+                    transition.floatParam = EditorGUILayout.TextField(new GUIContent("Float Param", "Float parameter to decide interval time"), transition.floatParam);
+                    transition.minInterval = EditorGUILayout.FloatField(new GUIContent("Min Interval", "Min value of dynamically changing interval time"), transition.minInterval);
+                    transition.maxInterval = EditorGUILayout.FloatField(new GUIContent("Max Interval", "Max value of dynamically changing interval time"), transition.maxInterval);
+                    break;
+                case ActionStateTransition.IntervalMode.Random:
+                    transition.minInterval = EditorGUILayout.FloatField(new GUIContent("Min Interval", "Min value of dynamically changing interval time"), transition.minInterval);
+                    transition.maxInterval = EditorGUILayout.FloatField(new GUIContent("Max Interval", "Max value of dynamically changing interval time"), transition.maxInterval);
+                    break;
+                case ActionStateTransition.IntervalMode.OuterTrigger:
+                    GUILayout.Label("Sorry, this mode is not implemented");
+                    break;
+
+            }
+            //conditionList.DoLayoutList();
             if (EditorGUI.EndChangeCheck()) {
+                serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(target);
             }
             if (textChangeComp) {

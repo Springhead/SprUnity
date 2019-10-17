@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoneKeyPoseNodeEditor : MonoBehaviour {
+namespace VGent {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    [CustomNodeEditor(typeof(ActionTargetOutputNode))]
+    public class ActionTargetOutputNodeEditor : ActionTargetNodeBaseEditor {
+
+        
+    }
+
 }
