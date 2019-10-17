@@ -14,8 +14,39 @@ namespace VGent{
                 Event.current.Use();
             }
             target.name = EditorGUILayout.TextField("Name", target.name);
-            base.OnInspectorGUI();
+            ActionState state = (ActionState)target;
+            //base.OnInspectorGUI();
+            var serializedObject = new SerializedObject(target);
+            var nodeProperty = serializedObject.FindProperty("nodes");
+            var paramProperty = serializedObject.FindProperty("useParams");
+            serializedObject.Update();
+            EditorGUILayout.PropertyField(nodeProperty, true);
+            EditorGUILayout.PropertyField(paramProperty, true);
+            state.durationMode = (ActionState.DurationMode)EditorGUILayout.EnumPopup("Duration Mode", state.durationMode);
+            switch (state.durationMode) {
+                case ActionState.DurationMode.Static:
+                    state.duration = EditorGUILayout.FloatField("Duration", state.duration);
+                    break;
+                case ActionState.DurationMode.VelocityBase:
+                    EditorGUILayout.LabelField("sorry, this mode isn't implemented yet.");
+                    break;
+                case ActionState.DurationMode.Fitts:
+                    state.fittsA = EditorGUILayout.FloatField("Fitts A", state.fittsA);
+                    state.fittsB = EditorGUILayout.FloatField("Fitts B", state.fittsB);
+                    state.accuracy = EditorGUILayout.FloatField("Acuracy", state.accuracy);
+                    break;
+            }
+            state.spring = EditorGUILayout.FloatField("Spring", state.spring);
+            state.damper = EditorGUILayout.FloatField("Damper", state.damper);
+            state.useFace = EditorGUILayout.Toggle("Use Face", state.useFace);
+            if (state.useFace) {
+                state.blend = EditorGUILayout.TextField("Blend", state.blend);
+                state.blendv = EditorGUILayout.FloatField("Blendv", state.blendv);
+                state.time = EditorGUILayout.FloatField("Time", state.time);
+                state.interval = EditorGUILayout.FloatField("Interval", state.interval);
+            }
             if (EditorGUI.EndChangeCheck()) {
+                serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(target);
             }
             if (textChangeComp) {
