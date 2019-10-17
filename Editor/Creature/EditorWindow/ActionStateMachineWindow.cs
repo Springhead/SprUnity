@@ -223,7 +223,7 @@ namespace SprUnity {
             }
             for (int i = 0; i < nStates; i++) {
                 List<int> list = new List<int>();
-                for (int j = 0; j < (i + 3); j++) {
+                for (int j = 0; j < ((nStates - i) + 3); j++) {
                     list.Add(0);
                 }
                 graphConnectionMatrix.Add(list);
