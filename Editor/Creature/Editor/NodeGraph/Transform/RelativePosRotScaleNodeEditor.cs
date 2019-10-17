@@ -27,6 +27,15 @@ namespace VGent{
                 }
                 
             } else {
+                // <!!>いずれ実装する
+                EditorGUI.BeginChangeCheck();
+                Vector3 pos = Handles.PositionHandle(r.position, r.rotation);
+                Quaternion rot = Handles.RotationHandle(r.rotation, r.position);
+                if (EditorGUI.EndChangeCheck() && !node.GetPort("relative").IsConnected)
+                {
+                    Undo.RecordObject(node, "Change RelativePosRotScaleNode");
+                    node.relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, rot, r.scale));
+                }
                 /*
                 EditorGUI.BeginChangeCheck();
                 Vector3 pos = Handles.PositionHandle(r.position, Quaternion.identity);
