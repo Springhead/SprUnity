@@ -27,6 +27,8 @@ namespace VGent {
         public MentalGroup agent;
         public MentalScene mentalScene;
 
+        public bool noMonalisaEffect;
+
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // Parameters
 
@@ -268,7 +270,7 @@ namespace VGent {
                     lookController.target = newAttentionTarget.gameObject;
                 }
                 lookController.speed = 0.3f;
-                if (forceStraight || (newAttentionTarget.GetParts<PersonParts>() != null && lookController.straight == false)) {
+                if (noMonalisaEffect && ( forceStraight || (newAttentionTarget.GetParts<PersonParts>() != null && lookController.straight == false))) {
                     lookController.straight = true;
                 } else {
                     lookController.straight = false;
