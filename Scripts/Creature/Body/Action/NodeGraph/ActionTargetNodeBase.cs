@@ -7,7 +7,8 @@ using SprUnity;
 namespace VGent {
     public abstract class ActionTargetNodeBase : Node {
 
-        public bool visualizable = false;
+        [UnityEngine.Serialization.FormerlySerializedAs("visualizable")]
+        public bool visualize = false;
 
         public virtual void OnSceneGUI(Body body = null) { }
         public virtual void SetInput<T>(T value) { }

@@ -416,7 +416,7 @@ namespace VGent {
             if (graph != null) {
                 foreach (var obj in graph.nodes) {
                     ActionTargetNodeBase node = obj as ActionTargetNodeBase;
-                    if (node != null && node.visualizable) {
+                    if (node != null && node.visualize) {
                         var editor = NodeEditor.GetEditor(node, this) as ActionTargetNodeBaseEditor;
                         if (editor != null && showHandles) {
                             editor.OnSceneGUI(body);

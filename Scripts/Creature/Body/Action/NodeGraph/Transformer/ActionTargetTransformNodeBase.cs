@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using XNode;
 
-namespace VGent{
+namespace VGent {
+    [NodeTint("#bae1ff")]
     public abstract class ActionTargetTransformNodeBase : ActionTargetNodeBase {
 
         
