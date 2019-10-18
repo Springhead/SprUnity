@@ -12,10 +12,17 @@ using System.Linq;
 namespace VGent {
 
     public class ActionTargetGraphEditorWindow : XNodeEditor.NodeEditorWindow, IHasCustomMenu {
-        private float handleSize = 0.05f;
+        // ちょっと定義分ける
+        private static float handleSize = 0.05f;
         private float selectedHandleSize = 0.15f;
         private StaticBoneKeyPose selectedboneKeyPose; // マウスが上にあるKeyPoseだけハンドルを大きくする
         private List<ActionTargetOutputNode> editableBoneKeyPoseNodes = new List<ActionTargetOutputNode>();
+
+        // サイズ可変ハンドル
+        private static float handleSizeValue = 0.5f;
+        private static float handleMinSize = 0.05f;
+        private static float handleMaxSize = 0.15f;
+        public static float HandleSize { get { return (1 - handleSizeValue) * handleMinSize + handleSizeValue * handleMaxSize; } }
 
         private bool showHandles = true;
         private bool showBones = true;
@@ -34,6 +41,7 @@ namespace VGent {
         private float subWindowFirstSpaceNum = 8;
         private float subWindowWidth = 200;
         static Texture2D noneButtonTexture = null;
+        private Rect lastSubWindowRect = new Rect();
 
         private GUISkin myskin;
         private string skinpath = "GUISkins/SprGUISkin.guiskin";
@@ -57,6 +65,7 @@ namespace VGent {
         private string renaming;
 
         static private float parameterWindowHeight = 160;
+
 
         protected override void OnEnable() {
             base.OnEnable();
@@ -174,6 +183,13 @@ namespace VGent {
             SubWindow();
         }
 
+        public override void Controls() {
+            //Debug.Log(lastSubWindowRect);
+            if (!showSubWindow || !lastSubWindowRect.Contains(Event.current.mousePosition)) {
+                base.Controls();
+            } 
+        }
+
         void DrawToolBar() {
             int toolBarHeight = 17;
             // <!!> まだ微妙にずれてるけどこれで上に表示できる
@@ -225,7 +241,7 @@ namespace VGent {
             //}
             showSubWindow = EditorGUILayout.Foldout(showSubWindow, "SubWidnow");
             var showSubWindowRect = GUILayoutUtility.GetLastRect();
-            if (!showSubWindow) {
+            if (showSubWindow) {
                 scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar, GUILayout.Height(position.height - parameterHeight));
 
                 var actionTargetGraphStatuses = ActionEditorWindowManager.instance.actionTargetGraphStatuses;
@@ -337,9 +353,24 @@ namespace VGent {
                 //        }
                 //    }
                 //}
+                GUI.skin = defaultSkin;
+                GUI.skin.label.normal.textColor = Color.white;
+                if (myskin != null) {
+                    GUI.skin.toggle = myskin.toggle;
+                } else {
+                    GUI.skin.toggle.normal.textColor = Color.white;
+                }
                 showHandles = GUILayout.Toggle(showHandles, "Show Handles");
+                GUILayout.Label("Handle Size");
+                handleSizeValue = GUILayout.HorizontalSlider(handleSizeValue, 0.0f, 1.0f);
                 showBones = GUILayout.Toggle(showBones, "Show Bone Meshes");
+
                 EditorGUILayout.EndVertical();
+
+                if (Event.current.type == EventType.Repaint) {
+                    lastSubWindowRect = GUILayoutUtility.GetLastRect();
+                    lastSubWindowRect.y += 19 * zoom + 20;
+                }
 
                 EditorGUILayout.EndScrollView();
             }
