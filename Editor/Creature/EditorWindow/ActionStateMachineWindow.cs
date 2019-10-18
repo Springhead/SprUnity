@@ -126,15 +126,15 @@ namespace SprUnity {
                 }
                 DrawStates();
                 DrawTransitions();
+
+                if (action.isChanged) {
+                    initialized = false;
+                }
+                action.isChanged = false;
             }
             if (GUI.changed) {
                 Repaint();
             }
-
-            if (action.isChanged) {
-                initialized = false;
-            }
-            action.isChanged = false;
 
             EndWindows();
             
