@@ -36,21 +36,27 @@ namespace VGent{
         }
         public List<TransitionCondition> conditions = new List<TransitionCondition>();
         */
+        [Tooltip("Static time interval value")]
         public float time = 1.0f;
         public List<string> flags = new List<string>();
         public enum IntervalMode {
-            StaticTimeFromPreviousKeyPoseStart,
-            StaticTimeFromPreviousKeyPoseEnd,
-            RelativeTimeFromPreviousKeyPoseStart,
+            StaticTimeFromPreviousSubMovementStart,
+            StaticTimeFromPreviousSubMovementEnd,
+            RelativeTimeFromPreviousSubMovementStart,
             OuterTrigger,
             Random,
             ProportionalToFloatParam,
         };
+        [Tooltip("Mode of transition time interval")]
         public IntervalMode intervalMode;
+        [Tooltip("(For Relative mode) set interval time = last submovement duration * coefficient(this value)")]
         public float timeCoefficient = 1.0f;
         public bool intervalNoise;
+        [Tooltip("Float parameter to decide interval time")]
         public string floatParam;
+        [Tooltip("Min value of dynamically changing interval time")]
         public float minInterval = 0.2f;
+        [Tooltip("Max value of dynamically changing interval time")]
         public float maxInterval = 0.5f;
         [HideInInspector]
         public TransitionCondition[] conditions;
@@ -109,13 +115,13 @@ namespace VGent{
         public bool IsTransitable(float t, float duration, ActionStateMachine aStateMachine) {
             float intervalTime;
             switch (intervalMode) {
-                case IntervalMode.StaticTimeFromPreviousKeyPoseStart:
+                case IntervalMode.StaticTimeFromPreviousSubMovementStart:
                     intervalTime = time;
                     break;
-                case IntervalMode.StaticTimeFromPreviousKeyPoseEnd:
+                case IntervalMode.StaticTimeFromPreviousSubMovementEnd:
                     intervalTime = time + duration;
                     break;
-                case IntervalMode.RelativeTimeFromPreviousKeyPoseStart:
+                case IntervalMode.RelativeTimeFromPreviousSubMovementStart:
                     intervalTime = timeCoefficient * duration;
                     break;
                 case IntervalMode.OuterTrigger:
@@ -239,7 +245,7 @@ namespace VGent{
         private void OnContextMenu(Vector2 mousePosition) {
 #if UNITY_EDITOR
             GenericMenu genericMenu = new GenericMenu();
-            genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => OnDelete());
+            genericMenu.AddItem(new GUIContent("Delete this transition"), false, () => { OnDelete(); stateMachine.isChanged = true; });
             genericMenu.ShowAsContext();
 #endif
         }

@@ -127,8 +127,10 @@ public abstract class SprBehaviour : SprBehaviourBase {
             if (!awakeCalled && GetDescStruct() != null) {
                 if (!enabled) { return; }
                 sprObject = Build();
-                // print(name + " : sprObject = " + sprObject.ToString());
-                sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
+                if (sprObject != null) {
+                    // print(name + " : sprObject = " + sprObject.ToString());
+                    sprBehaviourMap[sprObject] = this; // 逆引き辞書に登録
+                }
                 awakeCalled = true;
             }
         }

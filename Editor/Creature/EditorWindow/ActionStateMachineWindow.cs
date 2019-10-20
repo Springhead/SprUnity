@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Callbacks;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEditor;
+using UnityEditor.Callbacks;
+using UnityEngine;
 using VGent;
-
-using UnityEditor.Graphs;
-using UnityEngine.EventSystems;
 
 namespace SprUnity {
 
@@ -130,10 +126,16 @@ namespace SprUnity {
                 }
                 DrawStates();
                 DrawTransitions();
+
+                if (action.isChanged) {
+                    initialized = false;
+                }
+                action.isChanged = false;
             }
             if (GUI.changed) {
                 Repaint();
             }
+
             EndWindows();
             
             DrawToolBar();
@@ -221,7 +223,7 @@ namespace SprUnity {
             }
             for (int i = 0; i < nStates; i++) {
                 List<int> list = new List<int>();
-                for (int j = 0; j < (i + 3); j++) {
+                for (int j = 0; j < ((nStates - i) + 3); j++) {
                     list.Add(0);
                 }
                 graphConnectionMatrix.Add(list);

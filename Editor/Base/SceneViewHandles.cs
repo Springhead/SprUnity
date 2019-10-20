@@ -102,6 +102,15 @@ namespace SprUnity {
             return position;
         }
 
+        public static void Axis(Vector3 pos, Quaternion rot, float size = 0.2f) {
+            Handles.color = new Color(Handles.xAxisColor.r, Handles.xAxisColor.g, Handles.xAxisColor.b, 0.5f);
+            Handles.DrawLine(pos, pos + rot * (size * Vector3.right));
+            Handles.color = new Color(Handles.yAxisColor.r, Handles.yAxisColor.g, Handles.yAxisColor.b, 0.5f);
+            Handles.DrawLine(pos, pos + rot * (size * Vector3.up));
+            Handles.color = new Color(Handles.zAxisColor.r, Handles.zAxisColor.g, Handles.zAxisColor.b, 0.5f);
+            Handles.DrawLine(pos, pos + rot * (size * Vector3.forward));
+        }
+
         /* 線と平面の交点を求める
         *https://qiita.com/edo_m18/items/c8808f318f5abfa8af1e
         */

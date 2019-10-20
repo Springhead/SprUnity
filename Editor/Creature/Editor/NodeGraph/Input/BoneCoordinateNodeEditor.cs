@@ -10,12 +10,13 @@ namespace VGent{
     [CustomNodeEditor(typeof(BoneCoordinateNode))]
     public class BoneCoordinateNodeEditor : ActionTargetNodeBaseEditor {
         public override void OnSceneGUI(Body body = null) {
+            // BoneID Only?
             BoneCoordinateNode node = (BoneCoordinateNode)target;
             PosRotScale tempPosRotScale = new PosRotScale();
             Body graphBody = (node.graph as ActionTargetGraph)?.body;
             Bone bone = graphBody == null ? body?[node.boneId] : graphBody[node.boneId];
-            Vector3 pos;
-            Quaternion rot;
+            Vector3 pos = Vector3.zero;
+            Quaternion rot = Quaternion.identity;
             if(bone != null) {
                 if (graphBody == null) {
                     // Graph has No active body
@@ -24,6 +25,7 @@ namespace VGent{
                 pos = bone.transform.position;
                 rot = bone.transform.rotation;
                 Handles.PositionHandle(pos, rot);
+                Handles.Label(pos, node.boneId.ToString());
             } 
         }
     }

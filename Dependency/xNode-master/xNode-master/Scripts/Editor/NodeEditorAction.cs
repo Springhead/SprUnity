@@ -45,7 +45,8 @@ namespace XNodeEditor {
             public Vector2 GetPoint() { return port.GetReroutePoints(connectionIndex) [pointIndex]; }
         }
 
-        public void Controls() {
+        // <!!> changed to virtual function
+        public virtual void Controls() {
             wantsMouseMove = true;
             Event e = Event.current;
             switch (e.type) {

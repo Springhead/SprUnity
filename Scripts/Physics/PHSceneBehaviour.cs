@@ -8,7 +8,7 @@ using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 
-[CustomEditor(typeof(PHSceneBehaviour),true)]
+[CustomEditor(typeof(PHSceneBehaviour), true)]
 public class PHSceneBehaviourEditor : Editor {
 
     public bool showCollision = false;
@@ -18,7 +18,7 @@ public class PHSceneBehaviourEditor : Editor {
 
         DrawDefaultInspector();
 
-                    EditorGUI.BeginChangeCheck();
+        EditorGUI.BeginChangeCheck();
         showCollision = EditorGUILayout.Foldout(showCollision, "Collision Setting");
         if (showCollision) {
             int i = 0;
@@ -92,6 +92,7 @@ public class PHSceneBehaviour : SprBehaviour {
     protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
     private static PHSdkIf phSdk = null;
+    protected static FWApp fwApp = null;
 
     public PHSceneDescStruct desc = null;
     public PHIKEngineDescStruct descIK = null;
@@ -99,6 +100,8 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableIK = true;
     public bool enableStep = true;
     public bool enableUpdate = true;
+
+    public bool enableDebugWindow = false;
 
     [Serializable]
     public class CollisionSetting {
@@ -153,15 +156,24 @@ public class PHSceneBehaviour : SprBehaviour {
     public override ObjectIf Build() {
         SEH_Exception.init();
 
-        FWAppBehaviour appB = GetComponent<FWAppBehaviour>();
-
         PHSceneIf phScene;
-        if (appB != null) {
-            FWApp app = FWAppBehaviour.app;
-            phSdk   = app.GetSdk().GetPHSdk();
-            phScene = app.GetSdk().GetScene(0).GetPHScene();
+        if (enableDebugWindow) {
+            fwApp = new FWApp();
+            fwApp.InitInNewThread();
+
+            // FWAppの初期化が終わるまで待つ
+            while (fwApp.GetSdk() == null || fwApp.GetSdk().GetPHSdk() == null) { System.Threading.Thread.Sleep(10); }
+
+            phSdk = fwApp.GetSdk().GetPHSdk();
+            phScene = fwApp.GetSdk().GetScene(0).GetPHScene();
             phScene.Clear();
             phScene.SetDesc((PHSceneDesc)desc);
+
+            FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
+            fwSceneIf.EnableRenderContact(true);
+            fwSceneIf.EnableRenderForce(false, true);
+            //fwSceneIf.SetForceScale(0.01f, 0.01f);
+
         } else {
             phSdk = PHSdkIf.CreateSdk();
             phScene = phSdk.CreateScene((PHSceneDesc)desc);
@@ -178,12 +190,12 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
-    void FixedUpdate () {
+    void FixedUpdate() {
         if (sprObject != null && enableStep) {
-            foreach(var phSolidBehaviour in phSolidBehaviours){
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
             }
-            foreach(var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours){
+            foreach (var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours) {
                 phIKEndEffectorBehaviour.BeforeStep();
             }
             //lock (sprObject) {
@@ -201,8 +213,8 @@ public class PHSceneBehaviour : SprBehaviour {
                     }
                 }
             //}
-            if (FWAppBehaviour.app != null) {
-                FWAppBehaviour.app.PostRedisplay();
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
             }
         }
     }
@@ -239,6 +251,17 @@ public class PHSceneBehaviour : SprBehaviour {
         }
 
         ApplyCollisionList();
+    }
+
+    private void OnDestroy() {
+        if (fwApp != null) {
+            fwApp.EndThread();
+            fwApp = null;
+            if (phSdk != null) {
+                phSdk.Clear();
+                phSdk = null;
+            }
+        }
     }
 
 
