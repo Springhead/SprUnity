@@ -333,6 +333,8 @@ namespace VGent{
         [HideInInspector ]public List<ActionStateTransition> entryTransitions = new List<ActionStateTransition>();
         [HideInInspector] public Rect exitRect = new Rect(100, 200, 100, 50);
 
+        [HideInInspector]
+        public bool isChanged = false;
 
         // ----- ----- ----- ----- -----
 

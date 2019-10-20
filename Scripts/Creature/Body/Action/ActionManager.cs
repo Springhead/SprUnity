@@ -89,6 +89,7 @@ namespace VGent {
 
         // ----- ----- ----- ----- -----
 
+        [Obsolete("Please use GetStateMachine(name) instead")]
         public ActionStateMachine this[string key] {
             get {
                 foreach (var action in stateMachines) { if (action.name == key) return action; }//.GetInstance(this); }
@@ -132,6 +133,7 @@ namespace VGent {
 
         // ----- ----- ----- ----- -----
 
+        [Obsolete("Please use GetTargetGraph(graphName).SetInput<Type>(nodeName, value) instead")]
         public void SetInput<T>(string graphName, string nodeName, object value) {
             foreach(var keyPoseGraph in targetGraphs) {
                 if(keyPoseGraph.name == graphName) {

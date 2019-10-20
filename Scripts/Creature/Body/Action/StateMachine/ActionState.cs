@@ -14,23 +14,28 @@ namespace VGent{
 
         [HideInInspector]
         public ActionStateMachine stateMachine;
+        [Tooltip("Movement target activated in this state")]
         public ActionTargetOutputNode[] nodes;
         [HideInInspector]
         public List<ActionStateTransition> transitions = new List<ActionStateTransition>();
-        public List<string> useParams;
 
         public enum DurationMode {
             Static,           // 一定
             VelocityBase,     // 平均速度と距離から決定
             Fitts,            // フィッツ則による決定
         };
+        [Tooltip("Submovement duration mode")]
         public DurationMode durationMode;
+        [Tooltip("static duration value")]
         public float duration = 0.5f;
         public float fittsA = 0.5f;
         public float fittsB;
         public float accuracy = 0.01f;
+        [Tooltip("Spring activation rate in end of submovement")]
         public float spring = 1.0f;
+        [Tooltip("Damper activation rate in end of submovement")]
         public float damper = 1.0f;
+        [Tooltip("Add noise to the duration")]
         public bool durationNoise;
 
         public bool useFace = false;
@@ -252,16 +257,16 @@ namespace VGent{
             int nStates = states.Count;
             for (int i = 0; i < nStates; i++) {
                 ActionState state = states[i]; // 
-                genericMenu.AddItem(new GUIContent("Add Transition to../" + states[i].name), false, () => OnClickAddTransition(this, state));
+                genericMenu.AddItem(new GUIContent("Add Transition to../" + states[i].name), false, () => { OnClickAddTransition(this, state); stateMachine.isChanged = true; });
             }
-            genericMenu.AddItem(new GUIContent("Add Transition to../" + "Exit"), false, () => OnClickAddTransition(this, null));
-            genericMenu.AddItem(new GUIContent("Add Transition from../" + "Entry"), false, () => OnClickAddTransition(null, this));
+            genericMenu.AddItem(new GUIContent("Add Transition to../" + "Exit"), false, () => { OnClickAddTransition(this, null); stateMachine.isChanged = true; });
+            genericMenu.AddItem(new GUIContent("Add Transition from../" + "Entry"), false, () => { OnClickAddTransition(null, this); stateMachine.isChanged = true; });
             int nTransitions = transitions.Count;
             for (int i = 0; i < nTransitions; i++) {
                 ActionStateTransition transition = transitions[i]; // 
-                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => OnRemoveTransition(transition));
+                genericMenu.AddItem(new GUIContent("Remove Transition/" + transition.name + i), false, () => { OnRemoveTransition(transition); stateMachine.isChanged = true; });
             }
-            genericMenu.AddItem(new GUIContent("Remove State"), false, () => OnRemoveState());
+            genericMenu.AddItem(new GUIContent("Remove State"), false, () => { OnRemoveState(); stateMachine.isChanged = true; });
             genericMenu.ShowAsContext();
 #endif
         }
