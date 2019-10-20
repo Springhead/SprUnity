@@ -469,7 +469,7 @@ namespace VGent {
                 foreach (var connection in output.GetConnections()) {
                     var newBoneKeyPoseNode = connection.node as ActionTargetOutputNode;
                     if (newBoneKeyPoseNode != null) {
-                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode) && newBoneKeyPoseNode.visualizable) {
+                        if (!boneKeyPoseNodes.Contains(newBoneKeyPoseNode) && newBoneKeyPoseNode.visualize) {
                             boneKeyPoseNodes.Add(newBoneKeyPoseNode);
                         }
                     } else {
