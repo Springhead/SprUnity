@@ -11,10 +11,10 @@ using InteraWare;
 
 #if UNITY_EDITOR
 using UnityEditor;
-[CustomEditor(typeof(collision_setting))]
+[CustomEditor(typeof(BodyCollisionSetting))]
 public class collision_settingEditor : Editor {
     public override void OnInspectorGUI() {
-        collision_setting collision_Setting = (collision_setting)target;
+        BodyCollisionSetting collision_Setting = (BodyCollisionSetting)target;
         DrawDefaultInspector();
         if (GUILayout.Button("Add Collision List")) {
             collision_Setting.AddCollionListSave();
@@ -22,7 +22,7 @@ public class collision_settingEditor : Editor {
     }
 }
 #endif
-public class collision_setting : MonoBehaviour {
+public class BodyCollisionSetting : MonoBehaviour {
     //public bool saveOnDestroy = false;
     public bool addFirst = false;
     private PHSceneBehaviour phSceneBehaviour;
