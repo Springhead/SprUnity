@@ -34,7 +34,7 @@ namespace SprUnity {
                 EditorGUILayout.Space();
 
                 int removeNumber = -1;
-                for (int i=0; i< body.bones.Count; i++) {
+                for (int i = 0; i < body.bones.Count; i++) {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.PrefixLabel((body.bones[i] == null) ? "(null)" : body.bones[i].label);
                     body.bones[i] = EditorGUILayout.ObjectField(body.bones[i], typeof(Bone), true) as Bone;
@@ -76,6 +76,7 @@ namespace SprUnity {
                     }
                 }
                 if (GUILayout.Button("Fit To Avatar")) { body.FitToAvatar(); }
+                if (GUILayout.Button("SetBones")) { body.SetBonesFromRootBone(); }
             }
 
             EditorGUILayout.Space();
@@ -114,6 +115,7 @@ namespace SprUnity {
     public class Body : MonoBehaviour {
 
         // List of Bones
+        // 常にrootBoneが最初で親から子供の順になるように作成する
         public List<Bone> bones = new List<Bone>();
 
         // Root Bone
@@ -170,7 +172,7 @@ namespace SprUnity {
                     foreach (var bone in bones) {
                         bone.SyncAvatarBoneFromSolid();
                     }
-                }else if(syncMode == SyncMode.IK) {
+                } else if (syncMode == SyncMode.IK) {
                     foreach (var bone in bones) {
                         bone.SyncAvatarBoneFromIK();
                     }
@@ -207,7 +209,7 @@ namespace SprUnity {
             if (animator == null) {
                 animator = GameObject.FindObjectOfType<Animator>();
             }
-            if(animator == null) {
+            if (animator == null) {
                 Debug.LogWarning("No Animator Component was found");
                 // Initialize Body Parameter for KeyPoses
                 height = this[HumanBodyBones.Head].transform.position.y - this[HumanBodyBones.LeftFoot].transform.position.y;
@@ -507,6 +509,22 @@ namespace SprUnity {
                 inertiaMomentSum += CompInertiaMomentSumRecursive(child, centerBone);
             }
             return inertiaMomentSum;
+        }
+        
+        // bonesをセットする
+        public void SetBonesFromRootBone() {
+            bones.Clear();
+            bones.Add(rootBone);
+            SetBonesFromRootBoneRecursive(rootBone);
+        }
+        // 深さ順にbonesに追加
+        private void SetBonesFromRootBoneRecursive(Bone parentBone) {
+            foreach (var childBone in parentBone.children) {
+                if (!bones.Contains(childBone)) {
+                    bones.Add(childBone);
+                    SetBonesFromRootBoneRecursive(childBone);
+                }
+            }
         }
     }
 

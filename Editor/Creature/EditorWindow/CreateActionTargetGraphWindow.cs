@@ -7,6 +7,7 @@ namespace VGent{
     public class CreateActionTargetGraphWindow : EditorWindow {
         public static CreateActionTargetGraphWindow window;
         private string newName = "";
+        private string templateName = "Template";
         private static List<string> pathList= new List<string>();
         private static int pathIndex = 0;
 
@@ -17,8 +18,8 @@ namespace VGent{
             //position.center = new Rect(0f, 0f, Screen.currentResolution.width, Screen.currentResolution.height).center;
             position.center = vec;
             window.position = position;
-            window.minSize = new Vector2(300, 66);
-            window.maxSize = new Vector2(300, 66);
+            window.minSize = new Vector2(300, 88);
+            window.maxSize = new Vector2(300, 88);
             ReloadPathList();
         }
         void OnGUI() {
@@ -41,6 +42,11 @@ namespace VGent{
                 }
             }
             GUILayout.BeginHorizontal();
+            GUILayout.Label("Template Name");
+            templateName = GUILayout.TextField(templateName);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
             var label = GUI.skin.GetStyle("label");
             var backLabel = label.fontSize;
             label.fontSize = 15;
@@ -52,7 +58,7 @@ namespace VGent{
             newName = GUILayout.TextField(newName, textField, GUILayout.Height(20));
             if (Event.current.keyCode == KeyCode.Return) {
                 if (newName != "" && !existActionTargetGraph(newName)) {
-                    createGraphFromTemplate(newName, pathList[pathIndex], "Assets/Actions/KeyPoses/Template.asset");
+                    createGraphFromTemplate(newName, pathList[pathIndex], templateName);
                     //var graph = ActionTargetGraph.CreateActionTargetGraph(newName);
                     //AssetDatabase.CreateAsset(graph, pathList[pathIndex] + newName + ".asset");
                     //AssetDatabase.Refresh();
@@ -80,13 +86,13 @@ namespace VGent{
             return false;
         }
         // Addする機能はいらない
-        void createGraphFromTemplate(string name,string newPath,string templatePath) {
+        void createGraphFromTemplate(string name,string newPath,string templateName) {
             //KeyPoseDataGroup.CreateKeyPoseDataGroupAsset();
             // Asset全検索
             var guids = AssetDatabase.FindAssets("*").Distinct();
             List<string> nameList = new List<string>();
             ActionTargetGraph templateActionTargetGraph = null;
-            var templateObject = AssetDatabase.LoadAssetAtPath<Object>(templatePath);
+            var templateObject = AssetDatabase.LoadAssetAtPath<Object>(newPath + templateName + ".asset");
             templateActionTargetGraph = templateObject as ActionTargetGraph;
             if (templateActionTargetGraph != null) {
                 bool exist = false;
