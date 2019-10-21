@@ -25,7 +25,7 @@ namespace VGent{
         public override object GetValue(NodePort port) {
             PosRotScale tempInput1 = GetInputValue<PosRotScale>("input1", this.input1);
             PosRotScale tempInput2 = GetInputValue<PosRotScale>("input2", this.input2);
-            float tempBlend = GetInputValue<float>("blendRate", this.blendRate);
+            float tempBlend = Mathf.Clamp01(GetInputValue<float>("blendRate", this.blendRate));
             Vector3 pos = (1 - tempBlend) * tempInput1.position + tempBlend * tempInput2.position;
             Quaternion rot = Quaternion.Lerp(tempInput1.rotation, tempInput2.rotation, tempBlend);
             Vector3 scale = (1 - tempBlend) * tempInput1.scale + tempBlend * tempInput2.scale;
