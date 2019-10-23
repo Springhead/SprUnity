@@ -7873,7 +7873,7 @@ MonoBehaviour:
     maxMoment: 3.4028234663852886e+38
     numIteration: 100
     method: 0
-    bContactDetectionEnabled: 1
+    bContactDetectionEnabled: 0
     bCCDEnabled: 1
     broadPhaseMode: 0
     blendMode: 2

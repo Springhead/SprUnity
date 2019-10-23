@@ -42,6 +42,32 @@ public class TraceController : MonoBehaviour {
     private TraceDynamicalOffSolidState traceDynamicalOffSolidState;
     // Use this for initialization
     void Start() {
+        //Debug.Log(pair.srcAvatarBone.name +  
+        //          "srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
+        //          "srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) + 
+        //          "srcAvaLocRot 速度ベクトル " + srcAvaLocRot.ToQuaterniond().Rotation() + 
+        //          "preSrcAvaLocRot " + preSrcAvaLocRot.ToQuaterniond() + 
+        //          "preSrcAvaLocRot 角度 " + Math.Sqrt(preSrcAvaLocRot.ToQuaterniond().Rotation().square()) + 
+        //          "preSrcAvaLocRot 速度ベクトル " + preSrcAvaLocRot.ToQuaterniond().Rotation() + 
+        //          "srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
+        //          "srcAvaDiffRot 角度 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
+        //          "srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot * preSrcAvaLocRot).ToQuaterniond() +
+        //          " srcAvaAngVel " + srcAvaAngVel);
+        var srcAvaLocRot = new Quaterniond(0.604262, 0.788784, -0.0594855, 0.09565);
+        var preSrcAvaLocRot = new Quaterniond(0.796369, -0.594963, -0.0331679, -0.103516);
+        Quaternion srcAvaDiffRot = Quaternion.Slerp(Quaternion.identity, srcAvaLocRot.ToQuaternion() * Quaternion.Inverse(preSrcAvaLocRot.ToQuaternion()), 1.0f);
+        Debug.Log(
+                  "srcAvaLocRot " + srcAvaLocRot +
+                  "srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.Rotation().square()) +
+                  "srcAvaLocRot 速度ベクトル " + srcAvaLocRot.Rotation() +
+                  "preSrcAvaLocRot " + preSrcAvaLocRot +
+                  "preSrcAvaLocRot 角度 " + Math.Sqrt(preSrcAvaLocRot.Rotation().square()) +
+                  "preSrcAvaLocRot 速度ベクトル " + preSrcAvaLocRot.Rotation() +
+                  "srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
+                  "srcAvaDiffRot 角度 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
+                  "srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot.ToQuaterniond() * preSrcAvaLocRot)
+                  /*" srcAvaAngVel " + srcAvaAngVel*/);
+
         var q = new Quaterniond(0.181849, 0.961742, -0.0591918, 0.196256);
         Debug.Log("AngularVelocity " + Math.Sqrt(q.Rotation().square()));
         if (body == null) {
@@ -50,6 +76,7 @@ public class TraceController : MonoBehaviour {
         GetPairs();
         InitializeStringBonePairs();
         InitializeTraceBallJointState();
+        UpdateTraceJointStates();
     }
 
     [System.Serializable]
@@ -192,6 +219,10 @@ public class TraceController : MonoBehaviour {
         Debug.Log(traceSpringJointState.stringBonePair.destBone.name + " parent" + traceSpringJointState.parent.stringBonePair.destBone.name);
     }
 
+    private void Update() {
+        //UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
+    }
+
     void FixedUpdate() {
         UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
         foreach (var state in traceBallJointStates) {
@@ -219,8 +250,15 @@ public class TraceController : MonoBehaviour {
         baseBoneSolid.SetAngularVelocity(traceDynamicalOffSolidState.angularVelocity);
     }
 
+    private Quaternion preTrueRot;
     void getAngVelAndTargRot(TracePair pair, TraceState traceState, ref Quaternion preSrcAvaLocRot, out Vec3d angularVelocity, ref Quaterniond targetRotation) {
         Quaternion srcAvaLocRot = pair.srcAvatarBone.transform.localRotation;
+        if (srcAvaLocRot.w < 0) {
+            srcAvaLocRot.w *= -1;
+            srcAvaLocRot.x *= -1;
+            srcAvaLocRot.y *= -1;
+            srcAvaLocRot.z *= -1;
+        }
         Quaternion srcAvaDiffRot = Quaternion.Slerp(Quaternion.identity, srcAvaLocRot * Quaternion.Inverse(preSrcAvaLocRot), 1.0f);
         //Quaternion srcAvaDiffRot = srcAvaLocRot * Quaternion.Inverse(preSrcAvaLocRot); //これだと落ちる
         Vec3d srcAvaAngVel = srcAvaDiffRot.ToQuaterniond().RotationHalf() / Time.deltaTime;
@@ -232,16 +270,28 @@ public class TraceController : MonoBehaviour {
         //srcAvaAngVel = (angle * axis * Mathf.Deg2Rad / Time.deltaTime).ToVec3d();
 
         if (srcAvaAngVel.square() > upperLimitAngularVelocity * upperLimitAngularVelocity) {
-            Debug.Log(pair.srcAvatarBone.name + " " + Math.Sqrt(srcAvaAngVel.square() * Time.deltaTime) +
-                      "再計算 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
-                      " preSrcAvaLocRot " + preSrcAvaLocRot.ToQuaterniond() + "srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
-                      "srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
-                      "srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot * preSrcAvaLocRot).ToQuaterniond() +
-                      " srcAvaAngVel " + srcAvaAngVel);
-            srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
-            srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
-            srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
+            Debug.Log(pair.srcAvatarBone.name +
+                      " srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
+                      " srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) +
+                      " srcAvaLocRot 速度ベクトル " + srcAvaLocRot.ToQuaterniond().Rotation() +
+                      " preSrcAvaLocRot " + preSrcAvaLocRot.ToQuaterniond() +
+                      " preSrcAvaLocRot 角度 " + Math.Sqrt(preSrcAvaLocRot.ToQuaterniond().Rotation().square()) +
+                      " preSrcAvaLocRot 速度ベクトル " + preSrcAvaLocRot.ToQuaterniond().Rotation() +
+                      " srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
+                      " srcAvaDiffRot 角度 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
+                      " srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot * preSrcAvaLocRot).ToQuaterniond() +
+                      " srcAvaAngVel " + srcAvaAngVel +
+                      " srcTrueAvaLocRot " + pair.srcAvatarBone.transform.localRotation.ToQuaterniond() +
+                      " presrcTrueAvaLocRot " + preTrueRot.ToQuaterniond());
+            //srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
+            //srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
+            //srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
         }
+
+        if (pair.destBone.name == "RightLowerArm") {
+            preTrueRot = pair.srcAvatarBone.transform.localRotation;
+        }
+
         preSrcAvaLocRot = srcAvaLocRot;
 
         var srcAvaGloRot = pair.srcAvatarBone.transform.parent.rotation * srcAvaLocRot;

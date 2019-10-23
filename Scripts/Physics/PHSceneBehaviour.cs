@@ -190,6 +190,17 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
+    public override void Start() {
+        base.Start();
+        if (enableDebugWindow) {
+            FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
+            fwSceneIf.SetForceScale(0.01f, 0.01f);
+            for (int i = 0; i < phScene.NJoints(); i++) {
+                var joint = phScene.GetJoint(i);
+                fwSceneIf.EnableRender(joint, false);
+            }
+        }
+    }
     void FixedUpdate() {
         if (sprObject != null && enableStep) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
@@ -207,11 +218,11 @@ public class PHSceneBehaviour : SprBehaviour {
     void Update() {
         if (enableUpdate) {
             //lock (sprObject) {
-                foreach (var phSolidBehaviour in phSolidBehaviours) {
-                    if (phSolidBehaviour != null) {
-                        phSolidBehaviour.UpdatePose();
-                    }
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdatePose();
                 }
+            }
             //}
             if (fwApp != null) {
                 fwApp.PostRedisplay();
