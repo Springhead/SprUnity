@@ -461,6 +461,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -784,8 +786,8 @@ Camera:
   m_GameObject: {fileID: 326621380}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.9386792, g: 0.9640072, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
@@ -798,7 +800,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 12.1
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -822,13 +824,13 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 326621380}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0, y: 0.9985191, z: -0.054402143, w: 0}
+  m_LocalPosition: {x: 0, y: 1.68, z: 7.82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 6.2370005, y: 180.00002, z: 0}
 --- !u!1 &329879132
 GameObject:
   m_ObjectHideFlags: 0
@@ -1217,6 +1219,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -1464,6 +1468,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -1768,6 +1774,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -1927,10 +1935,10 @@ MonoBehaviour:
   r2: 0.04591205
   pivot: 1
   usePositionR1: 0
-  positionR1: {x: -1.0767795, y: 0.035452962, z: 0.002336838}
+  positionR1: {x: -0.076784745, y: 0.90409577, z: 0.0023400534}
   R1Object: {fileID: 0}
   usePositionR2: 0
-  positionR2: {x: 0.9232205, y: 0.035452962, z: 0.002336838}
+  positionR2: {x: -0.056524653, y: 0.55200446, z: -0.008137697}
   L1Object: {fileID: 0}
   split: 32
   slice: 16
@@ -2074,6 +2082,52 @@ Transform:
   m_Father: {fileID: 1452003504}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &710327497
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4047913569892270, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1093733221404820, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: faf4257e73d9f0a418b2cedc40483666, type: 2}
+  m_IsPrefabAsset: 0
 --- !u!1 &741498403
 GameObject:
   m_ObjectHideFlags: 0
@@ -2099,7 +2153,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 8
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -2369,6 +2423,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -2930,6 +2986,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -4175,6 +4233,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -4479,6 +4539,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -4729,6 +4791,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -5636,6 +5700,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -6228,6 +6294,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -6628,6 +6696,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -6949,6 +7019,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -7148,6 +7220,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -7460,7 +7534,22 @@ Prefab:
         type: 2}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: ec18c692d0057ad47b2657627e20ede8, type: 2}
+      objectReference: {fileID: 9100000, guid: faed11bba652f41a1994daac6de46ca8, type: 2}
+    - target: {fileID: 137914364097294778, guid: 483f41a6948107747be776315ca80180,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 137320432830279748, guid: 483f41a6948107747be776315ca80180,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 137849297416591818, guid: 483f41a6948107747be776315ca80180,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 483f41a6948107747be776315ca80180, type: 2}
   m_IsPrefabAsset: 0
@@ -7796,6 +7885,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -7873,7 +7964,7 @@ MonoBehaviour:
     maxMoment: 3.4028234663852886e+38
     numIteration: 100
     method: 0
-    bContactDetectionEnabled: 0
+    bContactDetectionEnabled: 1
     bCCDEnabled: 1
     broadPhaseMode: 0
     blendMode: 2
@@ -9316,6 +9407,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -10028,6 +10121,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -11077,6 +11172,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -11605,6 +11702,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
@@ -11713,6 +11812,8 @@ MonoBehaviour:
       timeVaryFrictionB: 1800
       timeVaryFrictionC: 0
       frictionViscosity: 0
+      stribeckVelocity: 0.1
+      stribeckmu: 0.1
       velocityFieldMode: 0
       velocityFieldAxis:
         _flag: 0
