@@ -24,6 +24,17 @@ public class PHSolidBehaviourEditor : Editor {
             pHSolidBehaviour.fixedSolidRotation = Handles.RotationHandle(pHSolidBehaviour.fixedSolidRotation, pHSolidBehaviour.fixedSolidPosition);
         }
     }
+
+    //public override void OnInspectorGUI() {
+    //    DrawDefaultInspector();
+    //    if (Application.isPlaying) {
+    //        PHSolidBehaviour phSolid = (PHSolidBehaviour) target;
+    //        for (int i = 0; i < phSolid.phSolid.NShape(); i++) {
+    //            var inertia = phSolid.phSolid.GetShape(i).CalcMomentOfInertia();
+
+    //        }
+    //    }
+    //}
 }
 
 #endif
@@ -38,6 +49,9 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public GameObject centerOfMass = null;
 
     public bool fixedSolid = false;
+
+    [SerializeField]
+    public Matrix3dStruct shapeInertia;
 
     [HideInInspector]
     public Vector3 fixedSolidPosition = new Vector3();
@@ -116,6 +130,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             // --
 
             // <!!> SpineとShoulderはCompInertiaすると落ちるのでデバッグ中
+            /*
             if (name == "Spine" || name.Contains("Shoulder")) {
                 var I = phSolid.GetInertia();
                 string str = name + " : \r\n";
@@ -147,7 +162,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 }
                 Debug.Log(str);
             }
-
+            */
+            shapeInertia.ApplyFrom(phSolid.GetShape(0).CalcMomentOfInertia());
             // --
 
             PHSolidDesc desc_ = new PHSolidDesc();
