@@ -114,11 +114,45 @@ namespace SprUnity {
 
     public class Body : MonoBehaviour {
 
+        public class BodyBones : IEnumerable<Bone> {
+            public class BodyBonesEnumerator : IEnumerator<Bone> {
+
+                private 
+
+                public Bone Current => throw new NotImplementedException();
+
+                object IEnumerator.Current => throw new NotImplementedException();
+
+                public void Dispose() {
+                    throw new NotImplementedException();
+                }
+
+                public override bool MoveNext() {
+
+                }
+
+                public void Reset() {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override IEnumerator<Bone> GetEnumerator() {
+
+            }
+
+            public override IEnumerator GetEnumerator() {
+
+            }
+        }
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Public Members
+
         // List of Bones
         // 常にrootBoneが最初で親から子供の順になるように作成する
         public List<Bone> bones = new List<Bone>();
 
-        // Root Bone
+        // Root Bone of Physical Model
         public Bone rootBone = null;
 
         // Animator with humanoid avatar to be synchronized with this body
@@ -143,18 +177,20 @@ namespace SprUnity {
         public bool initializeOnStart = true;
         public bool changeRoundConeOnStart = true;
 
-        // Flag
+        // Initialized Flag
         public bool initialized = false;
 
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-        // Controllers
+        // Body Parameter for KeyPoses
+        public float height = 1.6f;
 
+        // Controllers
         public LookController lookController = null;
         public BodyBalancer bodyBalancer = null;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-        // Body Parameter for KeyPoses
-        public float height = 1.6f;
+        // Private Members
+
+
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Functions

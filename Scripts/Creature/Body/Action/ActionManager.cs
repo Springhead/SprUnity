@@ -20,8 +20,10 @@ namespace VGent {
             base.OnInspectorGUI();
             ActionManager manager = (ActionManager)target;
             for(int i = 0; i < manager.stateMachines.Count; i++) {
-                if(GUILayout.Button(manager.stateMachines[i].name)) {
-                    manager.Action(manager.stateMachines[i].name);
+                if (manager.stateMachines[i] != null) {
+                    if (GUILayout.Button(manager.stateMachines[i].name)) {
+                        manager.Action(manager.stateMachines[i].name);
+                    }
                 }
             }
             if (GUILayout.Button("Stop")) {
