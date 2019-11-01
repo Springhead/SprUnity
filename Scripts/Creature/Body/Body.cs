@@ -546,7 +546,7 @@ namespace SprUnity {
             }
             return inertiaMomentSum;
         }
-        
+
         // bonesをセットする
         public void SetBonesFromRootBone() {
             bones.Clear();
@@ -561,6 +561,18 @@ namespace SprUnity {
                     SetBonesFromRootBoneRecursive(childBone);
                 }
             }
+        }
+
+        [InitializeOnLoadMethod]
+        private static void SetHierarchyWindowChanged() {
+            //Debug.Log("SetHierarchyWindowChaged");
+            EditorApplication.hierarchyChanged += () => {
+                //Debug.Log("SetBonesFromRootBone");
+                var bodys = FindObjectsOfType<Body>();
+                foreach (var body in bodys) {
+                    body.SetBonesFromRootBone();
+                }
+            };
         }
     }
 

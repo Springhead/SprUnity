@@ -270,19 +270,19 @@ public class TraceController : MonoBehaviour {
         //srcAvaAngVel = (angle * axis * Mathf.Deg2Rad / Time.deltaTime).ToVec3d();
 
         if (srcAvaAngVel.square() > upperLimitAngularVelocity * upperLimitAngularVelocity) {
-            Debug.Log(pair.srcAvatarBone.name +
-                      " srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
-                      " srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) +
-                      " srcAvaLocRot 速度ベクトル " + srcAvaLocRot.ToQuaterniond().Rotation() +
-                      " preSrcAvaLocRot " + preSrcAvaLocRot.ToQuaterniond() +
-                      " preSrcAvaLocRot 角度 " + Math.Sqrt(preSrcAvaLocRot.ToQuaterniond().Rotation().square()) +
-                      " preSrcAvaLocRot 速度ベクトル " + preSrcAvaLocRot.ToQuaterniond().Rotation() +
-                      " srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
-                      " srcAvaDiffRot 角度 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
-                      " srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot * preSrcAvaLocRot).ToQuaterniond() +
-                      " srcAvaAngVel " + srcAvaAngVel +
-                      " srcTrueAvaLocRot " + pair.srcAvatarBone.transform.localRotation.ToQuaterniond() +
-                      " presrcTrueAvaLocRot " + preTrueRot.ToQuaterniond());
+            //Debug.Log(pair.srcAvatarBone.name +
+            //          " srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
+            //          " srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) +
+            //          " srcAvaLocRot 速度ベクトル " + srcAvaLocRot.ToQuaterniond().Rotation() +
+            //          " preSrcAvaLocRot " + preSrcAvaLocRot.ToQuaterniond() +
+            //          " preSrcAvaLocRot 角度 " + Math.Sqrt(preSrcAvaLocRot.ToQuaterniond().Rotation().square()) +
+            //          " preSrcAvaLocRot 速度ベクトル " + preSrcAvaLocRot.ToQuaterniond().Rotation() +
+            //          " srcAvaDiffRot " + srcAvaDiffRot.ToQuaterniond() +
+            //          " srcAvaDiffRot 角度 " + Math.Sqrt(srcAvaDiffRot.ToQuaterniond().Rotation().square()) +
+            //          " srcAvaDiffRot * preSrcAvaLocRot " + (srcAvaDiffRot * preSrcAvaLocRot).ToQuaterniond() +
+            //          " srcAvaAngVel " + srcAvaAngVel +
+            //          " srcTrueAvaLocRot " + pair.srcAvatarBone.transform.localRotation.ToQuaterniond() +
+            //          " presrcTrueAvaLocRot " + preTrueRot.ToQuaterniond());
             //srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
             //srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
             //srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ

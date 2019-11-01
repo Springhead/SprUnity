@@ -16,12 +16,12 @@ public class PliantMotion : MonoBehaviour {
     private List<PliantMotionBone> pliantMotionBones;
     class PliantMotionBone {
         public bool isRootBone;
-        public PHSolidIf rootSolid;
+        public PHSolidIf solid; // HighGainのSolid
         public Bone bone; // LowGainのBone
         public PHJointIf phJointIf; // HighGainのJoint
-        public PliantMotionBone(Bone bone, PHJointIf phJointIf, bool isRootBone = false, PHSolidIf rootSolid = null) {
+        public PliantMotionBone(Bone bone, PHJointIf phJointIf, PHSolidIf solid = null, bool isRootBone = false) {
             this.isRootBone = isRootBone;
-            this.rootSolid = rootSolid;
+            this.solid = solid;
             this.bone = bone;
             this.phJointIf = phJointIf;
         }
@@ -62,10 +62,10 @@ public class PliantMotion : MonoBehaviour {
     void FixedUpdate() {
         foreach (var pbone in pliantMotionBones) {
             if (pbone.isRootBone) {
-                pbone.rootSolid.SetPose(pbone.bone.solid.phSolid.GetPose());
-                pbone.rootSolid.SetVelocity(pbone.bone.solid.phSolid.GetVelocity());
-                pbone.rootSolid.SetAngularVelocity(pbone.bone.solid.phSolid.GetAngularVelocity());
-                pbone.rootSolid.SetCenterOfMass(pbone.bone.solid.phSolid.GetCenterOfMass());
+                pbone.solid.SetPose(pbone.bone.solid.phSolid.GetPose());
+                pbone.solid.SetVelocity(pbone.bone.solid.phSolid.GetVelocity());
+                pbone.solid.SetAngularVelocity(pbone.bone.solid.phSolid.GetAngularVelocity());
+                pbone.solid.SetCenterOfMass(pbone.bone.solid.phSolid.GetCenterOfMass());
             } else {
                 PHBallJointIf targetBJ = pbone.bone.joint.phJoint as PHBallJointIf;
                 pbone.phJointIf.GetPlugSolid().SetCenterOfMass(pbone.bone.joint.phJoint.GetPlugSolid().GetCenterOfMass());
@@ -129,7 +129,7 @@ public class PliantMotion : MonoBehaviour {
                 var newJoint = phScene.CreateJoint(socketSolid, plugSolid, PHBallJointIf.GetIfInfoStatic(), ballJointDesc) as PHBallJointIf;
                 newJoint.SetSpring(newJoint.GetSpring() * hightGainRatio);
                 newJoint.SetDamper(newJoint.GetDamper() * hightGainRatio);
-                var newBone = new PliantMotionBone(bone, newJoint);
+                var newBone = new PliantMotionBone(bone, newJoint,plugSolid);
                 pliantMotionBones.Add(newBone);
             } else {
                 PHSpringIf sj = bone.joint.phJoint as PHSpringIf;
@@ -143,7 +143,7 @@ public class PliantMotion : MonoBehaviour {
                     newJoint.SetDamper(newJoint.GetDamper() * hightGainRatio);
                     newJoint.SetSpringOri(newJoint.GetSpringOri() * hightGainRatio);
                     newJoint.SetDamperOri(newJoint.GetDamperOri() * hightGainRatio);
-                    var newBone = new PliantMotionBone(bone, newJoint);
+                    var newBone = new PliantMotionBone(bone, newJoint,plugSolid);
                     pliantMotionBones.Add(newBone);
                 }
             }
@@ -158,14 +158,39 @@ public class PliantMotion : MonoBehaviour {
         }
         return;
     }
+    void CreateTreeNodeRecursive(PHTreeNodeIf lowGainTreeNodeIf,PHTreeNodeIf highGainTreeNodeIf) {
+        for (int i = 0; i < lowGainTreeNodeIf.NChildren(); i++) {
+            var childNode = lowGainTreeNodeIf.GetChildNode(i);
+            foreach (var pliantMotionBone in pliantMotionBones) {
+                if (pliantMotionBone.bone.solid.phSolid == childNode.GetSolid()) {
+                    var newTreeNode = phScene.CreateTreeNode(highGainTreeNodeIf, pliantMotionBone.solid);
+                    newTreeNode.Enable();
+                    CreateTreeNodeRecursive(lowGainTreeNodeIf,newTreeNode);
+                }
+            }
+        }
+
+    }
     // BodyをHighGainシミュレーションに追加
     void AddBody(Body body) {
         PHSolidIf socketSolid = phScene.CreateSolid(body.rootBone.solid.desc);
         // RootBoneを追加
-        var newBone = new PliantMotionBone(body.rootBone, null, true, socketSolid);
+        var newBone = new PliantMotionBone(body.rootBone, null, socketSolid, true);
         pliantMotionBones.Add(newBone);
         // RootBone以外を追加
         CreateSolidRecursive(body.rootBone, socketSolid);
+        // ABAのTreeがあればHighGain側も作る
+        for (int i = 0; i < phScene.NRootNodes(); i++) {
+            var rootNode = phScene.GetRootNode(i);
+            foreach (var pliantMotionBone in pliantMotionBones) {
+                if (pliantMotionBone.bone.solid.phSolid == rootNode.GetSolid()) {
+                    var newRootNode = phScene.CreateRootNode(pliantMotionBone.solid);
+                    newRootNode.Enable();
+                    CreateTreeNodeRecursive(rootNode,newRootNode);
+                    break;
+                }
+            }
+        }
         bodys.Add(body);
     }
     void OnDrawGizmos() {
@@ -175,7 +200,7 @@ public class PliantMotion : MonoBehaviour {
             Posed plugPosed;
             foreach (var pbone in pliantMotionBones) {
                 if (pbone.isRootBone) {
-                    Gizmos.DrawWireSphere(pbone.rootSolid.GetPose().Pos().ToVector3(), 0.05f);
+                    Gizmos.DrawWireSphere(pbone.solid.GetPose().Pos().ToVector3(), 0.05f);
                 } else {
                     var ball = pbone.phJointIf as PHBallJointIf;
 
