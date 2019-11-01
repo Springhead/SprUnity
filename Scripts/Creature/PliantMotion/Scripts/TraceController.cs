@@ -89,7 +89,7 @@ public class TraceController : MonoBehaviour {
         [HideInInspector]
         public Quaternion firstDestBoneLRot = Quaternion.identity;
         [HideInInspector]
-        public Vector3 firstPosition = new Vector3();
+        public Vector3 firstLocalPosition = new Vector3();
         [HideInInspector]
         public Quaternion srcToDest = Quaternion.identity;
     }
@@ -137,7 +137,7 @@ public class TraceController : MonoBehaviour {
                     var lb = pair.destBone.solid.transform.localRotation;
                     var la = pair.srcAvatarBone.transform.localRotation;
                     pair.firstDestBoneLRot = lb;
-                    pair.firstPosition = pair.srcAvatarBone.transform.position;
+                    pair.firstLocalPosition = pair.srcAvatarBone.transform.localPosition;
                     pair.srcToDest = Quaternion.Inverse(av) * so;
                 } else {
                     var so = pair.destBone.transform.rotation;
@@ -147,7 +147,7 @@ public class TraceController : MonoBehaviour {
                     var lb = pair.destBone.transform.localRotation;
                     var la = pair.srcAvatarBone.transform.localRotation;
                     pair.firstDestBoneLRot = lb;
-                    pair.firstPosition = pair.srcAvatarBone.transform.position;
+                    pair.firstLocalPosition = pair.srcAvatarBone.transform.localPosition;
                     pair.srcToDest = Quaternion.Inverse(av) * so;
                 }
             } else {
@@ -182,8 +182,8 @@ public class TraceController : MonoBehaviour {
                         var newState = new TraceDynamicalOffSolidState();
                         newState.stringBonePair = pair;
                         traceDynamicalOffSolidState = newState;
-                        traceDynamicalOffSolidState.targetRotation = pair.srcAvatarBone.transform.localRotation.ToQuaterniond();
-                        traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.localPosition.ToVec3d();
+                        traceDynamicalOffSolidState.targetRotation = pair.srcAvatarBone.transform.rotation.ToQuaterniond();
+                        traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.position.ToVec3d();
                     }
                 }
             }
@@ -209,14 +209,6 @@ public class TraceController : MonoBehaviour {
             traceDynamicalOffSolidState.stringBonePair.destBone) {
             traceSpringJointState.parent = traceDynamicalOffSolidState;
         }
-        foreach (var traceBallJointState in traceBallJointStates) {
-            if (traceBallJointState.parent != null) {
-                Debug.Log(traceBallJointState.stringBonePair.destBone.name + " parent" + traceBallJointState.parent.stringBonePair.destBone.name);
-            } else {
-                Debug.Log(traceBallJointState.stringBonePair.destBone.name + " parent null");
-            }
-        }
-        Debug.Log(traceSpringJointState.stringBonePair.destBone.name + " parent" + traceSpringJointState.parent.stringBonePair.destBone.name);
     }
 
     private void Update() {
@@ -326,7 +318,7 @@ public class TraceController : MonoBehaviour {
             traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.position.ToVec3d();
             traceDynamicalOffSolidState.velocity = (pair.srcAvatarBone.transform.position.ToVec3d() - preTargetPosition) / Time.deltaTime;
             if (traceDynamicalOffSolidState.velocity.square() > upperLimitSpringVelocity * upperLimitSpringVelocity) {
-                Debug.Log("DynamicalOff velocity Limit ");
+                //Debug.Log("DynamicalOff velocity Limit ");
                 traceDynamicalOffSolidState.velocity = traceDynamicalOffSolidState.velocity * Math.Sqrt(upperLimitSpringVelocity * upperLimitSpringVelocity / traceDynamicalOffSolidState.velocity.square());
                 traceDynamicalOffSolidState.targetPosition = traceDynamicalOffSolidState.velocity * Time.deltaTime + preTargetPosition;
             }
@@ -347,11 +339,11 @@ public class TraceController : MonoBehaviour {
 
             // targetPositionは初期位置からの相対位置
             var preTargetPosition = traceSpringJointState.targetPosition;
-            traceSpringJointState.targetPosition = (pair.srcAvatarBone.transform.localPosition - pair.firstPosition).ToVec3d();
+            traceSpringJointState.targetPosition = (pair.srcAvatarBone.transform.localPosition - pair.firstLocalPosition).ToVec3d();
             // velocityはすべてHipの上の座標系から見たGlobalVelocity,localAngularVelocityらしい
             var velocity = (traceSpringJointState.targetPosition - preTargetPosition) / Time.deltaTime;
             if (velocity.square() > upperLimitSpringVelocity * upperLimitSpringVelocity) {
-                Debug.Log("velocity Limit ");
+                //Debug.Log("velocity Limit ");
                 velocity = velocity * Math.Sqrt(upperLimitSpringVelocity * upperLimitSpringVelocity / velocity.square());
                 traceSpringJointState.targetPosition = velocity * Time.deltaTime + preTargetPosition;
             }

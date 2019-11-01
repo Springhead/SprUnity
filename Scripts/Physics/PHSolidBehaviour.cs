@@ -236,7 +236,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         applicationQuit = true;
     }
 
-    public void OnDestroy() {
+    private void OnDestroy() {
         if (!applicationQuit) {
             phScene.DelChildObject(phSolid);
         }
