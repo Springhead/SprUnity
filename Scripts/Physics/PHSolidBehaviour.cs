@@ -231,4 +231,14 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private bool applicationQuit = false;
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    public void OnDestroy() {
+        if (!applicationQuit) {
+            phScene.DelChildObject(phSolid);
+        }
+    }
 }
