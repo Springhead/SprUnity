@@ -7,6 +7,27 @@ using SprUnity;
 using VGent;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(BoneController))]
+public class BoneControllerEditor : Editor {
+    public void OnSceneGUI() {
+        BoneController boneController = (BoneController)target;
+
+        // ----- ----- ----- ----- -----
+        // Target Position Handle
+        if (boneController.showTestTargetHandle) {
+            Tools.current = Tool.None;
+            boneController.testTargetPosition = Handles.PositionHandle(boneController.testTargetPosition, Quaternion.identity);
+            boneController.testTargetRotation = Handles.RotationHandle(boneController.testTargetRotation, boneController.testTargetPosition);
+        }
+    }
+}
+
+#endif
+
+// ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 public class SubMovement {
     // Start Spr, Pos, Rot, Time
     public Vector2 s0 = new Vector2(1, 1);
@@ -87,7 +108,6 @@ public class SubMovement {
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
 public class BoneController : MonoBehaviour {
     public bool suspend = false;
 
@@ -107,6 +127,17 @@ public class BoneController : MonoBehaviour {
 
     public GameObject trajectoryVisualizeObj = null;
 
+    // ----- ----- -----
+    // 動作テスト機能
+    public bool showTestTargetHandle = false;
+    [HideInInspector]
+    public Vector3 testTargetPosition;
+    [HideInInspector]
+    public Quaternion testTargetRotation;
+    public Vector2 testSpringDamper = new Vector2(1, 1);
+    public float testInterval = 1.0f;
+    public float testDurationRatio = 1.0f;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
     [HideInInspector]
@@ -121,6 +152,9 @@ public class BoneController : MonoBehaviour {
 
     [HideInInspector]
     public Queue<SubMovement> subTrajectory = new Queue<SubMovement>();
+
+    [HideInInspector]
+    public float testTimer = -1.0f;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
@@ -177,6 +211,9 @@ public class BoneController : MonoBehaviour {
         if (debugLog) {
             streamWriter = new StreamWriter(Application.dataPath + "/../BoneController" + bone.label + ".txt", append: false);
         }
+
+        testTargetPosition = transform.position;
+        testTargetRotation = transform.rotation;
 
         initialized = true;
     }
@@ -269,6 +306,17 @@ public class BoneController : MonoBehaviour {
     public void FixedUpdate() {
         if (!initialized || suspend) {
             return;
+        }
+
+        // ----- ----- ----- ----- -----
+
+        if (showTestTargetHandle) {
+            testTimer -= Time.fixedDeltaTime;
+            if (testTimer < 0) {
+                float testDuration = Mathf.Max(0.1f, testInterval * testDurationRatio);
+                AddSubMovement(new Pose(testTargetPosition, testTargetRotation), testSpringDamper, testDuration, testDuration);
+                testTimer = testInterval;
+            }
         }
 
         // ----- ----- ----- ----- -----
