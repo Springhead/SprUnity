@@ -111,7 +111,8 @@ namespace SprUnity {
         }
     }
 #endif
-
+    // PHSceneよりも後に
+    [DefaultExecutionOrder(2)]
     public class Body : MonoBehaviour {
 
         // List of Bones

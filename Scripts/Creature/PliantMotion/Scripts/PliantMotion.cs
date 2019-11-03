@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using SprUnity;
 using SprCs;
+using UnityEngine.Profiling;
+
 // PHSolidBehaviourの慣性テンソルを調整するLink(Startで呼ばれる)より後でStartを呼びたいのでPHSolidBehaviourよりもExecutionOrderを大きくする
 [DefaultExecutionOrder(3)]
 public class PliantMotion : MonoBehaviour {
@@ -61,6 +63,7 @@ public class PliantMotion : MonoBehaviour {
 
     void FixedUpdate() {
         // Bodyが削除された場合対応していたBodyPliantMotionBonesDicを削除
+
         var deleteBodys = new List<Body>();
         foreach (var bodyPliatnMotionBones in bodyPliantMotionBonesDic) {
             if (bodyPliatnMotionBones.Key == null) {
@@ -71,6 +74,7 @@ public class PliantMotion : MonoBehaviour {
             bodyPliantMotionBonesDic.Remove(deleteBody);
         }
 
+        Profiler.BeginSample("UE");
         foreach (var bodyPliantMotionBones in bodyPliantMotionBonesDic) {
             if (bodyPliantMotionBones.Key == null) {
                 Debug.Log("In");
@@ -81,20 +85,24 @@ public class PliantMotion : MonoBehaviour {
                     pbone.solid.SetPose(pbone.bone.solid.phSolid.GetPose());
                     pbone.solid.SetVelocity(pbone.bone.solid.phSolid.GetVelocity());
                     pbone.solid.SetAngularVelocity(pbone.bone.solid.phSolid.GetAngularVelocity());
-                    pbone.solid.SetCenterOfMass(pbone.bone.solid.phSolid.GetCenterOfMass());
+                    //pbone.solid.SetCenterOfMass(pbone.bone.solid.phSolid.GetCenterOfMass());
                 }
                 else {
                     PHBallJointIf targetBJ = pbone.bone.joint.phJoint as PHBallJointIf;
-                    pbone.phJointIf.GetPlugSolid()
-                        .SetCenterOfMass(pbone.bone.joint.phJoint.GetPlugSolid().GetCenterOfMass());
+                    //pbone.phJointIf.GetPlugSolid()
+                    //    .SetCenterOfMass(pbone.bone.joint.phJoint.GetPlugSolid().GetCenterOfMass());
                     if (targetBJ != null) {
+                        Profiler.BeginSample("ballJoint");
                         PHBallJointIf receiveBJ = pbone.phJointIf as PHBallJointIf;
                         //Debug.Log(pbone.bone.name + targetBJ.GetTargetPosition() + " spring" + receiveBJ.GetSpring());
+                        Profiler.BeginSample("velocity position");
                         receiveBJ.SetTargetVelocity(targetBJ.GetTargetVelocity());
                         receiveBJ.SetTargetPosition(targetBJ.GetTargetPosition());
+                        Profiler.EndSample();
                         // JointのGainを変更
                         receiveBJ.SetSpring(targetBJ.GetSpring() * hightGainRatio);
                         receiveBJ.SetDamper(targetBJ.GetDamper() * hightGainRatio);
+                        Profiler.EndSample();
                     }
                     else {
                         PHSpringIf targetSJ = pbone.bone.joint.phJoint as PHSpringIf;
@@ -114,8 +122,11 @@ public class PliantMotion : MonoBehaviour {
                 }
             }
         }
-
+        Profiler.EndSample();
+        Profiler.BeginSample("Stepsyori");
         phScene.Step();
+        Profiler.EndSample();
+        Profiler.BeginSample("SHITA");
         foreach (var bodyPliantMotionBones in bodyPliantMotionBonesDic) {
             if (bodyPliantMotionBones.Key == null) {
                 continue;
@@ -139,6 +150,7 @@ public class PliantMotion : MonoBehaviour {
                 }
             }
         }
+        Profiler.EndSample();
     }
 
     // boneにはBodyのrootBone,socketにはrootBoneのPHSolidIfを渡す

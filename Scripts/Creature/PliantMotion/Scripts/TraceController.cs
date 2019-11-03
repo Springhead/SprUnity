@@ -4,44 +4,22 @@ using UnityEngine;
 using SprUnity;
 using SprCs;
 using System;
+using UnityEngine.Profiling;
 using UnityEngine.Serialization;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(TraceController))]
-public class TraceControllerEditor : Editor {
-    private bool skinOn = false;
-    public override void OnInspectorGUI() {
-        TraceController trace = (TraceController)target;
-        base.OnInspectorGUI();
-        if (GUILayout.Button("Target Mesh OnOFF")) {
-            if (trace.animator != null) {
-                var skinnedMeshs = trace.animator.GetComponentsInChildren<SkinnedMeshRenderer>();
-                foreach (var skinnedMesh in skinnedMeshs) {
-                    skinnedMesh.enabled = !skinOn;
-                    skinOn = !skinOn;
-                }
-            }
-        }
-    }
-}
-#endif
-
+// AnimatorがInput用とOutput用の二つあることが前提
 [DefaultExecutionOrder(0)]
-public class TraceController : MonoBehaviour {
-    public Animator animator;
+public abstract class TraceController : MonoBehaviour {
     public float upperLimitAngularVelocity = 1000f * Mathf.Deg2Rad;
     public float upperLimitSpringVelocity = 2f;
-    private List<TracePair> tracePairs;
+    protected List<TracePair> tracePairs;
 
-    private Body body;
+    protected Body body;
     private List<TraceBallJointState> traceBallJointStates;
     private TraceSpringJointState traceSpringJointState;
     private TraceDynamicalOffSolidState traceDynamicalOffSolidState;
     // Use this for initialization
-    void Start() {
+    protected void Start() {
         //Debug.Log(pair.srcAvatarBone.name +  
         //          "srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
         //          "srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) + 
@@ -211,12 +189,7 @@ public class TraceController : MonoBehaviour {
         }
     }
 
-    private void Update() {
-        //UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
-    }
-
-    void FixedUpdate() {
-        UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
+    protected void UpdateTargVelPos() {
         foreach (var state in traceBallJointStates) {
             PHBallJointIf bj = state.stringBonePair.destBone.joint.phJoint as PHBallJointIf;
             if (bj != null) {
@@ -244,6 +217,7 @@ public class TraceController : MonoBehaviour {
 
     private Quaternion preTrueRot;
     void getAngVelAndTargRot(TracePair pair, TraceState traceState, ref Quaternion preSrcAvaLocRot, out Vec3d angularVelocity, ref Quaterniond targetRotation) {
+        Profiler.BeginSample("getAngVelAndTragRot");
         Quaternion srcAvaLocRot = pair.srcAvatarBone.transform.localRotation;
         if (srcAvaLocRot.w < 0) {
             srcAvaLocRot.w *= -1;
@@ -275,9 +249,9 @@ public class TraceController : MonoBehaviour {
             //          " srcAvaAngVel " + srcAvaAngVel +
             //          " srcTrueAvaLocRot " + pair.srcAvatarBone.transform.localRotation.ToQuaterniond() +
             //          " presrcTrueAvaLocRot " + preTrueRot.ToQuaterniond());
-            //srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
-            //srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
-            //srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
+            srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
+            srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
+            srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
         }
 
         if (pair.destBone.name == "RightLowerArm") {
@@ -294,17 +268,24 @@ public class TraceController : MonoBehaviour {
         // parentが更新されていることが前提,traceStateが親から子の順にgetAngVelAndTargetRotが呼ばれなければならない
         targetRotation = (Quaternion.Inverse(pair.firstDestBoneLRot) *
                           Quaternion.Inverse(traceState.parent.destBoneRotNoLimit) * destBoneRot).ToQuaterniond();
-        var destBoneDiffRot = targetRotation * preTargetRotation.Inv();
+        var destBoneDiffRot = targetRotation * Quaternion.Inverse(preTargetRotation.ToQuaternion()).ToQuaterniond();
+        Profiler.BeginSample("shita");
         angularVelocity = destBoneDiffRot.RotationHalf() / Time.deltaTime;
         //angularVelocity = new Vec3d(0,0,0);
         //angularVelocity = (Quaternion.Inverse(pair.firstDestBoneLRot) * 
         //                   srcAvaDiffRot * pair.srcToDest).ToQuaterniond().RotationHalf()/ Time.deltaTime;
         // AngularVelocityの制限なし
         traceState.destBoneRotNoLimit = pair.srcAvatarBone.transform.rotation * pair.srcToDest;
+        Profiler.EndSample();
+        Profiler.EndSample();
     }
 
-    void UpdateTraceJointStates() {
+    protected void UpdateTraceJointStates() {
         Quaternion preDestRot = Quaternion.identity; // getAngVelAndTargRotで使用,親のグローバルの目標角度
+        // ストップした後にプレイを押すとTime.deltaTimeが0になり0割になる
+        if (Time.deltaTime == 0) {
+            return;
+        }
         // 親から更新していく
         {
             // Baseの角速度,速度を更新
@@ -364,37 +345,5 @@ public class TraceController : MonoBehaviour {
         }
     }
 
-    public void GetPairs() {
-        if (animator == null) {
-            Debug.LogError("animatorがnull");
-            return;
-        }
-
-        body = GetComponent<Body>();
-        if (body == null) {
-            Debug.LogError("TraceController.csをアタッチするオブジェクトにBodyをアタッチしてください");
-            return;
-        }
-
-        Dictionary<string, HumanBodyBones> labelToBoneId = new Dictionary<string, HumanBodyBones>();
-        for (int i = 0; i < (int)HumanBodyBones.LastBone; i++) {
-            labelToBoneId[((HumanBodyBones)i).ToString()] = (HumanBodyBones)i;
-        }
-        tracePairs = new List<TracePair>();
-        foreach (var bone in body.bones) {
-            TracePair pair = new TracePair(bone);
-            if (!labelToBoneId.ContainsKey(bone.label)) {
-                //Debug.Log(pair.label + "がTrace用アバターにない");
-                // BaseのBone
-                if (bone.parent == null) {
-                    pair.srcAvatarBone = animator.gameObject;
-                    tracePairs.Add(pair);
-                }
-                continue;
-            }
-            var avatarbone = animator.GetBoneTransform(labelToBoneId[bone.label]);
-            pair.srcAvatarBone = avatarbone.gameObject;
-            tracePairs.Add(pair);
-        }
-    }
+    protected abstract void GetPairs();
 }
