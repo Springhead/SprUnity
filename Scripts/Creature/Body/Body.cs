@@ -18,108 +18,107 @@ namespace SprUnity {
     public class BodyEditor : Editor {
         public bool showBoneList = false;
         public bool showFitting = true;
+        public bool showInitAndSync = true;
 
         public override void OnInspectorGUI() {
             Body body = (Body)target;
 
             // ----- ----- ----- ----- -----
+            // Main
+
+            // Root Bone
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Root Bone");
+            body.rootBone = EditorGUILayout.ObjectField(body.rootBone, typeof(Bone), true) as Bone;
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel("Avatar Animator");
+            body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+
+            // ----- ----- ----- ----- -----
             // Bone List
             showBoneList = EditorGUILayout.Foldout(showBoneList, "Bones");
             if (showBoneList) {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.PrefixLabel("Root Bone");
-                body.rootBone = EditorGUILayout.ObjectField(body.rootBone, typeof(Bone), true) as Bone;
-                EditorGUILayout.EndHorizontal();
-
-                EditorGUILayout.Space();
-
-                int removeNumber = -1;
-                for (int i = 0; i < body.bones.Count; i++) {
+                foreach (var bone in body.bones) {
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.PrefixLabel((body.bones[i] == null) ? "(null)" : body.bones[i].label);
-                    body.bones[i] = EditorGUILayout.ObjectField(body.bones[i], typeof(Bone), true) as Bone;
-                    if (body.bones[i] != null) {
-                        body.bones[i].avatarBone = EditorGUILayout.ObjectField(body.bones[i].avatarBone, typeof(GameObject), true) as GameObject;
-                    }
-                    if (GUILayout.Button("x")) { removeNumber = i; }
+                    EditorGUILayout.PrefixLabel(bone.label);
+                    var newBone = EditorGUILayout.ObjectField(bone, typeof(Bone), true) as Bone;
+                    bone.avatarBone = EditorGUILayout.ObjectField(bone.avatarBone, typeof(GameObject), true) as GameObject;
                     EditorGUILayout.EndHorizontal();
                 }
-
-                if (removeNumber >= 0) {
-                    if (EditorUtility.DisplayDialog("Remove Bone From Body", "Remove Bone From Body ? ", "Ok", "No")) {
-                        body.bones.RemoveAt(removeNumber);
-                    }
-                }
-
-                if (GUILayout.Button("Add Bone")) { body.bones.Add(new Bone()); }
             }
 
             EditorGUILayout.Space();
 
             // ----- ----- ----- ----- -----
-            // Select Animator(with Avatar) and Fit to Avatar Button
+            // Fit to Avatar
             showFitting = EditorGUILayout.Foldout(showFitting, "Fitting");
             if (showFitting) {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.PrefixLabel("Avatar Animator");
-                body.animator = EditorGUILayout.ObjectField(body.animator, typeof(Animator), true) as Animator;
-                EditorGUILayout.EndHorizontal();
+                if (GUILayout.Button("Fit to Avatar")) {
+                    if (EditorUtility.DisplayDialog("Fit to Avatar", "Fit to Avatar may overwrite current Spring/Damper/IK-Parameters. Do Fitting?", "Fit", "Do not Fit")) {
+                        body.FitToAvatar();
+                        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+                    }
+                }
+
                 body.fitSpringDamper = EditorGUILayout.Toggle("Fit Spring Damper", body.fitSpringDamper);
                 if (body.fitSpringDamper) {
                     body.momentToSpringCoeff = EditorGUILayout.FloatField("Moment to Spring", body.momentToSpringCoeff);
                     body.dampingRatio = EditorGUILayout.FloatField("Damping Ratio", body.dampingRatio);
                     body.minSpring = EditorGUILayout.FloatField("Min Spring Value", body.minSpring);
 
+                    EditorGUILayout.Space();
+
                     body.fitIKBiasOnFitSpring = EditorGUILayout.Toggle("Fit IK Bias", body.fitIKBiasOnFitSpring);
                     if (body.fitIKBiasOnFitSpring) {
                         body.momentToSqrtBiasCoeff = EditorGUILayout.FloatField("Moment to Sqrt(Bias)", body.momentToSqrtBiasCoeff);
                     }
                 }
-                if (GUILayout.Button("Fit To Avatar")) { body.FitToAvatar(); }
-                if (GUILayout.Button("SetBones")) { body.SetBonesFromRootBone(); }
+
+                EditorGUILayout.Space();
+
+                body.fitCollisionShape = EditorGUILayout.Toggle("Fit Collision Shape", body.fitCollisionShape);
             }
 
             EditorGUILayout.Space();
 
             // ----- ----- ----- ----- -----
-
-            bool initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
-            if (body.initializeOnStart != initializeOnStart) {
-                // LateAwakeStartフラグも同時に切り替える
-                body.initializeOnStart = initializeOnStart;
-                body.SetLateAwakeStart(!initializeOnStart);
-            }
-            body.changeRoundConeOnStart = EditorGUILayout.Toggle("Change RoundCone On Start", body.changeRoundConeOnStart);
-
-            body.syncEnabled = EditorGUILayout.Toggle("Synchronize", body.syncEnabled);
-            body.syncMode = (Body.SyncMode)EditorGUILayout.EnumPopup("Sync Mode", body.syncMode);
-
-            /*
-            // For BodyGenerator
-            if (GUILayout.Button("Print Bone Positions")) {
-                string str = "";
-                foreach (var bone in body.bones) {
-                    str += "body[\"" + bone.label + "\"].transform.position = new Vector3(";
-                    str += bone.transform.position.x + "f, ";
-                    str += bone.transform.position.y + "f, ";
-                    str += bone.transform.position.z + "f);";
-                    str += "\r\n";
+            // Init and Sync
+            showInitAndSync = EditorGUILayout.Foldout(showInitAndSync, "Init and Sync");
+            if (showInitAndSync) {
+                bool initializeOnStart = EditorGUILayout.Toggle("Initialize On Start", body.initializeOnStart);
+                if (body.initializeOnStart != initializeOnStart) {
+                    // LateAwakeStartフラグも同時に切り替える
+                    body.initializeOnStart = initializeOnStart;
+                    body.SetLateAwakeStart(!initializeOnStart);
                 }
-                Debug.Log(str);
+
+                body.syncEnabled = EditorGUILayout.Toggle("Synchronize", body.syncEnabled);
+                body.syncMode = (Body.SyncMode)EditorGUILayout.EnumPopup("Sync Mode", body.syncMode);
             }
-            */
+
         }
     }
 #endif
     // PHSceneよりも後に
     [DefaultExecutionOrder(2)]
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // Body Class
     public class Body : MonoBehaviour {
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Public Members
 
-        // List of Bones
-        // 常にrootBoneが最初で親から子供の順になるように作成する
-        public List<Bone> bones = new List<Bone>();
+        // List of Bones : rootBoneが最初で親から子供の順になるような順でアクセスできるイテレータを返す
+        public BodyBones bones {
+            get { return new BodyBones(rootBone); }
+        }
 
-        // Root Bone
+        // Root Bone of Physical Model
         public Bone rootBone = null;
 
         // Animator with humanoid avatar to be synchronized with this body
@@ -141,21 +140,18 @@ namespace SprUnity {
         public bool fitIKBiasOnFitSpring = true;
         public float momentToSqrtBiasCoeff = 100.0f;
 
+        public bool fitCollisionShape = false;
+
+        // Initialization
         public bool initializeOnStart = true;
-        public bool changeRoundConeOnStart = true;
+        public bool Initialized { get; private set; }
 
-        // Flag
-        public bool initialized = false;
-
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-        // Controllers
-
-        public LookController lookController = null;
-        public BodyBalancer bodyBalancer = null;
-
-        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // Body Parameter for KeyPoses
         public float height = 1.6f;
+
+        // Controllers
+        public LookController lookController = null;
+        public BodyBalancer bodyBalancer = null;
 
         // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
         // MonoBehaviour Functions
@@ -163,6 +159,10 @@ namespace SprUnity {
         void Start() {
             if (initializeOnStart) {
                 Initialize();
+            }
+
+            foreach (var bone in bones) {
+                Debug.Log(bone.name);
             }
         }
 
@@ -324,7 +324,7 @@ namespace SprUnity {
             }
 
             // -- Fit Collision Shape Length
-            if (changeRoundConeOnStart) {
+            if (fitCollisionShape) {
                 foreach (var bone in bones) {
                     if (bone.shape != null) {
                         var shapeObj = bone.shape.shapeObject;
@@ -427,10 +427,8 @@ namespace SprUnity {
                 bone.SaveInitialSpringDamper();
                 bone.InitializeController();
             }
-            initialized = true;
+            Initialized = true;
         }
-
-        // 
 
         // ----- ----- ----- ----- -----
         // Private Functions
@@ -467,9 +465,6 @@ namespace SprUnity {
 
                 // Conbine Mass
                 bone.parent.solid.desc.mass += bone.solid.desc.mass;
-
-                // Remove from body
-                bones.Remove(bone);
 
                 // Set Destroy Flag
                 destroy = true;
@@ -511,33 +506,77 @@ namespace SprUnity {
             }
             return inertiaMomentSum;
         }
+    }
 
-        // bonesをセットする
-        public void SetBonesFromRootBone() {
-            bones.Clear();
-            bones.Add(rootBone);
-            SetBonesFromRootBoneRecursive(rootBone);
-        }
-        // 深さ順にbonesに追加
-        private void SetBonesFromRootBoneRecursive(Bone parentBone) {
-            foreach (var childBone in parentBone.children) {
-                if (!bones.Contains(childBone)) {
-                    bones.Add(childBone);
-                    SetBonesFromRootBoneRecursive(childBone);
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // BodyBones : ボーンツリーの各ボーンに深さ優先順でアクセスするためのイテレータ
+    public class BodyBones : IEnumerable<Bone> {
+        public class BodyBonesEnumerator : IEnumerator<Bone> {
+            // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+            // Private Members
+            private Bone rootBone;
+            private Stack<int> stack = new Stack<int>();
+
+            // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+            // Constructor
+            public BodyBonesEnumerator(Bone rootBone) { this.rootBone = rootBone; }
+
+            // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+            // Inherited Methods for IEnumerable
+            public Bone Current { get; private set; } = null;
+            object IEnumerator.Current { get { return Current; } }
+            public void Dispose() { }
+            public void Reset() { Current = null; }
+            public bool MoveNext() {
+                if (Current == null) {
+                    Current = rootBone;
+                    return true;
                 }
+
+                if (Current.children.Count > 0) {
+                    Current = Current.children[0];
+                    stack.Push(0);
+                    return true;
+                }
+
+                stack.Push(stack.Pop() + 1);
+
+                int cnt = 0;
+                while (stack.Peek() >= Current.parent.children.Count) {
+                    Current = Current.parent;
+                    stack.Pop();
+                    if (stack.Count == 0) { break; }
+
+                    stack.Push(stack.Pop() + 1);
+
+                    cnt++; if (cnt > 1000) { throw new Exception("BodyBonesEnumerator Tree Traversal Too Long"); }
+                }
+
+                if (stack.Count > 0) {
+                    Current = Current.parent.children[stack.Peek()];
+                    return true;
+                }
+
+                return false;
             }
         }
 
-        [InitializeOnLoadMethod]
-        private static void SetHierarchyWindowChanged() {
-            //Debug.Log("SetHierarchyWindowChaged");
-            EditorApplication.hierarchyChanged += () => {
-                //Debug.Log("SetBonesFromRootBone");
-                var bodys = FindObjectsOfType<Body>();
-                foreach (var body in bodys) {
-                    body.SetBonesFromRootBone();
-                }
-            };
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Private Members
+        private Bone rootBone = null;
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Constructor
+        public BodyBones(Bone rootBone) { this.rootBone = rootBone; }
+
+        // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+        // Inherited Methods for IEnumerable
+        public IEnumerator<Bone> GetEnumerator() {
+            return new BodyBonesEnumerator(rootBone);
+        }
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
         }
     }
 

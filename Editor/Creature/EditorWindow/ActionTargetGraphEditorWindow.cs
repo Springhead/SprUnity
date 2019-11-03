@@ -516,18 +516,31 @@ namespace VGent {
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
+
+            // 全ActionManagerからActionTargetGraphを取得
+            List<ActionTargetGraph> actionTargetGraphs = new List<ActionTargetGraph>();
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                actionManager.GetActionStateMachineFromFolders();
+                actionManager.GetActionTargetGraphFromStateMachines();
+                foreach (var targetGraph in actionManager.targetGraphs) {
+                    actionTargetGraphs.Add(targetGraph);
+                }
+            }
+
             // Asset全検索
-            var guids = AssetDatabase.FindAssets("*").Distinct();
+            // var guids = AssetDatabase.FindAssets("*").Distinct();
+
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
+
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
 
-            foreach (var guid in guids) {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                var actionTargetGraph = obj as ActionTargetGraph;
-                if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
+            foreach (var actionTargetGraph in actionTargetGraphs) {
+                // var path = AssetDatabase.GUIDToAssetPath(guid);
+                // var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                // var actionTargetGraph = obj as ActionTargetGraph;
+                if (actionTargetGraph != null && AssetDatabase.IsMainAsset(actionTargetGraph)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);

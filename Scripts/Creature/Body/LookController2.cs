@@ -141,7 +141,7 @@ public class LookController2 : LookController {
 
     void FixedUpdate () {
         if (!initialized) {
-            if (body != null && body["Head"] != null && body["Head"].solid != null && body["Head"].solid.phSolid != null && body.initialized) {
+            if (body != null && body["Head"] != null && body["Head"].solid != null && body["Head"].solid.phSolid != null && body.Initialized) {
                 Quaternion initialHeadRotation = body["Head"].transform.rotation;
                 baseHeadRotation = initialHeadRotation;
                 nextBaseHeadRotation = initialHeadRotation;

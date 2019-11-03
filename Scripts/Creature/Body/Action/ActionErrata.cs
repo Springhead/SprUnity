@@ -5,7 +5,7 @@ using SprUnity;
 
 namespace VGent{
 
-    [CreateAssetMenu()]
+    // [CreateAssetMenu()]
     public class ActionErrata : MonoBehaviour{
 
         [System.Serializable]

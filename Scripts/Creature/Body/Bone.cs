@@ -107,7 +107,7 @@ namespace SprUnity {
         }
 
         void FixedUpdate() {
-            if (!body.initialized) { return; }
+            if (!body.Initialized) { return; }
 
             if (controller != null && controller.bone == null) { controller.bone = this; }
 
