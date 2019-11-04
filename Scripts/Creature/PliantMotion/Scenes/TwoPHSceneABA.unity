@@ -2860,8 +2860,8 @@ GameObject:
   - component: {fileID: 529795870}
   - component: {fileID: 529795869}
   - component: {fileID: 529795868}
-  - component: {fileID: 529795867}
   - component: {fileID: 529795866}
+  - component: {fileID: 529795867}
   m_Layer: 0
   m_Name: AnimationBody
   m_TagString: Untagged
@@ -2895,30 +2895,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d9c105cb4baee4c878f718b3371660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bones:
-  - {fileID: 1077787009}
-  - {fileID: 5019463}
-  - {fileID: 547693775}
-  - {fileID: 1571244782}
-  - {fileID: 784005054}
-  - {fileID: 1547480928}
-  - {fileID: 1073356130}
-  - {fileID: 88545544}
-  - {fileID: 1862460590}
-  - {fileID: 1485510705}
-  - {fileID: 1133474393}
-  - {fileID: 184698226}
-  - {fileID: 1221071271}
-  - {fileID: 2046860600}
-  - {fileID: 40890894}
-  - {fileID: 832065218}
-  - {fileID: 1416627138}
-  - {fileID: 1295549277}
-  - {fileID: 557100209}
-  - {fileID: 243024770}
-  - {fileID: 1238496781}
-  - {fileID: 1088108940}
-  - {fileID: 143743947}
   rootBone: {fileID: 1077787009}
   animator: {fileID: 66746823}
   syncEnabled: 1
@@ -2929,12 +2905,11 @@ MonoBehaviour:
   minSpring: 100
   fitIKBiasOnFitSpring: 1
   momentToSqrtBiasCoeff: 100
+  fitCollisionShape: 0
   initializeOnStart: 1
-  changeRoundConeOnStart: 1
-  initialized: 0
+  height: 1.2846162
   lookController: {fileID: 0}
   bodyBalancer: {fileID: 0}
-  height: 1.2846162
 --- !u!114 &529795867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2943,12 +2918,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 529795864}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06e29c7ac67ce9e49abc24c431628029, type: 3}
+  m_Script: {fileID: 11500000, guid: dd3037ebdd1f21441a02a90c8f0b841b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 828162874}
   upperLimitAngularVelocity: 17.453293
   upperLimitSpringVelocity: 2
+  animator: {fileID: 828162874}
 --- !u!114 &529795868
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4785,7 +4760,7 @@ Prefab:
         type: 2}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: ec18c692d0057ad47b2657627e20ede8, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 137914364097294778, guid: 483f41a6948107747be776315ca80180,
         type: 2}
       propertyPath: m_Enabled
@@ -6589,35 +6564,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddcd2708cac3df848ad49b8f2e3f1ddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  desc:
-    _flag: 0
-    timeStep: 0.0199999995529652
-    haptictimeStep: 0.001
-    count: 0
-    gravity:
-      _flag: 0
-      x: 0
-      y: -9.8
-      z: 0
-    airResistanceRateForVelocity: 1
-    airResistanceRateForAngularVelocity: 1
-    contactTolerance: 0.002
-    impactThreshold: 10
-    frictionThreshold: 0.01
-    maxDeltaPosition: 3.4028234663852886e+38
-    maxDeltaOrientation: 3.4028234663852886e+38
-    maxVelocity: 3.4028234663852886e+38
-    maxAngularVelocity: 100
-    maxForce: 3.4028234663852886e+38
-    maxMoment: 3.4028234663852886e+38
-    numIteration: 50
-    method: 0
-    bContactDetectionEnabled: 0
-    bCCDEnabled: 1
-    broadPhaseMode: 0
-    blendMode: 2
   enableDebugWindow: 0
   hightGainRatio: 100
+  lowGainPHScene: {fileID: 1637673298}
 --- !u!1 &1133474391
 GameObject:
   m_ObjectHideFlags: 0

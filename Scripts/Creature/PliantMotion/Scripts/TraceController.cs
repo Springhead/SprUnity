@@ -4,8 +4,10 @@ using UnityEngine;
 using SprUnity;
 using SprCs;
 using System;
+using UnityEditor.Experimental.UIElements;
 using UnityEngine.Profiling;
 using UnityEngine.Serialization;
+using VGent;
 
 // AnimatorがInput用とOutput用の二つあることが前提
 [DefaultExecutionOrder(0)]
@@ -54,6 +56,9 @@ public abstract class TraceController : MonoBehaviour {
         GetPairs();
         InitializeStringBonePairs();
         InitializeTraceBallJointState();
+        // デバッグ表示用
+        InitTarget();
+
         UpdateTraceJointStates();
     }
 
@@ -343,6 +348,74 @@ public abstract class TraceController : MonoBehaviour {
             // <!!> これってFixedUpdateが早いと0になるのでは？
             traceBallJointState.targetVelocity = angularVelocity;
         }
+
+        // デバッグ表示
+        foreach (var traceBallJointState in traceBallJointStates) {
+            var destBone = traceBallJointState.stringBonePair.destBone;
+            boneTransformDic[destBone].localPosRot.rotation =
+                boneTransformDic[destBone].firstLocalPosRot.rotation*traceBallJointState.targetRotation.ToQuaternion();
+        }
+    }
+
+    class PosRotParent {
+        public PosRot localPosRot = new PosRot();
+        public PosRot firstLocalPosRot = new PosRot();
+        public PosRotParent parent;
+        public PosRotParent(Transform transform, PosRotParent parent) {
+            localPosRot.position = transform.localPosition;
+            localPosRot.rotation = transform.localRotation;
+            firstLocalPosRot.position = transform.localPosition;
+            firstLocalPosRot.rotation = transform.localRotation;
+            this.parent = parent;
+        }
+
+        public Vector3 Position {
+            get {
+                if (parent != null) {
+                    return parent.Position + parent.Rotation * localPosRot.position;
+                }
+
+                return localPosRot.position;
+            }
+        }
+
+        public Quaternion Rotation {
+            get {
+                if (parent != null) {
+                    return parent.Rotation * localPosRot.rotation;
+                }
+                return localPosRot.rotation;
+            }
+        }
+    }
+    private Dictionary<Bone, PosRotParent> boneTransformDic;
+    public void InitTarget() {
+        boneTransformDic = new Dictionary<Bone, PosRotParent>();
+        var rootPosRotParent = new PosRotParent(body.rootBone.solid.transform, null);
+        boneTransformDic.Add(body.rootBone, rootPosRotParent);
+        InitRecursive(body.rootBone, rootPosRotParent);
+    }
+
+    void InitRecursive(Bone bone, PosRotParent parent) {
+        foreach (var boneChild in bone.children) {
+            if (boneChild.solid != null) {
+                var newPosRotParent = new PosRotParent(boneChild.solid.transform, parent);
+                boneTransformDic.Add(boneChild, newPosRotParent);
+                InitRecursive(boneChild, newPosRotParent);
+            }
+        }
+    }
+    public void ShowTarget() {
+        if (Application.isPlaying && isActiveAndEnabled) {
+            Gizmos.color = Color.black;
+            foreach (var posrotParent in boneTransformDic.Values) {
+                Gizmos.DrawWireSphere(posrotParent.Position, 0.01f);
+            }
+        }
+    }
+
+    private void OnDrawGizmos() {
+        ShowTarget();
     }
 
     protected abstract void GetPairs();
