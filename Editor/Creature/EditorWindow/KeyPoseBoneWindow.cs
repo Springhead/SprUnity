@@ -64,9 +64,9 @@ namespace SprUnity {
         }
         private static BoneBoxPair[] boneBoxPairs;
         private Texture2D texture = null;
-        private string path = "pictures/default.png";
+        private string path = "../pictures/default.png";
 
-        [MenuItem("Window/KeyPoseBone Window")]
+        [MenuItem("Window/VGent/Body/KeyPoseBone Window", priority = 20)]
         static void Open() {
             window = GetWindow<KeyPoseBoneWindow>();
             ActionEditorWindowManager.instance.keyPoseBoneWindow = window;

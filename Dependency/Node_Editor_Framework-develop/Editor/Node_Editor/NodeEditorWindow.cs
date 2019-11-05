@@ -26,8 +26,8 @@ namespace NodeEditorFramework.Standard
 		/// <summary>
 		/// Opens the Node Editor window and loads the last session
 		/// </summary>
-		[MenuItem("Window/Node Editor")]
-		public static NodeEditorWindow OpenNodeEditor () 
+		[MenuItem("Window/VGent/Body/(Testing) Node Editor", priority = 31)]
+        public static NodeEditorWindow OpenNodeEditor () 
 		{
 			_editor = GetWindow<NodeEditorWindow>();
 			_editor.minSize = new Vector2(400, 200);

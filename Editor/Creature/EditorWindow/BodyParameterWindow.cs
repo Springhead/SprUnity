@@ -23,7 +23,7 @@ namespace SprUnity {
         public static BoneGroupBoolPair[] displayBodyGroup;
         public static HumanBodyBones[][] boneGroup;
 
-        [MenuItem("Window/Body Parameter Window")]
+        [MenuItem("Window/VGent/Body/Body Parameter Window", priority = 10)]
         static void Open() {
             window = GetWindow<BodyParameterWindow>();
             window.titleContent = new GUIContent("BodyParameter");

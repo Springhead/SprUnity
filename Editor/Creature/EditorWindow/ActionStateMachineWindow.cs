@@ -42,7 +42,7 @@ namespace SprUnity {
         public static GUIStyle toolbarDropdown;
         public static GUIStyle toolbarPopup;
 
-        [MenuItem("Window/SprUnity Action/Action State Machine Window")]
+        [MenuItem("Window/VGent/Action/Action State Machine", priority = 40)]
         static void Open() {
             window = GetWindow<ActionStateMachineWindow>();
             window.titleContent = new GUIContent("ActionStateMachine");

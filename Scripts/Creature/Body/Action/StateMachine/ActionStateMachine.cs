@@ -37,39 +37,43 @@ namespace VGent{
             ActionStateMachine stateMachine = (ActionStateMachine)target;
             GUILayout.BeginVertical();
             int deleteNum = -1;
-            for(int i = 0; i < stateMachine.parameters.Count(); i++) {
-                ActionStateMachineParameter actionParameter = stateMachine.parameters[i];
-                GUILayout.BeginHorizontal();
-                actionParameter.label = GUILayout.TextArea(actionParameter.label);
-                switch (actionParameter.type) {
-                    case ActionStateMachineParameter.ParameterType.Bool:
-                        actionParameter.value = GUILayout.Toggle((bool)actionParameter.value, "");
-                        break;
-                    case ActionStateMachineParameter.ParameterType.Int:
-                        actionParameter.value = EditorGUILayout.IntField((int)actionParameter.value);
-                        break;
-                    case ActionStateMachineParameter.ParameterType.Float:
-                        actionParameter.value = EditorGUILayout.FloatField(actionParameter.value != null ? (float)actionParameter.value : 0.0f);
-                        break;
-                    case ActionStateMachineParameter.ParameterType.GameObject:
-                        /*
-                        if(actionParameter.value != null) {
-                            GUILayout.Label(((GameObject)actionParameter.value).name);
-                        } else {
-                            GUILayout.Label("Object null");
-                        }
-                        */
-                        actionParameter.value = EditorGUILayout.ObjectField((GameObject)actionParameter.value, typeof(GameObject));
-                        break;
-                    default:
-                        break;
+
+            if (stateMachine.parameters != null) {
+                for (int i = 0; i < stateMachine.parameters.Count(); i++) {
+                    ActionStateMachineParameter actionParameter = stateMachine.parameters[i];
+                    GUILayout.BeginHorizontal();
+                    actionParameter.label = GUILayout.TextArea(actionParameter.label);
+                    switch (actionParameter.type) {
+                        case ActionStateMachineParameter.ParameterType.Bool:
+                            actionParameter.value = GUILayout.Toggle((bool)actionParameter.value, "");
+                            break;
+                        case ActionStateMachineParameter.ParameterType.Int:
+                            actionParameter.value = EditorGUILayout.IntField((int)actionParameter.value);
+                            break;
+                        case ActionStateMachineParameter.ParameterType.Float:
+                            actionParameter.value = EditorGUILayout.FloatField(actionParameter.value != null ? (float)actionParameter.value : 0.0f);
+                            break;
+                        case ActionStateMachineParameter.ParameterType.GameObject:
+                            /*
+                            if(actionParameter.value != null) {
+                                GUILayout.Label(((GameObject)actionParameter.value).name);
+                            } else {
+                                GUILayout.Label("Object null");
+                            }
+                            */
+                            actionParameter.value = EditorGUILayout.ObjectField((GameObject)actionParameter.value, typeof(GameObject));
+                            break;
+                        default:
+                            break;
+                    }
+                    if (GUILayout.Button("x")) {
+                        deleteNum = i;
+                    }
+                    GUILayout.EndHorizontal();
+                    DrawReferenceNodes(actionParameter);
                 }
-                if (GUILayout.Button("x")) {
-                    deleteNum = i;
-                }
-                GUILayout.EndHorizontal();
-                DrawReferenceNodes(actionParameter);
             }
+
             if(deleteNum >= 0) {
                 stateMachine.parameters.RemoveAt(deleteNum);
             }
@@ -250,7 +254,7 @@ namespace VGent{
     }
 
 #if UNITY_EDITOR
-    [CreateAssetMenu(menuName = "ActionStateMachine")]
+    [CreateAssetMenu(menuName = "VGent Action/Action State Machine")]
 #endif
     public class ActionStateMachine : ScriptableObject {
 

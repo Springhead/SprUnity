@@ -11,7 +11,9 @@ using System.Reflection;
 #endif
 
 namespace VGent{
-    [CreateAssetMenu]
+#if UNITY_EDITOR
+    [CreateAssetMenu(menuName = "VGent Action/Action Target Graph")]
+#endif
     [System.Serializable]
     public class ActionTargetGraph : NodeGraph {
 

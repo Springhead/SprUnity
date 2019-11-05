@@ -20,10 +20,20 @@ namespace VGent{
             if (Tools.pivotRotation == PivotRotation.Local) {
                 EditorGUI.BeginChangeCheck();
                 float handleSize= ActionTargetGraphEditorWindow.HandleSize;
-                Vector3 pos = SceneViewHandles.AxisMove(r.position, r.rotation, handleSize);
-                //Vector3 pos = Handles.PositionHandle(r.position, r.rotation);
-                Quaternion rot = SceneViewHandles.AxisRotate(r.rotation, r.position, handleSize);
-                //Quaternion rot = Handles.RotationHandle(r.rotation, r.position);
+                // Vector3 pos = SceneViewHandles.AxisMove(r.position, r.rotation, handleSize);
+                Vector3 pos = Handles.PositionHandle(r.position, r.rotation);
+                // Quaternion rot = SceneViewHandles.AxisRotate(r.rotation, r.position, handleSize);
+                Quaternion rot = Handles.RotationHandle(r.rotation, r.position);
+
+                /*
+                string s = "";
+                s += "r.position=" + r.position.ToString() + ", ";
+                s += "r.rotation=" + r.rotation.ToString() + ", ";
+                s += "pos=" + pos.ToString() + ", ";
+                s += "rot=" + rot.ToString() + ", ";
+                Debug.Log(s);
+                */
+
                 if (EditorGUI.EndChangeCheck() && !node.GetPort("relative").IsConnected) {
                     Undo.RecordObject(node, "Change RelativePosRotScaleNode");
                     node.relative = tempOrigin.InverseTransformPosRotScale(new PosRotScale(pos, rot, r.scale));

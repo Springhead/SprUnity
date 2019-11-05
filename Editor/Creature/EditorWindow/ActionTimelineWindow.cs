@@ -181,7 +181,7 @@ namespace SprUnity {
         // 値が大きいと重いので、だれかいい方法教えてください
         int segments = 10;
 
-        [MenuItem("Window/SprUnity Action/Action Timeline Window")]
+        [MenuItem("Window/VGent/Action/Action Timeline", priority = 60)]
         static void Open() {
             window = GetWindow<ActionTimelineWindow>();
             ActionEditorWindowManager.instance.timelineWindow = window;

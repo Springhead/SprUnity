@@ -142,7 +142,7 @@ namespace VGent {
             }
             return false;
         }
-        [MenuItem("Window/SprUnity Action/Action Target Graph Editor Window")]
+        [MenuItem("Window/VGent/Action/Action Target Graph", priority = 50)]
         static void Open() {
             ReloadActionList();
             if (ActionEditorWindowManager.instance.actionTargetGraphStatuses != null) {
@@ -227,6 +227,7 @@ namespace VGent {
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
+
         void SubWindow() {
             Event e = Event.current;
             GUISkin defaultSkin = GUI.skin;
@@ -520,8 +521,7 @@ namespace VGent {
             // 全ActionManagerからActionTargetGraphを取得
             List<ActionTargetGraph> actionTargetGraphs = new List<ActionTargetGraph>();
             foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
-                actionManager.GetActionStateMachineFromFolders();
-                actionManager.GetActionTargetGraphFromStateMachines();
+                actionManager.UpdateList();
                 foreach (var targetGraph in actionManager.targetGraphs) {
                     actionTargetGraphs.Add(targetGraph);
                 }
