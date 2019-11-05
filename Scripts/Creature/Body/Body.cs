@@ -144,7 +144,7 @@ namespace SprUnity {
 
         // Initialization
         public bool initializeOnStart = true;
-        public bool Initialized = false;
+        public bool Initialized { get; set; } = false;
 
         // Body Parameter for KeyPoses
         public float height = 1.6f;
