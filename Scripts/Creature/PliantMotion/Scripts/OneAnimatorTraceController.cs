@@ -11,12 +11,19 @@ public class OneAnimatorTraceController : TraceController {
         base.Start();
         // animator.enabledがtrueだとFixedUpadateの後で更新されるためfalseにしておく
         animator.enabled = false;
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateAnimator, PHSceneBehaviour.CallbackPriority.BeforeStep, 0);
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateTraceJointStates, PHSceneBehaviour.CallbackPriority.BeforeStep, 1);
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateTargVelPos, PHSceneBehaviour.CallbackPriority.BeforeStep, 2);
+
     }
-    void FixedUpdate() {
-        // FixedUpdateでanimator.Updateをやらないと描画されないためAnimatorのUpdateModeが何であれFixedUpdateでanimator.Updateする
+    //void FixedUpdate() {
+    //    // FixedUpdateでanimator.Updateをやらないと描画されないためAnimatorのUpdateModeが何であれFixedUpdateでanimator.Updateする
+    //    UpdateAnimator();
+    //    UpdateTraceJointStates();
+    //    UpdateTargVelPos();
+    //}
+    void UpdateAnimator() {
         animator.Update(Time.deltaTime);
-        UpdateTraceJointStates();
-        UpdateTargVelPos();
     }
     protected override void GetPairs() {
         body = GetComponent<Body>();
