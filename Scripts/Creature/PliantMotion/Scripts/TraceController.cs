@@ -4,44 +4,24 @@ using UnityEngine;
 using SprUnity;
 using SprCs;
 using System;
+using UnityEditor.Experimental.UIElements;
+using UnityEngine.Profiling;
 using UnityEngine.Serialization;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using VGent;
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(TraceController))]
-public class TraceControllerEditor : Editor {
-    private bool skinOn = false;
-    public override void OnInspectorGUI() {
-        TraceController trace = (TraceController)target;
-        base.OnInspectorGUI();
-        if (GUILayout.Button("Target Mesh OnOFF")) {
-            if (trace.animator != null) {
-                var skinnedMeshs = trace.animator.GetComponentsInChildren<SkinnedMeshRenderer>();
-                foreach (var skinnedMesh in skinnedMeshs) {
-                    skinnedMesh.enabled = !skinOn;
-                    skinOn = !skinOn;
-                }
-            }
-        }
-    }
-}
-#endif
-
+// AnimatorがInput用とOutput用の二つあることが前提
 [DefaultExecutionOrder(0)]
-public class TraceController : MonoBehaviour {
-    public Animator animator;
+public abstract class TraceController : MonoBehaviour {
     public float upperLimitAngularVelocity = 1000f * Mathf.Deg2Rad;
     public float upperLimitSpringVelocity = 2f;
-    private List<TracePair> tracePairs;
+    protected List<TracePair> tracePairs;
 
-    private Body body;
+    protected Body body;
     private List<TraceBallJointState> traceBallJointStates;
     private TraceSpringJointState traceSpringJointState;
     private TraceDynamicalOffSolidState traceDynamicalOffSolidState;
     // Use this for initialization
-    void Start() {
+    protected void Start() {
         //Debug.Log(pair.srcAvatarBone.name +  
         //          "srcAvaLocRot " + srcAvaLocRot.ToQuaterniond() +
         //          "srcAvaLocRot 角度 " + Math.Sqrt(srcAvaLocRot.ToQuaterniond().Rotation().square()) + 
@@ -76,6 +56,9 @@ public class TraceController : MonoBehaviour {
         GetPairs();
         InitializeStringBonePairs();
         InitializeTraceBallJointState();
+        // デバッグ表示用
+        InitTarget();
+
         UpdateTraceJointStates();
     }
 
@@ -89,7 +72,7 @@ public class TraceController : MonoBehaviour {
         [HideInInspector]
         public Quaternion firstDestBoneLRot = Quaternion.identity;
         [HideInInspector]
-        public Vector3 firstPosition = new Vector3();
+        public Vector3 firstLocalPosition = new Vector3();
         [HideInInspector]
         public Quaternion srcToDest = Quaternion.identity;
     }
@@ -137,7 +120,7 @@ public class TraceController : MonoBehaviour {
                     var lb = pair.destBone.solid.transform.localRotation;
                     var la = pair.srcAvatarBone.transform.localRotation;
                     pair.firstDestBoneLRot = lb;
-                    pair.firstPosition = pair.srcAvatarBone.transform.position;
+                    pair.firstLocalPosition = pair.srcAvatarBone.transform.localPosition;
                     pair.srcToDest = Quaternion.Inverse(av) * so;
                 } else {
                     var so = pair.destBone.transform.rotation;
@@ -147,7 +130,7 @@ public class TraceController : MonoBehaviour {
                     var lb = pair.destBone.transform.localRotation;
                     var la = pair.srcAvatarBone.transform.localRotation;
                     pair.firstDestBoneLRot = lb;
-                    pair.firstPosition = pair.srcAvatarBone.transform.position;
+                    pair.firstLocalPosition = pair.srcAvatarBone.transform.localPosition;
                     pair.srcToDest = Quaternion.Inverse(av) * so;
                 }
             } else {
@@ -182,8 +165,8 @@ public class TraceController : MonoBehaviour {
                         var newState = new TraceDynamicalOffSolidState();
                         newState.stringBonePair = pair;
                         traceDynamicalOffSolidState = newState;
-                        traceDynamicalOffSolidState.targetRotation = pair.srcAvatarBone.transform.localRotation.ToQuaterniond();
-                        traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.localPosition.ToVec3d();
+                        traceDynamicalOffSolidState.targetRotation = pair.srcAvatarBone.transform.rotation.ToQuaterniond();
+                        traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.position.ToVec3d();
                     }
                 }
             }
@@ -209,22 +192,9 @@ public class TraceController : MonoBehaviour {
             traceDynamicalOffSolidState.stringBonePair.destBone) {
             traceSpringJointState.parent = traceDynamicalOffSolidState;
         }
-        foreach (var traceBallJointState in traceBallJointStates) {
-            if (traceBallJointState.parent != null) {
-                Debug.Log(traceBallJointState.stringBonePair.destBone.name + " parent" + traceBallJointState.parent.stringBonePair.destBone.name);
-            } else {
-                Debug.Log(traceBallJointState.stringBonePair.destBone.name + " parent null");
-            }
-        }
-        Debug.Log(traceSpringJointState.stringBonePair.destBone.name + " parent" + traceSpringJointState.parent.stringBonePair.destBone.name);
     }
 
-    private void Update() {
-        //UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
-    }
-
-    void FixedUpdate() {
-        UpdateTraceJointStates(); //Updateで呼ぶと落ちる？
+    protected void UpdateTargVelPos() {
         foreach (var state in traceBallJointStates) {
             PHBallJointIf bj = state.stringBonePair.destBone.joint.phJoint as PHBallJointIf;
             if (bj != null) {
@@ -252,6 +222,7 @@ public class TraceController : MonoBehaviour {
 
     private Quaternion preTrueRot;
     void getAngVelAndTargRot(TracePair pair, TraceState traceState, ref Quaternion preSrcAvaLocRot, out Vec3d angularVelocity, ref Quaterniond targetRotation) {
+        Profiler.BeginSample("getAngVelAndTragRot");
         Quaternion srcAvaLocRot = pair.srcAvatarBone.transform.localRotation;
         if (srcAvaLocRot.w < 0) {
             srcAvaLocRot.w *= -1;
@@ -283,9 +254,9 @@ public class TraceController : MonoBehaviour {
             //          " srcAvaAngVel " + srcAvaAngVel +
             //          " srcTrueAvaLocRot " + pair.srcAvatarBone.transform.localRotation.ToQuaterniond() +
             //          " presrcTrueAvaLocRot " + preTrueRot.ToQuaterniond());
-            //srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
-            //srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
-            //srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
+            srcAvaAngVel = srcAvaAngVel * Math.Sqrt(upperLimitAngularVelocity * upperLimitAngularVelocity / srcAvaAngVel.square());
+            srcAvaDiffRot = Quaterniond.Rot(srcAvaAngVel * Time.deltaTime).ToQuaternion();
+            srcAvaLocRot = srcAvaDiffRot * preSrcAvaLocRot; // これが外に出てるとだめだ
         }
 
         if (pair.destBone.name == "RightLowerArm") {
@@ -302,17 +273,24 @@ public class TraceController : MonoBehaviour {
         // parentが更新されていることが前提,traceStateが親から子の順にgetAngVelAndTargetRotが呼ばれなければならない
         targetRotation = (Quaternion.Inverse(pair.firstDestBoneLRot) *
                           Quaternion.Inverse(traceState.parent.destBoneRotNoLimit) * destBoneRot).ToQuaterniond();
-        var destBoneDiffRot = targetRotation * preTargetRotation.Inv();
+        var destBoneDiffRot = targetRotation * Quaternion.Inverse(preTargetRotation.ToQuaternion()).ToQuaterniond();
+        Profiler.BeginSample("shita");
         angularVelocity = destBoneDiffRot.RotationHalf() / Time.deltaTime;
         //angularVelocity = new Vec3d(0,0,0);
         //angularVelocity = (Quaternion.Inverse(pair.firstDestBoneLRot) * 
         //                   srcAvaDiffRot * pair.srcToDest).ToQuaterniond().RotationHalf()/ Time.deltaTime;
         // AngularVelocityの制限なし
         traceState.destBoneRotNoLimit = pair.srcAvatarBone.transform.rotation * pair.srcToDest;
+        Profiler.EndSample();
+        Profiler.EndSample();
     }
 
-    void UpdateTraceJointStates() {
+    protected void UpdateTraceJointStates() {
         Quaternion preDestRot = Quaternion.identity; // getAngVelAndTargRotで使用,親のグローバルの目標角度
+        // ストップした後にプレイを押すとTime.deltaTimeが0になり0割になる
+        if (Time.deltaTime == 0) {
+            return;
+        }
         // 親から更新していく
         {
             // Baseの角速度,速度を更新
@@ -326,7 +304,7 @@ public class TraceController : MonoBehaviour {
             traceDynamicalOffSolidState.targetPosition = pair.srcAvatarBone.transform.position.ToVec3d();
             traceDynamicalOffSolidState.velocity = (pair.srcAvatarBone.transform.position.ToVec3d() - preTargetPosition) / Time.deltaTime;
             if (traceDynamicalOffSolidState.velocity.square() > upperLimitSpringVelocity * upperLimitSpringVelocity) {
-                Debug.Log("DynamicalOff velocity Limit ");
+                //Debug.Log("DynamicalOff velocity Limit ");
                 traceDynamicalOffSolidState.velocity = traceDynamicalOffSolidState.velocity * Math.Sqrt(upperLimitSpringVelocity * upperLimitSpringVelocity / traceDynamicalOffSolidState.velocity.square());
                 traceDynamicalOffSolidState.targetPosition = traceDynamicalOffSolidState.velocity * Time.deltaTime + preTargetPosition;
             }
@@ -347,11 +325,11 @@ public class TraceController : MonoBehaviour {
 
             // targetPositionは初期位置からの相対位置
             var preTargetPosition = traceSpringJointState.targetPosition;
-            traceSpringJointState.targetPosition = (pair.srcAvatarBone.transform.localPosition - pair.firstPosition).ToVec3d();
+            traceSpringJointState.targetPosition = (pair.srcAvatarBone.transform.localPosition - pair.firstLocalPosition).ToVec3d();
             // velocityはすべてHipの上の座標系から見たGlobalVelocity,localAngularVelocityらしい
             var velocity = (traceSpringJointState.targetPosition - preTargetPosition) / Time.deltaTime;
             if (velocity.square() > upperLimitSpringVelocity * upperLimitSpringVelocity) {
-                Debug.Log("velocity Limit ");
+                //Debug.Log("velocity Limit ");
                 velocity = velocity * Math.Sqrt(upperLimitSpringVelocity * upperLimitSpringVelocity / velocity.square());
                 traceSpringJointState.targetPosition = velocity * Time.deltaTime + preTargetPosition;
             }
@@ -370,39 +348,75 @@ public class TraceController : MonoBehaviour {
             // <!!> これってFixedUpdateが早いと0になるのでは？
             traceBallJointState.targetVelocity = angularVelocity;
         }
+
+        // デバッグ表示
+        foreach (var traceBallJointState in traceBallJointStates) {
+            var destBone = traceBallJointState.stringBonePair.destBone;
+            boneTransformDic[destBone].localPosRot.rotation =
+                boneTransformDic[destBone].firstLocalPosRot.rotation*traceBallJointState.targetRotation.ToQuaternion();
+        }
     }
 
-    public void GetPairs() {
-        if (animator == null) {
-            Debug.LogError("animatorがnull");
-            return;
+    class PosRotParent {
+        public PosRot localPosRot = new PosRot();
+        public PosRot firstLocalPosRot = new PosRot();
+        public PosRotParent parent;
+        public PosRotParent(Transform transform, PosRotParent parent) {
+            localPosRot.position = transform.localPosition;
+            localPosRot.rotation = transform.localRotation;
+            firstLocalPosRot.position = transform.localPosition;
+            firstLocalPosRot.rotation = transform.localRotation;
+            this.parent = parent;
         }
 
-        body = GetComponent<Body>();
-        if (body == null) {
-            Debug.LogError("TraceController.csをアタッチするオブジェクトにBodyをアタッチしてください");
-            return;
-        }
-
-        Dictionary<string, HumanBodyBones> labelToBoneId = new Dictionary<string, HumanBodyBones>();
-        for (int i = 0; i < (int)HumanBodyBones.LastBone; i++) {
-            labelToBoneId[((HumanBodyBones)i).ToString()] = (HumanBodyBones)i;
-        }
-        tracePairs = new List<TracePair>();
-        foreach (var bone in body.bones) {
-            TracePair pair = new TracePair(bone);
-            if (!labelToBoneId.ContainsKey(bone.label)) {
-                //Debug.Log(pair.label + "がTrace用アバターにない");
-                // BaseのBone
-                if (bone.parent == null) {
-                    pair.srcAvatarBone = animator.gameObject;
-                    tracePairs.Add(pair);
+        public Vector3 Position {
+            get {
+                if (parent != null) {
+                    return parent.Position + parent.Rotation * localPosRot.position;
                 }
-                continue;
+
+                return localPosRot.position;
             }
-            var avatarbone = animator.GetBoneTransform(labelToBoneId[bone.label]);
-            pair.srcAvatarBone = avatarbone.gameObject;
-            tracePairs.Add(pair);
+        }
+
+        public Quaternion Rotation {
+            get {
+                if (parent != null) {
+                    return parent.Rotation * localPosRot.rotation;
+                }
+                return localPosRot.rotation;
+            }
         }
     }
+    private Dictionary<Bone, PosRotParent> boneTransformDic;
+    public void InitTarget() {
+        boneTransformDic = new Dictionary<Bone, PosRotParent>();
+        var rootPosRotParent = new PosRotParent(body.rootBone.solid.transform, null);
+        boneTransformDic.Add(body.rootBone, rootPosRotParent);
+        InitRecursive(body.rootBone, rootPosRotParent);
+    }
+
+    void InitRecursive(Bone bone, PosRotParent parent) {
+        foreach (var boneChild in bone.children) {
+            if (boneChild.solid != null) {
+                var newPosRotParent = new PosRotParent(boneChild.solid.transform, parent);
+                boneTransformDic.Add(boneChild, newPosRotParent);
+                InitRecursive(boneChild, newPosRotParent);
+            }
+        }
+    }
+    public void ShowTarget() {
+        if (Application.isPlaying && isActiveAndEnabled) {
+            Gizmos.color = Color.black;
+            foreach (var posrotParent in boneTransformDic.Values) {
+                Gizmos.DrawWireSphere(posrotParent.Position, 0.01f);
+            }
+        }
+    }
+
+    private void OnDrawGizmos() {
+        ShowTarget();
+    }
+
+    protected abstract void GetPairs();
 }
