@@ -70,7 +70,7 @@ http://git.haselab.net/haselab/SprUnity の一式を`Libraries/SprUnity`フォ�
 
 #### UniVRMを追加する
 
- https://github.com/vrm-c/UniVRM/releases から最新のUniVRMパッケージをダウンロードしてインポートします。
+ https://github.com/vrm-c/UniVRM/releases から最新のUniVRMパッケージ（UniVRM-0.XX.X_XXXX.unitypackage）をダウンロードしてインポートします。
 
 インポートするとAssetsに`VRM`フォルダが追加されます。`Libraries`の下に移動しておくとAssetsのトップがすっきりします。
 
@@ -78,11 +78,27 @@ http://git.haselab.net/haselab/SprUnity の一式を`Libraries/SprUnity`フォ�
 
 #### キャラクタを追加する
 
+好きなキャラクタのVRMファイルを用意します。[VRoid Studio]( https://vroid.com/studio )で作成してエクスポートしたり、[VRoid Hub]( https://hub.vroid.com/ )から権利的に問題のないモデルをダウンロードしてきても良いでしょう（もちろん他にも沢山の方法があります）。
 
+VRMファイルをAssetsフォルダにドラッグアンドドロップすると、モデルデータが自動でインポートされます（しばらく時間がかかります）。
+
+インポートが完了すると以下のようなファイルができています（この例ではViVi.vrmをロードしました）。
+
+![1572964516908](images/00_getstarted/1572964516908.png)
+
+`Models/モデル名`というフォルダを作ってその中に移動しておきます。
+
+`Models/モデル名/モデル名`というプレハブ（青い四角アイコン）をシーンにドラッグアンドドロップするとキャラクタがロードされます。
+
+![1572964762354](images/00_getstarted/1572964762354.png)
 
 
 
 #### Bodyをセットアップする
+
+
+
+
 
 #### Bodyを動かしてみる
 
