@@ -6,7 +6,7 @@ with open("SUMMARY.md", mode='w') as ofp:
     ofp.write("# Summary\n\n")
     ofp.write("* [Introduction](README.md)\n\n")
 
-    for contents in [Path("contents/sprunity"), Path("contents/vgent")]
+    for contents in [Path("contents/sprunity"), Path("contents/vgent")]:
         for file in sorted(list(contents.glob("*.md"))):
             with open(file) as ifp:
                 maintitle = ifp.readline().rstrip("\n").lstrip('#').lstrip(' ')
