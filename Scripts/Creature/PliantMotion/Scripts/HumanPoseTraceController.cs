@@ -14,11 +14,17 @@ public class HumanPoseTraceController : TraceController {
 
         humanPoseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
         humanPoseHandler.GetHumanPose(ref humanPose);
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateAnimator, PHSceneBehaviour.CallbackPriority.BeforeStep, 0);
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateTraceJointStates, PHSceneBehaviour.CallbackPriority.BeforeStep, 1);
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateTargVelPos, PHSceneBehaviour.CallbackPriority.BeforeStep, 2);
     }
-    void FixedUpdate() {
+    //void FixedUpdate() {
+    //    humanPoseHandler.SetHumanPose(ref humanPose);
+    //    UpdateTraceJointStates();
+    //    UpdateTargVelPos();
+    //}
+    void UpdateAnimator() {
         humanPoseHandler.SetHumanPose(ref humanPose);
-        UpdateTraceJointStates();
-        UpdateTargVelPos();
     }
     protected override void GetPairs() {
         body = GetComponent<Body>();

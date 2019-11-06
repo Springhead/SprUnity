@@ -31,6 +31,12 @@ public class PliantMotion : MonoBehaviour {
     // Use this for initialization
     void Start() {
         bodys = new List<Body>();
+        if (lowGainPHScene == null) {
+            lowGainPHScene = gameObject.GetComponentInParent<PHSceneBehaviour>();
+            if (lowGainPHScene == null) {
+                lowGainPHScene = FindObjectOfType<PHSceneBehaviour>();
+            }
+        }
         if (enableDebugWindow) {
             fwApp = new FWApp();
             fwApp.InitInNewThread();
@@ -53,6 +59,7 @@ public class PliantMotion : MonoBehaviour {
             phSdk = PHSdkIf.CreateSdk();
             PHSceneDesc phSceneDesc = new PHSceneDesc();
             lowGainPHScene.phScene.GetDesc(phSceneDesc);
+            phSceneDesc.bContactDetectionEnabled = false;
             phScene = phSdk.CreateScene(phSceneDesc);
         }
         bodyPliantMotionBonesDic = new Dictionary<Body, List<PliantMotionBone>>();

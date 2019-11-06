@@ -434,7 +434,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &4997428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1094,7 +1093,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!1 &15874446 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1316565303146840, guid: 483f41a6948107747be776315ca80180,
@@ -1350,7 +1348,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 3
 --- !u!114 &18463531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2039,7 +2036,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &47966768
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2639,7 +2635,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &126938110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2958,7 +2953,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &127311555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3324,7 +3318,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!4 &134403709
 Transform:
   m_ObjectHideFlags: 0
@@ -4297,7 +4290,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &154686313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4596,7 +4588,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &169592604
 GameObject:
   m_ObjectHideFlags: 0
@@ -5133,7 +5124,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 1
 --- !u!114 &185797809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5495,7 +5485,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 1
 --- !u!114 &205177247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6467,7 +6456,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &298086511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6831,7 +6819,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!114 &301420268
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7581,7 +7568,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!4 &375226082
 Transform:
   m_ObjectHideFlags: 0
@@ -8108,7 +8094,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &401679980
 Transform:
   m_ObjectHideFlags: 0
@@ -8480,7 +8465,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &408723419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8911,7 +8895,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &425733782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9246,7 +9229,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: -0.5280837, z: 0.19679248}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &456244981
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9523,7 +9505,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &460060673
 Transform:
   m_ObjectHideFlags: 0
@@ -9880,7 +9861,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &482048945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10169,7 +10149,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &492011487
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10629,7 +10608,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!114 &493511434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11093,7 +11071,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!114 &505500510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11593,7 +11570,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &563248859
 Transform:
   m_ObjectHideFlags: 0
@@ -12110,7 +12086,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!114 &582378597
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12706,7 +12681,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &650422778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13156,7 +13130,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &681364893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13340,7 +13313,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &692276382
 GameObject:
   m_ObjectHideFlags: 0
@@ -13622,7 +13594,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &695676063
 Transform:
   m_ObjectHideFlags: 0
@@ -14074,7 +14045,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &697967278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14355,7 +14325,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 3
 --- !u!114 &698391375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15779,7 +15748,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!114 &781095334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16686,7 +16654,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &798669065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16897,7 +16864,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &815227445
 GameObject:
   m_ObjectHideFlags: 0
@@ -17145,7 +17111,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &815227450
 Transform:
   m_ObjectHideFlags: 0
@@ -18628,7 +18593,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &1013293576
 Transform:
   m_ObjectHideFlags: 0
@@ -19001,7 +18965,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &1021287848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19389,7 +19352,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &1043358465
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19909,7 +19871,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!114 &1076689294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20208,7 +20169,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &1093896051
 Transform:
   m_ObjectHideFlags: 0
@@ -20276,35 +20236,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddcd2708cac3df848ad49b8f2e3f1ddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  desc:
-    _flag: 0
-    timeStep: 0.0199999995529652
-    haptictimeStep: 0.001
-    count: 0
-    gravity:
-      _flag: 0
-      x: 0
-      y: -9.8
-      z: 0
-    airResistanceRateForVelocity: 1
-    airResistanceRateForAngularVelocity: 1
-    contactTolerance: 0.002
-    impactThreshold: 10
-    frictionThreshold: 0.01
-    maxDeltaPosition: 3.4028234663852886e+38
-    maxDeltaOrientation: 3.4028234663852886e+38
-    maxVelocity: 3.4028234663852886e+38
-    maxAngularVelocity: 100
-    maxForce: 3.4028234663852886e+38
-    maxMoment: 3.4028234663852886e+38
-    numIteration: 100
-    method: 0
-    bContactDetectionEnabled: 0
-    bCCDEnabled: 1
-    broadPhaseMode: 0
-    blendMode: 2
   enableDebugWindow: 0
   hightGainRatio: 100
+  lowGainPHScene: {fileID: 1637673298}
 --- !u!1 &1123292777 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1377825698381612, guid: 483f41a6948107747be776315ca80180,
@@ -20773,7 +20707,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: -0.5280837, z: 0.19679248}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &1159031514
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -21035,7 +20968,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 1
 --- !u!114 &1169431027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21946,7 +21878,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &1223812591
 Transform:
   m_ObjectHideFlags: 0
@@ -22726,7 +22657,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &1269562776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22980,7 +22910,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &1274847140
 GameObject:
   m_ObjectHideFlags: 0
@@ -24092,7 +24021,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!1 &1351550206
 GameObject:
   m_ObjectHideFlags: 0
@@ -24297,7 +24225,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &1353071926 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1920583302884954, guid: 483f41a6948107747be776315ca80180,
@@ -25358,7 +25285,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 9
 --- !u!1 &1427919320
 GameObject:
   m_ObjectHideFlags: 0
@@ -25710,7 +25636,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 3
 --- !u!114 &1449024415
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26405,7 +26330,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &1485806425
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26496,30 +26420,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d9c105cb4baee4c878f718b3371660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bones:
-  - {fileID: 689571705}
-  - {fileID: 185797806}
-  - {fileID: 698391371}
-  - {fileID: 1578106698}
-  - {fileID: 1732982982}
-  - {fileID: 482048945}
-  - {fileID: 1963407412}
-  - {fileID: 961218127}
-  - {fileID: 411158430}
-  - {fileID: 1043358465}
-  - {fileID: 127311551}
-  - {fileID: 505500506}
-  - {fileID: 1426926768}
-  - {fileID: 695676059}
-  - {fileID: 1805881190}
-  - {fileID: 1686879940}
-  - {fileID: 493511427}
-  - {fileID: 1021287845}
-  - {fileID: 2036777724}
-  - {fileID: 1601394809}
-  - {fileID: 650422775}
-  - {fileID: 126938107}
-  - {fileID: 1485806421}
   rootBone: {fileID: 689571705}
   animator: {fileID: 169592610}
   syncEnabled: 1
@@ -26530,12 +26430,11 @@ MonoBehaviour:
   minSpring: 100
   fitIKBiasOnFitSpring: 1
   momentToSqrtBiasCoeff: 100
+  fitCollisionShape: 0
   initializeOnStart: 1
-  changeRoundConeOnStart: 1
-  initialized: 0
+  height: 1.2846162
   lookController: {fileID: 0}
   bodyBalancer: {fileID: 0}
-  height: 1.2846162
 --- !u!114 &1490161243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27116,7 +27015,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!4 &1558486855
 Transform:
   m_ObjectHideFlags: 0
@@ -27297,30 +27195,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d9c105cb4baee4c878f718b3371660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bones:
-  - {fileID: 801878521}
-  - {fileID: 205177244}
-  - {fileID: 1449024411}
-  - {fileID: 1223812587}
-  - {fileID: 815227446}
-  - {fileID: 425733782}
-  - {fileID: 1585813367}
-  - {fileID: 229836629}
-  - {fileID: 1137790715}
-  - {fileID: 697967278}
-  - {fileID: 1682433933}
-  - {fileID: 1076689290}
-  - {fileID: 13492004}
-  - {fileID: 563248855}
-  - {fileID: 134403705}
-  - {fileID: 1558486851}
-  - {fileID: 582378590}
-  - {fileID: 298086508}
-  - {fileID: 401679977}
-  - {fileID: 1159031510}
-  - {fileID: 681364890}
-  - {fileID: 1862642473}
-  - {fileID: 492011483}
   rootBone: {fileID: 801878521}
   animator: {fileID: 391657402}
   syncEnabled: 1
@@ -27331,12 +27205,11 @@ MonoBehaviour:
   minSpring: 100
   fitIKBiasOnFitSpring: 1
   momentToSqrtBiasCoeff: 100
+  fitCollisionShape: 0
   initializeOnStart: 1
-  changeRoundConeOnStart: 1
-  initialized: 0
+  height: 1.2846162
   lookController: {fileID: 0}
   bodyBalancer: {fileID: 0}
-  height: 1.2846162
 --- !u!114 &1564344044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27640,7 +27513,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &1578106702
 Transform:
   m_ObjectHideFlags: 0
@@ -28124,7 +27996,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &1585813373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28483,7 +28354,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: -0.5280837, z: 0.19679248}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &1601394813
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -28862,7 +28732,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 0
 --- !u!1 &1637673296
 GameObject:
   m_ObjectHideFlags: 0
@@ -29575,7 +29444,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!65 &1666090170
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30040,7 +29908,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &1682433937
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30439,7 +30306,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 8
 --- !u!4 &1686879944
 Transform:
   m_ObjectHideFlags: 0
@@ -31363,7 +31229,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!4 &1732982986
 Transform:
   m_ObjectHideFlags: 0
@@ -31604,7 +31469,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &1751729306
 Transform:
   m_ObjectHideFlags: 0
@@ -32493,7 +32357,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!4 &1805881194
 Transform:
   m_ObjectHideFlags: 0
@@ -32992,7 +32855,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!4 &1857711995
 Transform:
   m_ObjectHideFlags: 0
@@ -33298,7 +33160,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!114 &1862642476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33702,7 +33563,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 5
 --- !u!114 &1877193130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34352,7 +34212,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 7
 --- !u!114 &1963407418
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35414,7 +35273,6 @@ MonoBehaviour:
     zz: 1
   fixedSolidPosition: {x: 0, y: 0, z: 0}
   fixedSolidRotation: {x: 0, y: 0, z: 0, w: 0}
-  treeDepth: 6
 --- !u!4 &2036777727
 Transform:
   m_ObjectHideFlags: 0
@@ -36189,30 +36047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d9c105cb4baee4c878f718b3371660, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bones:
-  - {fileID: 1274300336}
-  - {fileID: 1169431024}
-  - {fileID: 18463527}
-  - {fileID: 1013293572}
-  - {fileID: 1093896047}
-  - {fileID: 1269562776}
-  - {fileID: 798669059}
-  - {fileID: 953264150}
-  - {fileID: 1543385761}
-  - {fileID: 47966768}
-  - {fileID: 4997424}
-  - {fileID: 301420264}
-  - {fileID: 1347660835}
-  - {fileID: 460060669}
-  - {fileID: 1857711991}
-  - {fileID: 375226078}
-  - {fileID: 781095327}
-  - {fileID: 1877193127}
-  - {fileID: 1751729303}
-  - {fileID: 456244977}
-  - {fileID: 154686310}
-  - {fileID: 408723416}
-  - {fileID: 1666090166}
   rootBone: {fileID: 1274300336}
   animator: {fileID: 237113022}
   syncEnabled: 1
@@ -36223,12 +36057,11 @@ MonoBehaviour:
   minSpring: 100
   fitIKBiasOnFitSpring: 1
   momentToSqrtBiasCoeff: 100
+  fitCollisionShape: 0
   initializeOnStart: 1
-  changeRoundConeOnStart: 1
-  initialized: 0
+  height: 1.2846162
   lookController: {fileID: 0}
   bodyBalancer: {fileID: 0}
-  height: 1.2846162
 --- !u!114 &2112501386
 MonoBehaviour:
   m_ObjectHideFlags: 0

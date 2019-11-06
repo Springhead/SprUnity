@@ -20,6 +20,18 @@ public abstract class TraceController : MonoBehaviour {
     private List<TraceBallJointState> traceBallJointStates;
     private TraceSpringJointState traceSpringJointState;
     private TraceDynamicalOffSolidState traceDynamicalOffSolidState;
+    public PHSceneBehaviour phSceneBehaviour {
+        get {
+            PHSceneBehaviour pb = gameObject.GetComponentInParent<PHSceneBehaviour>();
+            if (pb == null) {
+                pb = FindObjectOfType<PHSceneBehaviour>();
+                if (pb == null) {
+                    throw new ObjectNotFoundException("PHSceneBehaviour was not found", gameObject);
+                }
+            }
+            return pb;
+        }
+    }
     // Use this for initialization
     protected void Start() {
         //Debug.Log(pair.srcAvatarBone.name +  
@@ -350,13 +362,26 @@ public abstract class TraceController : MonoBehaviour {
         }
 
         // デバッグ表示
+        {
+            var destBone = traceDynamicalOffSolidState.stringBonePair.destBone;
+            boneTransformDic[destBone].localPosRot.rotation =
+                boneTransformDic[destBone].firstLocalPosRot.rotation*traceDynamicalOffSolidState.targetRotation.ToQuaternion();
+            boneTransformDic[destBone].localPosRot.position =
+                boneTransformDic[destBone].firstLocalPosRot.position + traceDynamicalOffSolidState.targetPosition.ToVector3();
+        }
+        {
+            var destBone = traceSpringJointState.stringBonePair.destBone;
+            boneTransformDic[destBone].localPosRot.rotation =
+                boneTransformDic[destBone].firstLocalPosRot.rotation*traceSpringJointState.targetRotation.ToQuaternion();
+            boneTransformDic[destBone].localPosRot.position =
+                boneTransformDic[destBone].firstLocalPosRot.position + traceSpringJointState.targetPosition.ToVector3();
+        }
         foreach (var traceBallJointState in traceBallJointStates) {
             var destBone = traceBallJointState.stringBonePair.destBone;
             boneTransformDic[destBone].localPosRot.rotation =
                 boneTransformDic[destBone].firstLocalPosRot.rotation*traceBallJointState.targetRotation.ToQuaternion();
         }
     }
-
     class PosRotParent {
         public PosRot localPosRot = new PosRot();
         public PosRot firstLocalPosRot = new PosRot();

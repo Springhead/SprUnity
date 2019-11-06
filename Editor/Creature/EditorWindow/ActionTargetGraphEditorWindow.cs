@@ -120,12 +120,12 @@ namespace VGent {
 
             InitAtionTargetGraphRectDict();
 
-            SceneView.onSceneGUIDelegate -= OnSceneGUI;
-            SceneView.onSceneGUIDelegate += OnSceneGUI;
+            SceneView.duringSceneGui -= OnSceneGUI;
+            SceneView.duringSceneGui+= OnSceneGUI;
         }
 
         private void OnDestroy() {
-            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+            SceneView.duringSceneGui -= OnSceneGUI;
         }
 
         [OnOpenAsset(0)]
@@ -442,7 +442,7 @@ namespace VGent {
                 }
             }
         }
-        private void OnSceneGUI(SceneView sceneView) {
+        public void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
             if (graph != null) {

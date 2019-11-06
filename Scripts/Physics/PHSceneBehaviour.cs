@@ -121,6 +121,23 @@ public class PHSceneBehaviour : SprBehaviour {
     public List<CollisionSetting> collisionList = new List<CollisionSetting>();
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // DefaultExecutionOrderでは不十分なためPHSceneのFixedUpdateで特定の順番で呼べるようにする
+    public enum CallbackPriority {
+        BeforeStep,
+        Finally
+    }
+    public delegate void PHSceneBehaviourCallback();
+    private class PHSceneBehaviourCallbackItem {
+        public int subPriority;
+        public PHSceneBehaviourCallback callback;
+        public PHSceneBehaviourCallbackItem(int subPriority, PHSceneBehaviourCallback callback) {
+            this.subPriority = subPriority;
+            this.callback = callback;
+        }
+    }
+    // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
+    private Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
     public PHSceneIf phScene { get { return sprObject as PHSceneIf; } }
@@ -190,6 +207,14 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
+    public override void Awake() {
+        base.Awake();
+        // Nullチェックしなくて済むように初期化
+        fixedUpdateCallbacks = new Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>>();
+        foreach (CallbackPriority callbackPriority in Enum.GetValues(typeof(CallbackPriority))) {
+            fixedUpdateCallbacks.Add(callbackPriority, new List<PHSceneBehaviourCallbackItem>());
+        }
+    }
     public override void Start() {
         base.Start();
         if (enableDebugWindow) {
@@ -206,8 +231,13 @@ public class PHSceneBehaviour : SprBehaviour {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
             }
+
             foreach (var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours) {
                 phIKEndEffectorBehaviour.BeforeStep();
+            }
+
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeStep]) {
+                callBackItem.callback();
             }
             //lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
@@ -334,6 +364,12 @@ public class PHSceneBehaviour : SprBehaviour {
                 }
             }
         }
+    }
+
+    public void AddFixedUpadateCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, CallbackPriority callbackPriority, int subPriority = 0) {
+        var newItem = new PHSceneBehaviourCallbackItem(subPriority, phSceneBehaviourCallback);
+        fixedUpdateCallbacks[callbackPriority].Add(newItem);
+        fixedUpdateCallbacks[callbackPriority].Sort((a, b) => a.subPriority - b.subPriority);
     }
 
     public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
