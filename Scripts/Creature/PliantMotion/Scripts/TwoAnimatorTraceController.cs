@@ -27,19 +27,16 @@ public class TwoAnimatorTraceControllerEditor : Editor {
 
 // AnimatorがInput用とOutput用の二つあることが前提
 [DefaultExecutionOrder(0)]
-public class TwoAnimatorTraceController : TraceController{
+public class TwoAnimatorTraceController : TraceController {
     public Animator animator;
-    private void Update() {
-        if (animator.updateMode == AnimatorUpdateMode.Normal) {
-            UpdateTraceJointStates(); 
-        }
-    }
-
-    void FixedUpdate() {
+    protected new void Start() {
+        base.Start();
         if (animator.updateMode == AnimatorUpdateMode.AnimatePhysics) {
-            UpdateTraceJointStates();
+            phSceneBehaviour.AddFixedUpadateCallback(UpdateTraceJointStates,
+                PHSceneBehaviour.CallbackPriority.BeforeStep, 0);
         }
-        UpdateTargVelPos();
+        phSceneBehaviour.AddFixedUpadateCallback(UpdateTargVelPos,
+            PHSceneBehaviour.CallbackPriority.BeforeStep, 1);
     }
     protected override void GetPairs() {
         if (animator == null) {
