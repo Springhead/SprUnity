@@ -43,7 +43,7 @@ namespace VGent {
 
     [DefaultExecutionOrder(2)]
     public class MentalGroup : MentalExistence {
-        private MentalScene mentalScene;
+        public MentalScene mentalScene { private set; get; }
         private List<MentalAttribute> mentalAttributeListOnPlaying = new List<MentalAttribute>();
         private List<MentalParts> mentalPartsListOnPlaying = new List<MentalParts>();
         public List<MentalAttribute> mentalAttributeList {

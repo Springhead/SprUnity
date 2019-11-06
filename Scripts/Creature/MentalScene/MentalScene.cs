@@ -14,6 +14,8 @@ namespace VGent{
     public class MentalScene : MonoBehaviour {
         // MentalScene関連はプレイ中以外でも見れるようにするために二つ実装する 
         private List<MentalGroup> mentalGroupList = new List<MentalGroup>();
+        public Body body;
+
         public MentalGroup[] mentalGroups {
             get {
                 if (Application.isPlaying) {
