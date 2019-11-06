@@ -120,14 +120,21 @@ namespace VGent {
 
             InitAtionTargetGraphRectDict();
 
-            SceneView.duringSceneGui -= OnSceneGUI;
-            SceneView.duringSceneGui+= OnSceneGUI;
+#if UNITY_2019_1_OR_NEWER
+           SceneView.duringSceneGui -= OnSceneGUI;
+           SceneView.duringSceneGui+= OnSceneGUI;
+#else
+            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+            SceneView.onSceneGUIDelegate += OnSceneGUI;
+#endif
         }
-
         private void OnDestroy() {
-            SceneView.duringSceneGui -= OnSceneGUI;
+#if UNITY_2019_1_OR_NEWER
+           SceneView.duringSceneGui -= OnSceneGUI;
+#else
+            SceneView.onSceneGUIDelegate -= OnSceneGUI;
+#endif
         }
-
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
             ActionTargetGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionTargetGraph;
