@@ -16,7 +16,7 @@ namespace XNodeEditor {
         public virtual void OnGUI() { }
 
         /// <summary> Called when opened by NodeEditorWindow </summary>
-        public virtual void OnOpen() { }
+        public virtual void OnOpen() { Debug.Log("NodeGraphEditor : OnOpen"); }
 
         public virtual Texture2D GetGridTexture() {
             return NodeEditorPreferences.GetSettings().gridTexture;

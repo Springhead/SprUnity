@@ -21,7 +21,6 @@ namespace SprUnity {
 
         //
         public ActionStateMachineWindow stateMachineWindow;
-        public KeyPoseWindow keyPoseWindow;
         public ActionTimelineWindow timelineWindow;
 
         //
@@ -29,12 +28,8 @@ namespace SprUnity {
 
         //
         public BodyParameterWindow bodyParameterWindow;
-        
-        
-        // KeyPoseWindow関係
-        public List<KeyPoseStatus> keyPoseStatuses;
-
-        // public ActionSelectWindow関係
+                
+        // ActionSelectWindow関係
         public List<ActionStateMachine> actions;
         public ActionStateMachine selectedAction;
         public int actionIndex = 0;
@@ -65,7 +60,6 @@ namespace SprUnity {
         // Log data
 
         ActionEditorWindowManager() {
-            keyPoseStatuses = new List<KeyPoseStatus>();
             actions = new List<ActionStateMachine>();
             actionTargetGraphs = new List<ActionTargetGraph>();
             actionTargetGraphStatuses = new List<ActionTargetGraphStatus>();
@@ -107,7 +101,6 @@ namespace SprUnity {
         }
 
         void Reload() {
-            KeyPoseWindow.ReloadKeyPoseList();
             ActionStateMachineWindow.ReloadActionList();
             body = GameObject.FindObjectOfType<Body>();
             if (stateMachineWindow) stateMachineWindow.InitializeGraphMatrix();
@@ -127,7 +120,6 @@ namespace SprUnity {
         }
 
         void OnProjectChanged() {
-            KeyPoseWindow.ReloadKeyPoseList();
             ActionStateMachineWindow.ReloadActionList();
         }
 

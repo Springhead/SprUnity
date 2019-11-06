@@ -63,6 +63,16 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private bool applicationQuit = false;
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    private void OnDestroy() {
+        if (!applicationQuit) {
+            phSdk.DelChildObject(sprObject);
+        }
+    }
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // その他のメソッド
 

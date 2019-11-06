@@ -5,6 +5,15 @@ using SprCs;
 
 namespace SprUnity {
 
+#if UNITY_EDITOR
+    using UnityEditor;
+
+    [CustomEditor(typeof(Bone))]
+    [CanEditMultipleObjects]
+    public class BoneEditor : Editor {
+    }
+
+#endif
     public class Bone : MonoBehaviour {
 
         // Label to identify the role of this bone
@@ -107,7 +116,7 @@ namespace SprUnity {
         }
 
         void FixedUpdate() {
-            if (!body.initialized) { return; }
+            if (!body.Initialized) { return; }
 
             if (controller != null && controller.bone == null) { controller.bone = this; }
 
@@ -223,7 +232,7 @@ namespace SprUnity {
 
         public void SyncSolidFromAvatarBone() {
             if (avatarBone != null) {
-                if(joint != null) { 
+                if (joint != null) {
                 }
             }
         }

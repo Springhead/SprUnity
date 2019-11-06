@@ -20,19 +20,18 @@ namespace VGent {
             base.OnInspectorGUI();
             ActionManager manager = (ActionManager)target;
             for(int i = 0; i < manager.stateMachines.Count; i++) {
-                if(GUILayout.Button(manager.stateMachines[i].name)) {
-                    manager.Action(manager.stateMachines[i].name);
+                if (manager.stateMachines[i] != null) {
+                    if (GUILayout.Button(manager.stateMachines[i].name)) {
+                        manager.Action(manager.stateMachines[i].name);
+                    }
                 }
             }
             if (GUILayout.Button("Stop")) {
                 manager.QuitAction();
             }
 
-            if (GUILayout.Button("SetASM")) {
-                manager.GetActionStateMachineFromFolders();
-            }
-            if (GUILayout.Button("SetATG")) {
-                manager.GetActionTargetGraphFromStateMachines();
+            if (GUILayout.Button("Update List")) {
+                manager.UpdateList();
             }
         }
     }
@@ -72,10 +71,64 @@ namespace VGent {
 
     public class ActionManager : MonoBehaviour {
 
+        public static void UpdateFolderList() {
+        }
+
+        public static List<string> StateMachineFolders() {
+            List<string> allStateMachineFolders = new List<string>();
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                foreach (var stateMachineFolder in actionManager.stateMachineFolders) {
+                    if (!allStateMachineFolders.Contains(stateMachineFolder)) {
+                        string folder = stateMachineFolder;
+                        if (folder.Last() != '/') { folder = folder + "/"; }
+                        allStateMachineFolders.Add(folder);
+                    }
+                }
+            }
+            return allStateMachineFolders;
+        }
+
+        public static List<string> TargetGraphFolders() {
+            List<string> allTargetGraphFolders = new List<string>();
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                foreach (var targetGraphFolder in actionManager.targetGraphFolders) {
+                    if (!allTargetGraphFolders.Contains(targetGraphFolder)) {
+                        string folder = targetGraphFolder;
+                        if (folder.Last() != '/') { folder = folder + "/"; }
+                        allTargetGraphFolders.Add(folder);
+                    }
+                }
+            }
+            return allTargetGraphFolders;
+        }
+
+        public static ActionStateMachine FindStateMachine(string name) {
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                actionManager.UpdateList();
+                foreach (var stateMachine in actionManager.stateMachines) {
+                    if (stateMachine.name == name) { return stateMachine; }
+                }
+            }
+            return null;
+        }
+
+        public static ActionTargetGraph FindTargetGraph(string name) {
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                actionManager.UpdateList();
+                foreach (var targetGraph in actionManager.targetGraphs) {
+                    if (targetGraph.name == name) { return targetGraph; }
+                }
+            }
+            return null;
+        }
+
+        // ----- ----- ----- ----- -----
+
         public Body body = null;
         public BlendShapeController blendController;
 
         [FolderPath] public string[] stateMachineFolders = new string[] { };
+        [FolderPath] public string[] targetGraphFolders = new string[] { };
         public List<ActionStateMachine> stateMachines = new List<ActionStateMachine>();
         public bool autoSetGraphs = true;
         public List<ActionTargetGraph> targetGraphs = new List<ActionTargetGraph>();
@@ -92,22 +145,14 @@ namespace VGent {
         [Obsolete("Please use GetStateMachine(name) instead")]
         public ActionStateMachine this[string key] {
             get {
-                foreach (var action in stateMachines) { if (action.name == key) return action; }//.GetInstance(this); }
+                foreach (var action in stateMachines) { if (action.name == key) return action; }
                 return null;
             }
         }
 
         void Start() {
-            /*
-            for (int i = 0; i < targetGraphs.Count; i++) {
-                targetGraphs[i].GetInstance(this);
-            }
-            for (int i = 0; i < stateMachines.Count; i++) {
-                stateMachines[i].instances.Add(this, stateMachines[i].Instantiate(this));
-            }
-            */
             if (autoSetGraphs) {
-                GetActionTargetGraphFromStateMachines();
+                UpdateList();
             }
             for (int i = 0; i < targetGraphs.Count; i++) {
                 targetGraphs[i].manager = this;
@@ -137,7 +182,7 @@ namespace VGent {
         public void SetInput<T>(string graphName, string nodeName, object value) {
             foreach(var keyPoseGraph in targetGraphs) {
                 if(keyPoseGraph.name == graphName) {
-                    var graph = keyPoseGraph;//.GetInstance(this);
+                    var graph = keyPoseGraph;
                     foreach(var inputNode in graph.inputNodes) {
                         if (inputNode.name.Contains(nodeName)) {
                             (inputNode as ActionTargetNodeBase).SetInput<T>((T)value);
@@ -167,7 +212,7 @@ namespace VGent {
             print("Action: " + name);
             foreach (var action in stateMachines) {
                 if (action.name == name) {
-                    inAction = action;//.instances[this];
+                    inAction = action;
                     inAction.Begin();
                 }
             }
@@ -183,41 +228,38 @@ namespace VGent {
 
         // ----- ----- ----- ----- -----
 
-        public void GetActionStateMachineFromFolders() {
-            stateMachines.Clear();
+        public void UpdateList() {
 #if UNITY_EDITOR
-            // 
-            var guids = AssetDatabase.FindAssets("t:ActionStateMachine", stateMachineFolders);
+            // Action State Machine
+            {
+                stateMachines.Clear();
+                var guids = AssetDatabase.FindAssets("t:ActionStateMachine", stateMachineFolders);
+                foreach (var guid in guids) {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                    var action = obj as ActionStateMachine;
+                    if (action != null && AssetDatabase.IsMainAsset(obj)) {
+                        stateMachines.Add(action);
+                    }
+                }
+            }
 
-            foreach (var guid in guids) {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                var action = obj as ActionStateMachine;
-                if (action != null && AssetDatabase.IsMainAsset(obj)) {
-                    stateMachines.Add(action);
+            // Action Target Graph
+            {
+                targetGraphs.Clear();
+                var guids = AssetDatabase.FindAssets("t:ActionTargetGraph", targetGraphFolders);
+                foreach (var guid in guids) {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                    var action = obj as ActionTargetGraph;
+                    if (action != null && AssetDatabase.IsMainAsset(obj)) {
+                        targetGraphs.Add(action);
+                    }
                 }
             }
 #endif
         }
 
-        public void GetActionTargetGraphFromStateMachines() {
-            foreach(var action in stateMachines) {
-                var states = action?.states;
-                foreach(var state in states) {
-                    try { 
-                        foreach (var node in state?.nodes) {
-                            var graph = node?.graph as ActionTargetGraph;
-                            Debug.Log(graph?.name);
-                            if (graph != null) {
-                                if (!targetGraphs.Contains(graph)) targetGraphs.Add(graph);
-                            }
-                        }
-                    } catch {
-                        continue;
-                    }
-                }
-            }
-        }
     }
 
 }

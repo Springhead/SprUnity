@@ -319,7 +319,7 @@ namespace SprUnity {
 
             }
 
-            body.bones.Add(bone);
+            // body.bones.Add(bone);
 
             return bone;
         }

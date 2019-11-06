@@ -120,14 +120,21 @@ namespace VGent {
 
             InitAtionTargetGraphRectDict();
 
+#if UNITY_2019_1_OR_NEWER
+           SceneView.duringSceneGui -= OnSceneGUI;
+           SceneView.duringSceneGui+= OnSceneGUI;
+#else
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
             SceneView.onSceneGUIDelegate += OnSceneGUI;
+#endif
         }
-
         private void OnDestroy() {
+#if UNITY_2019_1_OR_NEWER
+           SceneView.duringSceneGui -= OnSceneGUI;
+#else
             SceneView.onSceneGUIDelegate -= OnSceneGUI;
+#endif
         }
-
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line) {
             ActionTargetGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as ActionTargetGraph;
@@ -142,7 +149,7 @@ namespace VGent {
             }
             return false;
         }
-        [MenuItem("Window/SprUnity Action/Action Target Graph Editor Window")]
+        [MenuItem("Window/VGent/Action/Action Target Graph", priority = 50)]
         static void Open() {
             ReloadActionList();
             if (ActionEditorWindowManager.instance.actionTargetGraphStatuses != null) {
@@ -227,6 +234,7 @@ namespace VGent {
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
+
         void SubWindow() {
             Event e = Event.current;
             GUISkin defaultSkin = GUI.skin;
@@ -441,7 +449,7 @@ namespace VGent {
                 }
             }
         }
-        private void OnSceneGUI(SceneView sceneView) {
+        public void OnSceneGUI(SceneView sceneView) {
             Body body = ActionEditorWindowManager.instance.body;
             editableBoneKeyPoseNodes.Clear();
             if (graph != null) {
@@ -516,18 +524,30 @@ namespace VGent {
         public static void ReloadActionList() {
             actionTargetGraphNames = new List<string>();
             List<ActionTargetGraph> actionTargetGraphsInAsset = new List<ActionTargetGraph>();
+
+            // 全ActionManagerからActionTargetGraphを取得
+            List<ActionTargetGraph> actionTargetGraphs = new List<ActionTargetGraph>();
+            foreach (var actionManager in FindObjectsOfType<ActionManager>()) {
+                actionManager.UpdateList();
+                foreach (var targetGraph in actionManager.targetGraphs) {
+                    actionTargetGraphs.Add(targetGraph);
+                }
+            }
+
             // Asset全検索
-            var guids = AssetDatabase.FindAssets("*").Distinct();
+            // var guids = AssetDatabase.FindAssets("*").Distinct();
+
             // 特定フォルダ
             // var keyPosesInFolder = AssetDatabase.FindAssets("t:KeyPoseInterpolationGroup", saveFolder);
+
             ActionEditorWindowManager.instance.actionTargetGraphs.Clear();
             actionTargetGraphNames.Clear();
 
-            foreach (var guid in guids) {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-                var actionTargetGraph = obj as ActionTargetGraph;
-                if (actionTargetGraph != null && AssetDatabase.IsMainAsset(obj)) {
+            foreach (var actionTargetGraph in actionTargetGraphs) {
+                // var path = AssetDatabase.GUIDToAssetPath(guid);
+                // var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                // var actionTargetGraph = obj as ActionTargetGraph;
+                if (actionTargetGraph != null && AssetDatabase.IsMainAsset(actionTargetGraph)) {
                     ActionEditorWindowManager.instance.actionTargetGraphs.Add(actionTargetGraph);
                     actionTargetGraphNames.Add(actionTargetGraph.name);
                     var actionTargetGraphStatus = new ActionTargetGraphStatus(actionTargetGraph);

@@ -56,7 +56,7 @@ namespace VGent {
         }
 
         private void FixedUpdate() {
-            if (body == null || body.initialized) {
+            if (body == null || body.Initialized) {
                 if (inActionSequence != null && inActionSequence.keyPoseTimings.Count() > 0) {
                     if (inActionSequence.keyPoseTimings[index].start <= time) {
                         Quaternion rotate = Quaternion.identity;
