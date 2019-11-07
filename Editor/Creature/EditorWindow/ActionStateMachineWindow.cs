@@ -230,23 +230,27 @@ namespace SprUnity {
             }
             var transitions = action.transitions;
             for (int i = 0; i < transitions.Count(); i++) {
-                int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
-                int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
-                if (from < to) {
-                    transitions[i].transitionNumber = graphConnectionMatrix[from][to];
-                    graphConnectionMatrix[from][to]++;
-                } else {
-                    transitions[i].transitionNumber = graphConnectionMatrix[to][from];
-                    graphConnectionMatrix[to][from]++;
+                if (transitions[i].fromState != null && transitions[i].toState != null) {
+                    int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
+                    int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
+                    if (from < to) {
+                        transitions[i].transitionNumber = graphConnectionMatrix[from][to];
+                        graphConnectionMatrix[from][to]++;
+                    } else {
+                        transitions[i].transitionNumber = graphConnectionMatrix[to][from];
+                        graphConnectionMatrix[to][from]++;
+                    }
                 }
             }
             for (int i = 0; i < transitions.Count(); i++) {
-                int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
-                int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
-                if (from < to) {
-                    transitions[i].transitionCountSamePairs = graphConnectionMatrix[from][to];
-                } else {
-                    transitions[i].transitionCountSamePairs = graphConnectionMatrix[to][from];
+                if (transitions[i].fromState != null && transitions[i].toState != null) {
+                    int from = transitions[i].fromState != null ? transitions[i].fromState.serialCount : (transitions[i].toState.serialCount + 1);
+                    int to = transitions[i].toState != null ? transitions[i].toState.serialCount : (transitions[i].fromState.serialCount + 2);
+                    if (from < to) {
+                        transitions[i].transitionCountSamePairs = graphConnectionMatrix[from][to];
+                    } else {
+                        transitions[i].transitionCountSamePairs = graphConnectionMatrix[to][from];
+                    }
                 }
             }
         }
