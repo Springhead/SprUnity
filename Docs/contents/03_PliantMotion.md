@@ -53,3 +53,16 @@ SprUnityとVGentCoreとUniVRM( https://github.com/vrm-c/UniVRM/releases )をAsse
 
 ![image-20191114010916233](C:\Users\sugi\AppData\Roaming\Typora\typora-user-images\image-20191114010916233.png)
 
+##### PHSceneをシーンに追加
+
+
+
+##### BodyのPrefabをシーンに追加
+
+UnpackPrefab
+
+BodyにAnimatorを追加してFitToAvatar
+
+TraceControllerのAnimatorに追加
+
+Play動く
