@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEditor;
 
 [CustomEditor(typeof(PHIKBallActuatorBehaviour))]
+[CanEditMultipleObjects]
 public class PHIKBallActuatorBehaviourEditor : Editor {
     PHIKBallActuatorDesc desc = new PHIKBallActuatorDesc();
 

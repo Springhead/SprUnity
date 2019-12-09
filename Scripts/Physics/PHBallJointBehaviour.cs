@@ -8,6 +8,7 @@ using System;
 using UnityEditor;
 
 [CustomEditor(typeof(PHBallJointBehaviour))]
+[CanEditMultipleObjects]
 public class PHBallJointBehaviourEditor : PHJointBehaviourEditor {
     public void OnSceneGUI() {
         base.OnSceneGUI();
