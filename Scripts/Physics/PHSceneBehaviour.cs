@@ -371,6 +371,17 @@ public class PHSceneBehaviour : SprBehaviour {
         fixedUpdateCallbacks[callbackPriority].Add(newItem);
         fixedUpdateCallbacks[callbackPriority].Sort((a, b) => a.subPriority - b.subPriority);
     }
+    public void DeleteFixedUpadateCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, CallbackPriority callbackPriority, int subPriority = 0) {
+        var callBackItems = fixedUpdateCallbacks[callbackPriority];
+        PHSceneBehaviourCallbackItem deleteCallBackItem = null;
+        foreach(var item in callBackItems) {
+            if (item.subPriority == subPriority && item.callback == phSceneBehaviourCallback) {
+                deleteCallBackItem = item;
+                break;
+            }
+        }
+        callBackItems.Remove(deleteCallBackItem);
+    }
 
     public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
