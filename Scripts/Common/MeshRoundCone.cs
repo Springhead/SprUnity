@@ -78,7 +78,10 @@ public class MeshRoundCone : MonoBehaviour {
             }
         }
         */
-        Reshape();
+        var meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        if (meshRenderer != null && meshRenderer.enabled) {
+            Reshape();
+        }
     }
 
 #if UNITY_EDITOR
