@@ -3,7 +3,15 @@ using System.Collections;
 using System.Linq;
 using SprCs;
 using System;
+#if UNITY_EDITOR
+using UnityEditor;
 
+[CustomEditor(typeof(CDRoundConeBehavior))]
+[CanEditMultipleObjects]
+public class CDRoundConeBehaviorEditor : Editor {
+}
+
+#endif
 [DefaultExecutionOrder(3)]
 public class CDRoundConeBehavior : CDShapeBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
