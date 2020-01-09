@@ -2,6 +2,15 @@
 using System.Collections;
 using SprCs;
 
+#if UNITY_EDITOR
+    using UnityEditor;
+
+    [CustomEditor(typeof(PHSpringBehavior))]
+    [CanEditMultipleObjects]
+    public class PHSpringBehaviorEditor : Editor {
+    }
+
+#endif
 [DefaultExecutionOrder(4)]
 public class PHSpringBehavior : PHJointBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
