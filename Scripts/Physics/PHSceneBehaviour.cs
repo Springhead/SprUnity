@@ -41,28 +41,62 @@ public class PHSceneBehaviourEditor : Editor {
                 // -----
 
                 EditorGUILayout.BeginHorizontal();
-                collisionItem.targetSetMode1 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 1", collisionItem.targetSetMode1));
+                EditorGUI.BeginChangeCheck();
+                var targetSetMode1 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 1", collisionItem.targetSetMode1));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.targetSetMode1 = targetSetMode1;
+                }
                 if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
-                    collisionItem.solid1 = EditorGUILayout.ObjectField(collisionItem.solid1, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    EditorGUI.BeginChangeCheck();
+                    var solid1 = EditorGUILayout.ObjectField(collisionItem.solid1, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid1 = solid1;
+                    }
                 } else if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    collisionItem.solid1Pattern = EditorGUILayout.TextField(collisionItem.solid1Pattern);
+                    EditorGUI.BeginChangeCheck();
+                    var solid1Pattern = EditorGUILayout.TextField(collisionItem.solid1Pattern);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid1Pattern = solid1Pattern;
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
 
                 // --
 
                 EditorGUILayout.BeginHorizontal();
-                collisionItem.targetSetMode2 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 2", collisionItem.targetSetMode2));
+                EditorGUI.BeginChangeCheck();
+                var targetSetMode2 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 2", collisionItem.targetSetMode2));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.targetSetMode2 = targetSetMode2;
+                }
                 if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
-                    collisionItem.solid2 = EditorGUILayout.ObjectField(collisionItem.solid2, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    EditorGUI.BeginChangeCheck();
+                    var solid2 = EditorGUILayout.ObjectField(collisionItem.solid2, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid2 = solid2;
+                    }
                 } else if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    collisionItem.solid2Pattern = EditorGUILayout.TextField(collisionItem.solid2Pattern);
+                    var solid2Pattern = EditorGUILayout.TextField(collisionItem.solid2Pattern);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid2Pattern = solid2Pattern;
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
 
                 // -----
 
-                collisionItem.mode = (PHSceneDesc.ContactMode)(EditorGUILayout.EnumPopup("Contact Mode", collisionItem.mode));
+                EditorGUI.BeginChangeCheck();
+                var mode = (PHSceneDesc.ContactMode)(EditorGUILayout.EnumPopup("Contact Mode", collisionItem.mode));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.mode = mode;
+                }
             }
 
             foreach (var removeItem in removeList) {
@@ -374,7 +408,7 @@ public class PHSceneBehaviour : SprBehaviour {
     public void DeleteFixedUpadateCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, CallbackPriority callbackPriority, int subPriority = 0) {
         var callBackItems = fixedUpdateCallbacks[callbackPriority];
         PHSceneBehaviourCallbackItem deleteCallBackItem = null;
-        foreach(var item in callBackItems) {
+        foreach (var item in callBackItems) {
             if (item.subPriority == subPriority && item.callback == phSceneBehaviourCallback) {
                 deleteCallBackItem = item;
                 break;
