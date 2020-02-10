@@ -50,9 +50,6 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
 
     public bool fixedSolid = false;
 
-    [SerializeField]
-    public Matrix3dStruct shapeInertia;
-
     [HideInInspector]
     public Vector3 fixedSolidPosition = new Vector3();
 
@@ -163,7 +160,6 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 Debug.Log(str);
             }
             */
-            shapeInertia.ApplyFrom(phSolid.GetShape(0).CalcMomentOfInertia());
             // --
 
             PHSolidDesc desc_ = new PHSolidDesc();
