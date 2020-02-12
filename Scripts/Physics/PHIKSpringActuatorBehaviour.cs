@@ -69,12 +69,12 @@ public class PHIKSpringActuatorBehaviour : PHIKActuatorBehaviour {
 
     // -- DescオブジェクトをNewして返す
     public override CsObject CreateDesc() {
-        return new PHIKBallActuatorDesc();
+        return new PHIKSpringActuatorDesc();
     }
 
     // -- DescStructをDescに適用する
     public override void ApplyDesc(CsObject from, CsObject to) {
-        (from as PHIKBallActuatorDescStruct).ApplyTo(to as PHIKBallActuatorDesc);
+        (from as PHIKSpringActuatorDescStruct).ApplyTo(to as PHIKSpringActuatorDesc);
     }
 
     // -- Sprオブジェクトの構築を行う
