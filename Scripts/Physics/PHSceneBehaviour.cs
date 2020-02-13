@@ -261,6 +261,18 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
     void FixedUpdate() {
+        if (enableUpdate) {
+            //lock (sprObject) {
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdatePose();
+                }
+            }
+            //}
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
+            }
+        }
         if (sprObject != null && enableStep) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
@@ -276,21 +288,6 @@ public class PHSceneBehaviour : SprBehaviour {
             //lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
             //}
-        }
-    }
-
-    void Update() {
-        if (enableUpdate) {
-            //lock (sprObject) {
-            foreach (var phSolidBehaviour in phSolidBehaviours) {
-                if (phSolidBehaviour != null) {
-                    phSolidBehaviour.UpdatePose();
-                }
-            }
-            //}
-            if (fwApp != null) {
-                fwApp.PostRedisplay();
-            }
         }
     }
 
