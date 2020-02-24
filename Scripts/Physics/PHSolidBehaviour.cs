@@ -18,7 +18,7 @@ public class PHSolidBehaviourEditor : Editor {
 
         // ----- ----- ----- ----- -----
         // Fixed Solid Position Handle
-        if (pHSolidBehaviour.fixedSolid) {
+        if (Application.isPlaying && pHSolidBehaviour.fixedSolid) {
             Tools.current = Tool.None;
             pHSolidBehaviour.fixedSolidPosition = Handles.PositionHandle(pHSolidBehaviour.fixedSolidPosition, Quaternion.identity);
             pHSolidBehaviour.fixedSolidRotation = Handles.RotationHandle(pHSolidBehaviour.fixedSolidRotation, pHSolidBehaviour.fixedSolidPosition);
@@ -199,7 +199,6 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             if (fixedSolid) {
                 // Fixedな剛体はHandleの位置をSpringheadに反映
                 so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
-
             } else {
                 // Fixedでない剛体の場合
 
