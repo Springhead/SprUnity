@@ -199,6 +199,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             if (fixedSolid) {
                 // Fixedな剛体はHandleの位置をSpringheadに反映
                 so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
+                gameObject.transform.position = fixedSolidPosition;
+                gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
 
