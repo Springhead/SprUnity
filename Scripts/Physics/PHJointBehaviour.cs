@@ -12,7 +12,7 @@ public class PHJointBehaviourEditor : Editor {
         PHJointBehaviour phJointBehaviour = (PHJointBehaviour)target;
 
         // ----- ----- ----- ----- -----
-        // Target Position Handle
+        // Joint Pose Handle
         if (phJointBehaviour.showJointPoseHandle) {
             Tools.current = Tool.None;
             // <!!> この方式だと微小変化が常に発生してあまりUndoなどが機能しない
@@ -41,7 +41,9 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     public GameObject plug = null;
 
     public GameObject jointObject = null;
+    // Joint自体の位置姿勢の描画・編集有効化
     public bool showJointPoseHandle;
+    // Jointの目標角度の描画・編集有効化(Jointの種類によって描画変化)
     public bool showJointTargetPositionHandle;
     public Vector3 jointPosition = new Vector3();
     public Quaternion jointOrientation =Quaternion.identity;
