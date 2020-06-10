@@ -75,7 +75,7 @@ public class PHTreeNodeBehaviour : SprSceneObjBehaviour {
                     if (sprObject == null) {
                         sprObject = phScene.CreateTreeNode(parentTreeNode.phTreeNode,
                             jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
-                        Debug.Log("CreateTreeNode[" + this.name + "] = Tree(" + parentTreeNode.name + ") <= Solid(" + jo.plug.name + ")");
+                        //Debug.Log("CreateTreeNode[" + this.name + "] = Tree(" + parentTreeNode.name + ") <= Solid(" + jo.plug.name + ")");
 
                         phTreeNode.Enable();
                     }
@@ -88,7 +88,7 @@ public class PHTreeNodeBehaviour : SprSceneObjBehaviour {
                     if (sprObject == null) {
                         sprObject = phScene.CreateTreeNode(parentRootNode.phRootNode,
                             jo.plug.GetComponent<PHSolidBehaviour>().phSolid);
-                        Debug.Log("CreateTreeNode[" + this.name + "] = Root(" + parentRootNode.name + ") <= Solid(" + jo.plug.name + ")");
+                        //Debug.Log("CreateTreeNode[" + this.name + "] = Root(" + parentRootNode.name + ") <= Solid(" + jo.plug.name + ")");
 
                         phTreeNode.Enable();
                     }
