@@ -262,15 +262,10 @@ public class PHSceneBehaviour : SprBehaviour {
     }
     void FixedUpdate() {
         if (enableUpdate) {
-            //lock (sprObject) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 if (phSolidBehaviour != null) {
-                    phSolidBehaviour.UpdatePose();
+                    phSolidBehaviour.UpdateSolidFromGameObject();
                 }
-            }
-            //}
-            if (fwApp != null) {
-                fwApp.PostRedisplay();
             }
         }
         if (sprObject != null && enableStep) {
@@ -288,6 +283,16 @@ public class PHSceneBehaviour : SprBehaviour {
             //lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
             //}
+        }
+        if (enableUpdate) {
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdateGameObjectFromSolid();
+                }
+            }
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
+            }
         }
     }
 
