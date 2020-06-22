@@ -161,7 +161,7 @@ public class PHSceneBehaviour : SprBehaviour {
         Finally
     }
     public delegate void PHSceneBehaviourCallback();
-    private class PHSceneBehaviourCallbackItem {
+    protected class PHSceneBehaviourCallbackItem {
         public int subPriority;
         public PHSceneBehaviourCallback callback;
         public PHSceneBehaviourCallbackItem(int subPriority, PHSceneBehaviourCallback callback) {
@@ -170,7 +170,7 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
     // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
-    private Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
+    protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -419,7 +419,7 @@ public class PHSceneBehaviour : SprBehaviour {
         callBackItems.Remove(deleteCallBackItem);
     }
 
-    public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
+    public virtual void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
 
         // スキンメッシュ描画時のカクつきを防ぐため、ツリー深さでソートしておく。

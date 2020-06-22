@@ -217,14 +217,14 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         if (sprObject != null) {
             PHSolidIf so = sprObject as PHSolidIf;
             if (fixedSolid) {
+                // 親が動くと子のGameObjectは動くため修正
+                gameObject.transform.position = fixedSolidPosition;
+                gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
 
-                if (!so.IsDynamical()) {
-                } else {
-                    // Dynamicalな剛体はSpringheadのシミュレーション結果をUnityに反映
-                    gameObject.transform.FromPosed(so.GetPose());
-                }
+                // Dynamicalな剛体はSpringheadのシミュレーション結果をUnityに反映
+                gameObject.transform.FromPosed(so.GetPose());
 
                 fixedSolidPosition = gameObject.transform.position;
                 fixedSolidRotation = gameObject.transform.rotation;
