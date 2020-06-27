@@ -171,6 +171,20 @@ public class PHSceneBehaviour : SprBehaviour {
     }
     // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
     protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // Thread処理用
+    public delegate void ThreadCallback();
+    public List<ThreadCallback> waitUntilNextStepCallbackList = new List<ThreadCallback>();
+    public void ExecWaitUntilNextStepCallbackList() {
+        lock (waitUntilNextStepCallbackList) {
+            foreach(var callback in waitUntilNextStepCallbackList) {
+                callback();
+            }
+            waitUntilNextStepCallbackList.Clear();
+        }
+    }
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
