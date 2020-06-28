@@ -60,4 +60,20 @@ public class PHSpringBehavior : PHJointBehaviour {
         return phScene.CreateJoint(soSock, soPlug, PHSpringIf.GetIfInfoStatic(), (PHSpringDesc)desc);
     }
 
+    // Thread処理のためのメソッド
+    public void SetTargetVelocityAsync(Vec6d v) {
+        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
+            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phSpring.SetTargetVelocity(v));
+        }
+    }
+    public void SetTargetOrientationAsync(Quaterniond q) {
+        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
+            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phSpring.SetTargetOrientation(q));
+        }
+    }
+    public void SetTargetPositionAsync(Vec3d p) {
+        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
+            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phSpring.SetTargetPosition(p));
+        }
+    }
 }

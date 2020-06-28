@@ -157,6 +157,7 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // DefaultExecutionOrderでは不十分なためPHSceneのFixedUpdateで特定の順番で呼べるようにする
     public enum CallbackPriority {
+        BeforeUpdateSolidFromGameObject,
         BeforeStep,
         Finally
     }
@@ -275,14 +276,15 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
     void FixedUpdate() {
-        if (enableUpdate) {
+        if (sprObject != null && enableUpdate) {
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateSolidFromGameObject]) {
+                callBackItem.callback();
+            }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 if (phSolidBehaviour != null) {
                     phSolidBehaviour.UpdateSolidFromGameObject();
                 }
             }
-        }
-        if (sprObject != null && enableStep) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
             }
@@ -297,8 +299,6 @@ public class PHSceneBehaviour : SprBehaviour {
             //lock (sprObject) {
                 (sprObject as PHSceneIf).Step();
             //}
-        }
-        if (enableUpdate) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 if (phSolidBehaviour != null) {
                     phSolidBehaviour.UpdateGameObjectFromSolid();
