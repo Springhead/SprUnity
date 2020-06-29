@@ -263,18 +263,6 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             }
         }
     }
-    
-    // Thread処理のためのメソッド
-    public void SetPoseAsync(Posed p) {
-        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
-            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phSolid.SetPose(p));
-        }
-    }
-    public void SetShapePoseAsync(int num, Posed p) {
-        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
-            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phSolid.SetShapePose(num,p));
-        }
-    }
 
     private bool applicationQuit = false;
     private void OnApplicationQuit() {

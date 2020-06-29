@@ -117,16 +117,4 @@ public class PHBallJointBehaviour : PHJointBehaviour {
             }
         }
     }
-
-    // Thread処理のためのメソッド
-    public void SetTargetVelocityAsync(Vec3d v) {
-        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
-            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phBallJoint.SetTargetVelocity(v));
-        }
-    }
-    public void SetTargetPositionAsync(Quaterniond q) {
-        lock (phSceneBehaviour.waitUntilNextStepCallbackList) {
-            phSceneBehaviour.waitUntilNextStepCallbackList.Add(() => phBallJoint.SetTargetPosition(q));
-        }
-    }
 }

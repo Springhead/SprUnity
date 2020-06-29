@@ -174,19 +174,6 @@ public class PHSceneBehaviour : SprBehaviour {
     protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-    // Thread処理用
-    public delegate void ThreadCallback();
-    public List<ThreadCallback> waitUntilNextStepCallbackList = new List<ThreadCallback>();
-    public void ExecWaitUntilNextStepCallbackList() {
-        lock (waitUntilNextStepCallbackList) {
-            foreach(var callback in waitUntilNextStepCallbackList) {
-                callback();
-            }
-            waitUntilNextStepCallbackList.Clear();
-        }
-    }
-
-    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
     public PHSceneIf phScene { get { return sprObject as PHSceneIf; } }
