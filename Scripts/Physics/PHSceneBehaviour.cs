@@ -125,7 +125,7 @@ public class PHSceneBehaviour : SprBehaviour {
     protected List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
     protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
-    private static PHSdkIf phSdk = null;
+    protected static PHSdkIf phSdk = null;
     protected static FWApp fwApp = null;
 
     public PHSceneDescStruct desc = null;
