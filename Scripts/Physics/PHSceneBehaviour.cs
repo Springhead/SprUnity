@@ -137,6 +137,7 @@ public class PHSceneBehaviour : SprBehaviour {
 
     public bool enableDebugWindow = false;
 
+    public bool threadMode = false;
     [Serializable]
     public class CollisionSetting {
         public enum CollisionTargetSettingMode { All, One, NameMatching };
@@ -225,6 +226,7 @@ public class PHSceneBehaviour : SprBehaviour {
             FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
             fwSceneIf.EnableRenderContact(true);
             fwSceneIf.EnableRenderForce(false, true);
+            phScene.threadMode = threadMode;
             //fwSceneIf.SetForceScale(0.01f, 0.01f);
 
         } else {
