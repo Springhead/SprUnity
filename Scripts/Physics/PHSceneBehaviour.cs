@@ -232,6 +232,7 @@ public class PHSceneBehaviour : SprBehaviour {
         } else {
             phSdk = PHSdkIf.CreateSdk();
             phScene = phSdk.CreateScene((PHSceneDesc)desc);
+            phScene.threadMode = threadMode;
         }
 
         return phScene;
