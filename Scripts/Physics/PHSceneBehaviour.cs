@@ -286,7 +286,7 @@ public class PHSceneBehaviour : SprBehaviour {
             foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeStep]) {
                 callBackItem.callback();
             }
-            if (sprObject != null && enableStep) { 
+            if (sprObject != null && enableStep) {
                 (sprObject as PHSceneIf).Step();
             }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
@@ -338,10 +338,10 @@ public class PHSceneBehaviour : SprBehaviour {
         if (fwApp != null) {
             fwApp.EndThread();
             fwApp = null;
-            if (phSdk != null) {
-                phSdk.Clear();
-                phSdk = null;
-            }
+        }
+        if (phSdk != null) {
+            phSdk.Clear();
+            phSdk = null;
         }
     }
 
