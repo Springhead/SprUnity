@@ -118,7 +118,7 @@ namespace VGent{
 
         public PosRotScale TransformPosRotScale(PosRotScale posrotscale) {
             PosRotScale result = new PosRotScale();
-            result.position = position + rotation * Vector3.Scale(scale, posrotscale.position);
+            result.position = position + Vector3.Scale(scale, rotation * posrotscale.position);
             result.rotation = (rotation * posrotscale.rotation).normalized;
             result.scale = Vector3.Scale(scale, posrotscale.scale);
             return result;

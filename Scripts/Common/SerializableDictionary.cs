@@ -54,12 +54,13 @@ namespace SprUnity{
             list.Add(keyAndValue);
             table = null;
         }
-
+        /*
         public void Set(TKey key, TValue value) {
             table = GetTable();
             table[key] = value;
             list = ConvertDictionaryToList(table);
         }
+        */
     }
 
     /// <summary>
