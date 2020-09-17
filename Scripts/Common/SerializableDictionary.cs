@@ -12,7 +12,7 @@ namespace SprUnity{
     [System.Serializable]
     public class TableBase<TKey, TValue, Type> where Type : KeyAndValue<TKey, TValue> {
         [SerializeField]
-        private List<Type> list;
+        private List<Type> list = new List<Type>();
         private Dictionary<TKey, TValue> table;
 
 
@@ -36,6 +36,29 @@ namespace SprUnity{
                 dic.Add(pair.Key, pair.Value);
             }
             return dic;
+        }
+
+        static List<Type> ConvertDictionaryToList(Dictionary<TKey, TValue> dict) {
+            List<Type> list = new List<Type>();
+            foreach(var pair in dict) {
+                list.Add(new KeyAndValue<TKey, TValue>(pair.Key, pair.Value) as Type);
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// APIs
+        /// </summary>
+        public void Add(Type keyAndValue) {
+            if (keyAndValue.Key == null) return;
+            list.Add(keyAndValue);
+            table = null;
+        }
+
+        public void Set(TKey key, TValue value) {
+            table = GetTable();
+            table[key] = value;
+            list = ConvertDictionaryToList(table);
         }
     }
 
