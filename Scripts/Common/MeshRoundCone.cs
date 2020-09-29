@@ -170,6 +170,7 @@ public class MeshRoundCone : MonoBehaviour {
         meshRenderer.sharedMaterial = default_material;
     }
 
+    [ContextMenu("Reshape")]
     public void Reshape() {
         // Avoid Invalid Value
         if (length <= 0) { length = 1e-5f; }
