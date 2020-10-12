@@ -33,6 +33,7 @@ namespace SprUnity{
         static Dictionary<TKey, TValue> ConvertListToDictionary(List<Type> list) {
             Dictionary<TKey, TValue> dic = new Dictionary<TKey, TValue>();
             foreach (KeyAndValue<TKey, TValue> pair in list) {
+                if (pair.Key == null) continue;
                 dic.Add(pair.Key, pair.Value);
             }
             return dic;
