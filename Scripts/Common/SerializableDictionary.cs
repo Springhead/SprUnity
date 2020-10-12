@@ -61,6 +61,19 @@ namespace SprUnity{
             list = ConvertDictionaryToList(table);
         }
         */
+
+        public void Clear() {
+            list.Clear();
+            table = null;
+        }
+
+        public void CleanNullKey() {
+            for (int i = list.Count - 1; i >= 0; i--) {
+                if (list[i].Key == null) {
+                    list.Remove(list[i]);
+                }
+            }
+        }
     }
 
     /// <summary>
