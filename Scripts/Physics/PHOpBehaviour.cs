@@ -244,7 +244,7 @@ public class PHOpBehaviour : SprSceneObjBehaviour {
 
         //Marshal Copy for vertices, because objTargetVtsArr is slow
         try{
-            Marshal.Copy(opObjAddr.objTargetVtsArr._this, dataArray, 0, copySize);
+            Marshal.Copy(opObjAddr.objTargetVtsArr._thisArray[0], dataArray, 0, copySize);
         }
         catch (ArgumentOutOfRangeException e){
             Console.WriteLine(e.Message);
