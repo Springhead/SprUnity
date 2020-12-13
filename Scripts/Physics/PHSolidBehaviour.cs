@@ -222,9 +222,11 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
-                gameObject.transform.FromPosed(so.GetPose());
-                fixedSolidPosition = gameObject.transform.position;
-                fixedSolidRotation = gameObject.transform.rotation;
+                if (so.IsDynamical()) {
+                    gameObject.transform.FromPosed(so.GetPose());
+                    fixedSolidPosition = gameObject.transform.position;
+                    fixedSolidRotation = gameObject.transform.rotation;
+                }
             }
         }
     }
