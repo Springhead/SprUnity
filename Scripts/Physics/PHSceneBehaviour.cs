@@ -221,6 +221,7 @@ public class PHSceneBehaviour : SprBehaviour {
             while (fwApp.GetSdk() == null || fwApp.GetSdk().GetPHSdk() == null) { System.Threading.Thread.Sleep(10); }
 
             phSdk = fwApp.GetSdk().GetPHSdk();
+            PHSdkIf.phSdkIf = phSdk;
             phScene = fwApp.GetSdk().GetScene(0).GetPHScene();
             phScene.Clear();
             phScene.SetDesc((PHSceneDesc)desc);

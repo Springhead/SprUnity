@@ -204,10 +204,10 @@ public abstract class SprSceneObjBehaviour : SprBehaviour {
         }
     }
 
-    //
+    // phScene.GetSdkを使用すると、FwAppを使用した場合nullになってしまうためPHSdkif.phSdkIfを使用
     public PHSdkIf phSdk {
         get {
-            return phScene.GetSdk();
+            return PHSdkIf.phSdkIf;
         }
     }
 }
