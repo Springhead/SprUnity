@@ -46,7 +46,7 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     // Jointの目標角度の描画・編集有効化(Jointの種類によって描画変化)
     public bool showJointTargetPositionHandle;
     public Vector3 jointPosition = new Vector3();
-    public Quaternion jointOrientation =Quaternion.identity;
+    public Quaternion jointOrientation = Quaternion.identity;
 
     // 関節で接続された剛体同士の衝突を無効ににするかどうか
     public bool disableCollision = false;
@@ -70,7 +70,7 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
         if (!socket) { socket = gameObject.transform.parent.GetComponentInParent<PHSolidBehaviour>().gameObject; }
-        if (!plug)   { plug   = gameObject.GetComponentInParent<PHSolidBehaviour>().gameObject; }
+        if (!plug) { plug = gameObject.GetComponentInParent<PHSolidBehaviour>().gameObject; }
 
         if (socket == null) { throw new ObjectNotFoundException("Socket object did not found for Joint", gameObject); }
         if (plug == null) { throw new ObjectNotFoundException("Plug object did not found for Joint", gameObject); }
@@ -91,8 +91,15 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
             } else {
                 jointPose = jointObject.transform.ToPosed();
             }
-            jo.SetSocketPose(soSock.GetPose().Inv() * jointPose);
-            jo.SetPlugPose(soPlug.GetPose().Inv() * jointPose);
+            Posed socketPose = soSock.GetPose().Inv() * jointPose;
+            Posed plugPose = soPlug.GetPose().Inv() * jointPose;
+            jo.SetSocketPose(socketPose);
+            jo.SetPlugPose(plugPose);
+
+            // 後でDescStructを元にSetDescするため、DescStructの更新が必要
+            PHJointDescStruct jointDescStruct = GetDescStruct() as PHJointDescStruct;
+            jointDescStruct.poseSocket = socketPose;
+            jointDescStruct.posePlug = plugPose;
         }
 
         return jo;

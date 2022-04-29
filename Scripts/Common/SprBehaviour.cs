@@ -89,7 +89,7 @@ public abstract class SprBehaviour : SprBehaviourBase {
     // 対応するSpringheadオブジェクト
 
     private ObjectIf sprObject_ = null;
-    public ObjectIf sprObject { get { return sprObject_; }  protected set { sprObject_ = value; } }
+    public ObjectIf sprObject { get { return sprObject_; } protected set { sprObject_ = value; } }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // 派生クラスで実装するメソッド
