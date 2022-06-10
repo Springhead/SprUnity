@@ -224,7 +224,7 @@ public class PHSceneBehaviour : SprBehaviour {
 
             FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
             fwSceneIf.EnableRenderContact(true);
-            fwSceneIf.EnableRenderForce(false, true);
+            fwSceneIf.EnableRenderForce(false, true);              
             //fwSceneIf.SetForceScale(0.01f, 0.01f);
 
         } else {
