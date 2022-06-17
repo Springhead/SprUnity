@@ -204,7 +204,11 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 // Fixedでない剛体の場合
                 if (!so.IsDynamical()) {
                     // Dynamicalでない剛体はUnityの位置をSpringheadに反映（操作可能）
-                    so.SetPose(gameObject.transform.ToPosed());
+                    //Debug.Log(name + " so.GetVelocity() " + so.GetVelocity());
+                    //Debug.Log(name + " so.GetAngurlarVel() " + so.GetAngularVelocity());
+                    //Debug.Log(name + " so.GetPose() " + so.GetPose());
+                    //so.SetPose(gameObject.transform.ToPosed());
+                    //gameObject.transform.FromPosed(so.GetPose());
                 }
 
                 fixedSolidPosition = gameObject.transform.position;
@@ -222,13 +226,13 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 //gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
-                if (so.IsDynamical()) {
+                //if (so.IsDynamical()) {
                     gameObject.transform.FromPosed(so.GetPose());
                     var q = so.GetPose();
                     //Debug.Log("test " + name + "(" + q.w + "," + q.x + "," + q.y + "," + q.z + ")");
                     fixedSolidPosition = gameObject.transform.position;
                     fixedSolidRotation = gameObject.transform.rotation;
-                }
+                //}
             }
         }
     }
