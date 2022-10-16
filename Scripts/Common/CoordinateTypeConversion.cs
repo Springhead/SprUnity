@@ -30,7 +30,7 @@ namespace SprUnity {
 
         public static arraywrapper_double ToArrayWrapperDouble(this double[] d) {
             int l = d.Length;
-            arraywrapper_double wd = new arraywrapper_double(nelm: (uint)l);
+            arraywrapper_double wd = new arraywrapper_double(nelm: l);
             for (int i = 0; i < l; i++) {
                 wd[i] = d[i];
             }

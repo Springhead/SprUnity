@@ -125,7 +125,7 @@ public class PHSceneBehaviour : SprBehaviour {
     protected List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
     protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
-    private static PHSdkIf phSdk = null;
+    public static PHSdkIf phSdk = null;
     protected static FWApp fwApp = null;
 
     public PHSceneDescStruct desc = null;
@@ -157,11 +157,12 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // DefaultExecutionOrderでは不十分なためPHSceneのFixedUpdateで特定の順番で呼べるようにする
     public enum CallbackPriority {
+        BeforeUpdateSolidFromGameObject,
         BeforeStep,
         Finally
     }
     public delegate void PHSceneBehaviourCallback();
-    private class PHSceneBehaviourCallbackItem {
+    protected class PHSceneBehaviourCallbackItem {
         public int subPriority;
         public PHSceneBehaviourCallback callback;
         public PHSceneBehaviourCallbackItem(int subPriority, PHSceneBehaviourCallback callback) {
@@ -170,7 +171,8 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
     // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
-    private Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
+    protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
+
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
@@ -262,18 +264,14 @@ public class PHSceneBehaviour : SprBehaviour {
     }
     void FixedUpdate() {
         if (enableUpdate) {
-            //lock (sprObject) {
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateSolidFromGameObject]) {
+                callBackItem.callback();
+            }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 if (phSolidBehaviour != null) {
-                    phSolidBehaviour.UpdatePose();
+                    phSolidBehaviour.UpdateSolidFromGameObject();
                 }
             }
-            //}
-            if (fwApp != null) {
-                fwApp.PostRedisplay();
-            }
-        }
-        if (sprObject != null && enableStep) {
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
             }
@@ -285,9 +283,17 @@ public class PHSceneBehaviour : SprBehaviour {
             foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeStep]) {
                 callBackItem.callback();
             }
-            //lock (sprObject) {
+            if (sprObject != null && enableStep) { 
                 (sprObject as PHSceneIf).Step();
-            //}
+            }
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdateGameObjectFromSolid();
+                }
+            }
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
+            }
         }
     }
 
@@ -414,7 +420,7 @@ public class PHSceneBehaviour : SprBehaviour {
         callBackItems.Remove(deleteCallBackItem);
     }
 
-    public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
+    public virtual void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
 
         // スキンメッシュ描画時のカクつきを防ぐため、ツリー深さでソートしておく。

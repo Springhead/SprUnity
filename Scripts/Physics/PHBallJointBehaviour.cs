@@ -10,8 +10,30 @@ using UnityEditor;
 [CustomEditor(typeof(PHBallJointBehaviour))]
 [CanEditMultipleObjects]
 public class PHBallJointBehaviourEditor : PHJointBehaviourEditor {
+    PHBallJointDesc desc = new PHBallJointDesc();
+
     public void OnSceneGUI() {
         base.OnSceneGUI();
+
+        PHBallJointBehaviour phBallJointBehaviour = target as PHBallJointBehaviour;
+
+        if (phBallJointBehaviour.showJointTargetPositionHandle) {
+            Tools.current = Tool.None;
+
+            if (phBallJointBehaviour.phBallJoint != null) {
+                phBallJointBehaviour.phBallJoint.GetDesc(desc);
+                Quaternion currTargetPosition = desc.targetPosition.ToQuaternion();
+                Quaternion handleRot = Handles.RotationHandle(currTargetPosition, phBallJointBehaviour.transform.position);
+                desc.targetPosition = handleRot.ToQuaterniond();
+                phBallJointBehaviour.phBallJoint.SetDesc(desc);
+                phBallJointBehaviour.desc.targetPosition = desc.targetPosition;
+
+            } else if (phBallJointBehaviour.desc != null) {
+                Quaternion currPullbackTarget = ((Quaterniond)(phBallJointBehaviour.desc.targetPosition)).ToQuaternion();
+                Quaternion handleRot = Handles.RotationHandle(currPullbackTarget, phBallJointBehaviour.transform.position);
+                phBallJointBehaviour.desc.targetPosition = handleRot.ToQuaterniond();
+            }
+        }
     }
 }
 

@@ -73,7 +73,7 @@ public class HISpidarGBehaviour : SprBehaviour {
 
             if (lengthText != null) {
                 string text = "";
-                for (int i = 0; i < hiSpidar.NMotor(); i++) {
+                for (int i = 0; i < (int)hiSpidar.NMotor(); i++) {
                     text += hiSpidar.GetMotor((uint)i).GetLength().ToString() + "\r\n";
                 }
                 lengthText.text = text;

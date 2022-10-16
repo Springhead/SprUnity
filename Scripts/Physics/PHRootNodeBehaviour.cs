@@ -49,7 +49,7 @@ public class PHRootNodeBehaviour : SprSceneObjBehaviour {
     public override void Link() {
         if (sprObject == null) {
             sprObject = phScene.CreateRootNode(this.GetComponent<PHSolidBehaviour>().phSolid);
-            Debug.Log("CreateRootNode[" + this.name + "]");
+            //Debug.Log("CreateRootNode[" + this.name + "]");
             phRootNode.Enable();
         }
     }

@@ -191,7 +191,43 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public void BeforeStep() {
         UpdateCenterOfMass();
     }
+    // GameObjectの位置姿勢をSpringhead剛体に適用 適用対象(fixedSolid,dynamicalOff)の親にSolidがあると問題が起こる
+    public void UpdateSolidFromGameObject() {
+        if (sprObject != null) {
+            PHSolidIf so = sprObject as PHSolidIf;
+            if (fixedSolid) {
+                // Fixedな剛体はHandleの位置をSpringheadに反映
+                so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
+                gameObject.transform.position = fixedSolidPosition;
+                gameObject.transform.rotation = fixedSolidRotation;
+            } else {
+                // Fixedでない剛体の場合
+                if (!so.IsDynamical()) {
+                    // Dynamicalでない剛体はUnityの位置をSpringheadに反映（操作可能）
+                    so.SetPose(gameObject.transform.ToPosed());
+                }
 
+                fixedSolidPosition = gameObject.transform.position;
+                fixedSolidRotation = gameObject.transform.rotation;
+            }
+        }
+    }
+    // Springhead剛体の位置姿勢をGameObjectに適用：更新順を制御するためPHSceneからまとめて呼び出す
+    public void UpdateGameObjectFromSolid() {
+        if (sprObject != null) {
+            PHSolidIf so = sprObject as PHSolidIf;
+            if (fixedSolid) {
+                // 親が動くと子のGameObjectは動くため修正
+                gameObject.transform.position = fixedSolidPosition;
+                gameObject.transform.rotation = fixedSolidRotation;
+            } else {
+                // Fixedでない剛体の場合
+                gameObject.transform.FromPosed(so.GetPose());
+                fixedSolidPosition = gameObject.transform.position;
+                fixedSolidRotation = gameObject.transform.rotation;
+            }
+        }
+    }
     // Springhead剛体とGameObjectの間での位置姿勢の同期：　更新順を制御するためPHSceneからまとめて呼び出す
     public void UpdatePose() {
         if (sprObject != null) {
