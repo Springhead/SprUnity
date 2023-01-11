@@ -268,9 +268,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 callBackItem.callback();
             }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
-                if (phSolidBehaviour != null) {
-                    phSolidBehaviour.UpdateSolidFromGameObject();
-                }
+                phSolidBehaviour.UpdateSolidFromGameObject();
             }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
                 phSolidBehaviour.BeforeStep();
@@ -287,9 +285,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 (sprObject as PHSceneIf).Step();
             }
             foreach (var phSolidBehaviour in phSolidBehaviours) {
-                if (phSolidBehaviour != null) {
-                    phSolidBehaviour.UpdateGameObjectFromSolid();
-                }
+                phSolidBehaviour.UpdateGameObjectFromSolid();
             }
             if (fwApp != null) {
                 fwApp.PostRedisplay();
@@ -427,7 +423,15 @@ public class PHSceneBehaviour : SprBehaviour {
         phSolidBehaviours.Sort((a, b) => a.treeDepth.CompareTo(b.treeDepth));
     }
 
+    public void RemovePHSolidBehaviour(PHSolidBehaviour phSolid) {
+        phSolidBehaviours.Remove(phSolid);
+    }
+
     public void RegisterPHIKEndEffectorBehaviour(PHIKEndEffectorBehaviour phIKEndEffector) {
         phIKEndEffectorBehaviours.Add(phIKEndEffector);
+    }
+
+    public void RemovePHIKEndEffectorBehaviour(PHIKEndEffectorBehaviour phIKEndEffector) {
+        phIKEndEffectorBehaviours.Remove(phIKEndEffector);
     }
 }

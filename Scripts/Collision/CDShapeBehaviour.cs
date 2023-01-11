@@ -8,6 +8,7 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
     // メンバ変数
 
     public GameObject shapeObject = null;
+    private bool applicationQuit = false;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // 派生クラスで実装するメソッド
@@ -63,7 +64,6 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
         }
     }
 
-    private bool applicationQuit = false;
     private void OnApplicationQuit() {
         applicationQuit = true;
     }
