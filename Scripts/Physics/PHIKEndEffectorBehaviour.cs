@@ -68,6 +68,7 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
 
     public bool showTargetPositionHandle = false;
     public bool showTargetOrientationHandle = false;
+    private bool applicationQuit = false;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
@@ -174,4 +175,14 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    private void OnDestroy() {
+        if (!applicationQuit) {
+            phSceneBehaviour.RemovePHIKEndEffectorBehaviour(this);
+            phScene.DelChildObject(phIKEndEffector);
+        }
+    }
 }
