@@ -42,9 +42,15 @@ public class PHTreeNodeBehaviour : SprSceneObjBehaviour {
 
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build(){
+        if(gameObject.GetComponent<PHJointBehaviour>() == null) {
+            Debug.Log("null" + gameObject.name);
+        }
+        phSceneBehaviour.AddJointOrderCallback(test, gameObject.GetComponent<PHJointBehaviour>());
         return null;
     }
-
+    void test() {
+        Debug.Log("callback " + name);
+    }
     // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
     public override void Link() {
         // まず、このTreeNodeに付随する関節を探す。同じGameObjectに付いているはず
