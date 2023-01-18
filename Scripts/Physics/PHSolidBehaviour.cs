@@ -207,6 +207,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                     //Debug.Log(name + " so.GetVelocity() " + so.GetVelocity());
                     //Debug.Log(name + " so.GetAngurlarVel() " + so.GetAngularVelocity());
                     //Debug.Log(name + " so.GetPose() " + so.GetPose());
+                    //so.SetVelocity((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
+                    //Debug.Log((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
                     //so.SetPose(gameObject.transform.ToPosed());
                     //gameObject.transform.FromPosed(so.GetPose());
                 }

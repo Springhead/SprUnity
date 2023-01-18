@@ -174,21 +174,8 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
 
-    protected class PHSceneBehaviourJointOrderCallbackItem {
-        public PHJointBehaviour phJointBehaviour;
-        public PHSceneBehaviourCallback callback;
-        public PHJointIf rootSocketJoint; // socketを辿った場合の根元の剛体に繋がっているJoint
-        public bool isCalled = false;
-        public bool isRoot;
-        public PHSceneBehaviourJointOrderCallbackItem(PHJointBehaviour phJointBehaviour, PHSceneBehaviourCallback callback, bool isRoot = false) {
-            this.phJointBehaviour = phJointBehaviour;
-            this.callback = callback;
-            this.isRoot = isRoot;
-        }
-    }
     // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
     protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
-    protected List<PHSceneBehaviourJointOrderCallbackItem> jointOrderCallbacks = new List<PHSceneBehaviourJointOrderCallbackItem>();
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
@@ -266,69 +253,8 @@ public class PHSceneBehaviour : SprBehaviour {
     // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
     public override void Link() {
         OnValidate();
-
-        // Jointのsocketを辿り末端の剛体に繋がっているJointを探し出す(木構造前提)
-        foreach (var callBackItem in jointOrderCallbacks) {
-            if (callBackItem.phJointBehaviour == null) {
-                Debug.Log("null");
-            }
-            var socketSolid = callBackItem.phJointBehaviour.phJoint.GetSocketSolid();
-            
-            PHJointIf rootSocketJoint = callBackItem.phJointBehaviour.phJoint;
-            bool jointExist = true;
-            while (jointExist) {
-                jointExist = false;
-                for (int i = 0; i < phScene.NJoints(); i++) {
-                    var joint = phScene.GetJoint(i);
-                    var plugSolid = joint.GetPlugSolid();
-                    if (socketSolid == plugSolid) {
-                        jointExist = true;
-                        rootSocketJoint = joint;
-                        socketSolid = joint.GetSocketSolid();
-                        break;
-                    }
-                }
-            }
-            callBackItem.rootSocketJoint = rootSocketJoint;
-            Debug.Log(callBackItem.phJointBehaviour.phJoint.GetName() + " 's root is" + rootSocketJoint.GetName());
-        }
-
-        // 一番Socket側から実行
-
-        foreach (var callBackItemForRoot in jointOrderCallbacks) {
-            if (callBackItemForRoot.isCalled) continue;
-            var rootCallbacks = jointOrderCallbacks.Where(item => item.phJointBehaviour.phJoint == callBackItemForRoot.rootSocketJoint);
-            foreach (var rootCallback in rootCallbacks) {
-                rootCallback.callback();
-            }
-            var plugSolid = callBackItemForRoot.rootSocketJoint.GetPlugSolid() ;
-            bool jointExist = true;
-            while (jointExist) { // jointのPlug剛体を辿る
-                jointExist = false;
-                for (int i = 0; i < phScene.NJoints(); i++) {
-                    var joint = phScene.GetJoint(i);
-                    var socketSolid = joint.GetSocketSolid();
-                    if (socketSolid == plugSolid) {
-                        jointExist = true;
-                        var jointCallbacks = jointOrderCallbacks.Where(item => item.phJointBehaviour.phJoint == callBackItemForRoot.rootSocketJoint);
-                        foreach(var jointCallback in jointCallbacks) {
-                            jointCallback.callback();
-                        }
-                        plugSolid = joint.GetPlugSolid(); // 
-                        break;
-                    }
-                }
-            }
-
-        }
-        //foreach (var callBackItem in jointOrderCallbacks) {
-        //    if (callBackItem.isCalled) continue;
-
-        //}
     }
-    void ExecCallBackRecursive() {
 
-    }
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
@@ -516,10 +442,6 @@ public class PHSceneBehaviour : SprBehaviour {
         callBackItems.Remove(deleteCallBackItem);
     }
 
-    public void AddJointOrderCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, PHJointBehaviour phJoint) {
-        var newItem = new PHSceneBehaviourJointOrderCallbackItem(phJoint, phSceneBehaviourCallback);
-        jointOrderCallbacks.Add(newItem);
-    }
     public virtual void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
 
