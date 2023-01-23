@@ -167,7 +167,9 @@ public class MeshRoundCone : MonoBehaviour {
             }
         }
 
-        meshRenderer.sharedMaterial = default_material;
+        if (default_material != null) {
+            meshRenderer.sharedMaterial = default_material;
+        }
     }
 
     public void Reshape() {

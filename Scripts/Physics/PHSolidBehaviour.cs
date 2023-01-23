@@ -59,6 +59,8 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     // このGameObjectがScene Hierarchyでどれくらいの深さにあるか。浅いものから順にUpdatePoseするために使う
     [NonSerialized]
     public int treeDepth = 0;
+    private bool applicationQuit = false;
+
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
@@ -264,13 +266,13 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         }
     }
 
-    private bool applicationQuit = false;
     private void OnApplicationQuit() {
         applicationQuit = true;
     }
 
     private void OnDestroy() {
         if (!applicationQuit) {
+            phSceneBehaviour.RemovePHSolidBehaviour(this);
             phScene.DelChildObject(phSolid);
         }
     }

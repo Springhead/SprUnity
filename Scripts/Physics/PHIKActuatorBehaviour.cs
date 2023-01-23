@@ -102,4 +102,14 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private bool applicationQuit = false;
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    private void OnDestroy() {
+        if (!applicationQuit) {
+            phScene.DelChildObject(phIKActuator);
+        }
+    }
 }
