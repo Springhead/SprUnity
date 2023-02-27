@@ -240,10 +240,10 @@ public class PHSceneBehaviour : SprBehaviour {
 
             PHConstraintEngineDesc constraintEngineDesc = new PHConstraintEngineDesc();
             phScene.GetConstraintEngine().GetDesc(constraintEngineDesc);
+            //constraintEngineDesc.velCorrectionRate = 0.3;
+            //constraintEngineDesc.shrinkRate = 0.9;
             Debug.Log("constraintEngineDesc.velCorrectionRate " + constraintEngineDesc.velCorrectionRate);
             Debug.Log("constraintEngineDesc.shirinkRate " + constraintEngineDesc.shrinkRate);
-            //constraintEngineDesc.velCorrectionRate = 0.6;
-            //constraintEngineDesc.shrinkRate = 1;
             phScene.GetConstraintEngine().SetDesc(constraintEngineDesc);
         }
 

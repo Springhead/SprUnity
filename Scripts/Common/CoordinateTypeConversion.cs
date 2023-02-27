@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using SprCs;
+using System;
 
 namespace SprUnity {
     public static class SprUnityExtentions {
@@ -25,7 +26,8 @@ namespace SprUnity {
         }
 
         public static Quaterniond ToQuaterniond(this Quaternion q) {
-            return new Quaterniond(q.w, q.x, q.y, q.z);
+            double norm = Math.Sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+            return new Quaterniond(q.w/norm, q.x/norm, q.y/norm, q.z/norm);
         }
 
         public static arraywrapper_double ToArrayWrapperDouble(this double[] d) {

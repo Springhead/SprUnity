@@ -230,6 +230,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 // Fixedでない剛体の場合
                 //if (so.IsDynamical()) {
                     gameObject.transform.FromPosed(so.GetPose());
+                    //Debug.Log(so.GetName() + so.GetPose());
                     var q = so.GetPose();
                     //Debug.Log("test " + name + "(" + q.w + "," + q.x + "," + q.y + "," + q.z + ")");
                     fixedSolidPosition = gameObject.transform.position;
