@@ -7,6 +7,7 @@ using UnityEngine;
 using SprCs;
 using SprUnity;
 
+[DefaultExecutionOrder(5)]
 public class PHRootNodeBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
@@ -42,18 +43,15 @@ public class PHRootNodeBehaviour : SprSceneObjBehaviour {
 
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
-        return null;
+        var solid = this.GetComponent<PHSolidBehaviour>().phSolid;
+        sprObject = phScene.CreateRootNode(solid);
+        CreateTreeNodesRecurs(phRootNode, solid);
+        phRootNode.Enable();
+        return phRootNode;
     }
 
     // -- 全てのBuildが完了した後に行う処理を書く。オブジェクト同士をリンクするなど
     public override void Link() {
-        if (sprObject == null) {
-            var solid = this.GetComponent<PHSolidBehaviour>().phSolid;
-            sprObject = phScene.CreateRootNode(solid);
-            //Debug.Log("CreateRootNode[" + this.name + "]");
-            CreateTreeNodesRecurs(phRootNode, solid);
-            phRootNode.Enable();
-        }
     }
 
     // RootNodeからJointのPlugを辿り、全てのTreeNodeを再帰的に作成

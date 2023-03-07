@@ -167,7 +167,7 @@ public class MeshRoundCone : MonoBehaviour {
             }
         }
 
-        if (default_material != null) {
+        if (default_material != null && meshRenderer.sharedMaterial == null) {
             meshRenderer.sharedMaterial = default_material;
         }
     }
