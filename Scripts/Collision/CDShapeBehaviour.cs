@@ -27,6 +27,7 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
         }
 
         CDShapeIf shape = CreateShape(shapeObject);
+        shape.SetName("cd:" + gameObject.name);
         phSolid.AddShape(shape);
 
         GameObject solidObject = solidBehaviour.gameObject;
