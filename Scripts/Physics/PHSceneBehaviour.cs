@@ -299,7 +299,6 @@ public class PHSceneBehaviour : SprBehaviour {
                 callBackItem.callback();
             }
             if (sprObject != null && enableStep) {
-                Console.WriteLine("step");
                 (sprObject as PHSceneIf).Step();
             }
             foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateSolidFromGameObject]) {

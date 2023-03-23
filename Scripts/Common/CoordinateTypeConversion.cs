@@ -27,7 +27,7 @@ namespace SprUnity {
 
         public static Quaterniond ToQuaterniond(this Quaternion q) {
             double norm = Math.Sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
-            return new Quaterniond(q.w/norm, q.x/norm, q.y/norm, q.z/norm);
+            return new Quaterniond(q.w / norm, q.x / norm, q.y / norm, q.z / norm);
         }
 
         public static arraywrapper_double ToArrayWrapperDouble(this double[] d) {
