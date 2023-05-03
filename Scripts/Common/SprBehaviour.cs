@@ -119,12 +119,13 @@ public abstract class SprBehaviour : SprBehaviourBase {
     private bool awakeCalled = false;
     public virtual void Awake() { AwakeImpl(); }
     public void AwakeImpl(bool fromLateExecQueue = false) {
+        if(awakeCalled) { return; }
         if (lateAwakeStart && !(fromLateExecQueue)) {
             // 今すぐ実行せず、待ち行列に入れる
             lateAwakeQueue.Enqueue(this);
 
         } else {
-            if (!awakeCalled && GetDescStruct() != null) {
+            if (GetDescStruct() != null) {
                 if (!enabled) { return; }
                 sprObject = Build();
                 if (sprObject != null) {
@@ -140,12 +141,13 @@ public abstract class SprBehaviour : SprBehaviourBase {
     private bool startCalled = false;
     public virtual void Start() { StartImpl(); }
     public virtual void StartImpl(bool fromLateExecQueue = false) {
+        if (startCalled) { return; }
         if (lateAwakeStart && !(fromLateExecQueue)) {
             // 今すぐ実行せず、待ち行列に入れる
             lateStartQueue.Enqueue(this);
 
         } else {
-            if (!startCalled && GetDescStruct() != null) {
+            if (GetDescStruct() != null) {
                 Link();
                 // オブジェクトの作成が一通り完了したら一度OnValidateを読んで設定を確実に反映しておく
                 OnValidate();
