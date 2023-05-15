@@ -209,7 +209,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                     //Debug.Log(name + " so.GetPose() " + so.GetPose());
                     //so.SetVelocity((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
                     //Debug.Log((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
-                    //so.SetPose(gameObject.transform.ToPosed());
+                    so.SetPose(gameObject.transform.ToPosed());
                     //gameObject.transform.FromPosed(so.GetPose());
                 }
 
@@ -228,14 +228,14 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 //gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
-                //if (so.IsDynamical()) {
+                if (so.IsDynamical()) {
                     gameObject.transform.FromPosed(so.GetPose());
                     //Debug.Log(so.GetName() + so.GetPose());
                     var q = so.GetPose();
                     //Debug.Log("test " + name + "(" + q.w + "," + q.x + "," + q.y + "," + q.z + ")");
                     fixedSolidPosition = gameObject.transform.position;
                     fixedSolidRotation = gameObject.transform.rotation;
-                //}
+                }
             }
         }
     }
