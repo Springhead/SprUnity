@@ -44,9 +44,10 @@ public class PHRootNodeBehaviour : SprSceneObjBehaviour {
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
         var solid = this.GetComponent<PHSolidBehaviour>().phSolid;
-        sprObject = phScene.CreateRootNode(solid);
+        sprObject = phScene.CreateRootNode(solid, desc);
         CreateTreeNodesRecurs(phRootNode, solid);
         phRootNode.Enable();
+        phRootNode.SetName("RootNode:" + gameObject.name);
         return phRootNode;
     }
 
