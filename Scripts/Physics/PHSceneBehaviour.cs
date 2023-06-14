@@ -162,6 +162,7 @@ public class PHSceneBehaviour : SprBehaviour {
     public enum CallbackPriority {
         BeforeUpdateSolidFromGameObject,
         BeforeStep,
+        BeforeUpdateGameObjectFromSolid,
         Finally
     }
     public delegate void PHSceneBehaviourCallback();
@@ -301,7 +302,7 @@ public class PHSceneBehaviour : SprBehaviour {
             if (sprObject != null && enableStep) {
                 (sprObject as PHSceneIf).Step();
             }
-            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateSolidFromGameObject]) {
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateGameObjectFromSolid]) {
                 callBackItem.callback();
             }
             foreach (var phSolidBehaviour in phSolidBehaviours) {

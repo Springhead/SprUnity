@@ -10,7 +10,8 @@ namespace SprUnity {
         public static Posed ToPosed(this Transform t) {
             Vector3 p = t.position;
             Quaternion q = t.rotation;
-            return new Posed(q.w, q.x, q.y, q.z, p.x, p.y, p.z);
+            double norm = Math.Sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+            return new Posed(q.w / norm, q.x / norm, q.y / norm, q.z / norm, p.x, p.y, p.z);
         }
 
         public static Vec3f ToVec3f(this Vector3 v) {
