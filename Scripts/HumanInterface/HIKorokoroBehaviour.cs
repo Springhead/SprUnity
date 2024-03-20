@@ -68,8 +68,6 @@ public class HIKorokoroBehaviour : SprBehaviour
             hiSdk.AddRealDevice(DRCyUsb20Sh4If.GetIfInfoStatic(), cyDesc);
         }
 
-     
-
         //
 
         DRUARTMotorDriverDesc umDesc = new DRUARTMotorDriverDesc();
@@ -89,10 +87,7 @@ public class HIKorokoroBehaviour : SprBehaviour
             d.motors.push_back(dM);
         }
         
-            korokoro.Init(d);
-        
-
-        
+            korokoro.Init(d); 
 
         return korokoro;
     }
@@ -108,11 +103,6 @@ public class HIKorokoroBehaviour : SprBehaviour
        
         if (sprObject != null)
         {
-            //haptic pointerの位置をpointerと合わせる
-            //controllerTransform = GameObject.Find("Sphere").transform;
-            //controllerTransform.position = pointerTransform.position;
-            //controllerTransform.rotation = pointerTransform.rotation;
-
             //pointerの位置をSetPose
             pointerTransform = GameObject.Find("Pointer").transform;
             Posed pointerPose = new Posed(pointerTransform.position.ToVec3d(), pointerTransform.rotation.ToQuaterniond());
@@ -120,7 +110,6 @@ public class HIKorokoroBehaviour : SprBehaviour
             //if (hiKorokoro.IsGood())
             {
                 hiKorokoro.SetPose(pointerPose);
-                //Debug.Log("SetPose" + pointerPose);
             }
 
 
@@ -135,17 +124,9 @@ public class HIKorokoroBehaviour : SprBehaviour
                 lengthText.text = text;
             }
 
-            //if (EditorApplication.isPlaying == false)
-            //{
-            //    // Play終わったら
-            //    Build().Clear();
-            //    Debug.Log("clear");
-            //}
-
 
             if (pointer != null)
             {
-
                 Posed pose = hiKorokoro.GetPose();
                 pointer.transform.position = pose.Pos().ToVector3();
                 pointer.transform.rotation = pose.Ori().ToQuaternion();
