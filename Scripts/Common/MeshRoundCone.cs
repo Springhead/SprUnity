@@ -16,8 +16,10 @@ public class MeshRoundCone : MonoBehaviour {
 
     public bool usePositionR1 = false;
     public Vector3 positionR1 = new Vector3();
+    public GameObject R1Object;
     public bool usePositionR2 = false;
     public Vector3 positionR2 = new Vector3();
+    public GameObject L1Object;
 
     public void UpdateR1R2HandlePosition() {
         if (pivot == Pivot.Center) {
@@ -76,7 +78,10 @@ public class MeshRoundCone : MonoBehaviour {
             }
         }
         */
-        Reshape();
+        var meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        if (meshRenderer != null && meshRenderer.enabled) {
+            Reshape();
+        }
     }
 
 #if UNITY_EDITOR
@@ -162,7 +167,9 @@ public class MeshRoundCone : MonoBehaviour {
             }
         }
 
-        meshRenderer.sharedMaterial = default_material;
+        if (default_material != null && meshRenderer.sharedMaterial == null) {
+            meshRenderer.sharedMaterial = default_material;
+        }
     }
 
     public void Reshape() {

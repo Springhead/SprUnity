@@ -130,10 +130,18 @@ public class PHIKEndEffectorBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
+    void OnDrawGizmos() {
+        if (phIKEndEffector != null) {
+            Gizmos.color = Color.green;
+            Vec3d endEffectorPos = phIKEndEffector.GetSolid().GetPose() * phIKEndEffector.GetTargetLocalPosition();
+            Gizmos.DrawWireCube(endEffectorPos.ToVector3(), 0.03f * Vector3.one);
+        }
+    }
+
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // その他のメソッド
-    
+
     // PHSceneのStepが呼ばれる前に呼ばれる
     public void BeforeStep() {
         UpdateIKTargetPosition();

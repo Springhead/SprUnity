@@ -2,6 +2,7 @@
 using System.Collections;
 using SprCs;
 using System;
+using SprUnity;
 
 [DefaultExecutionOrder(3)]
 public class CDCapsuleBehavior : CDShapeBehaviour {
@@ -43,8 +44,23 @@ public class CDCapsuleBehavior : CDShapeBehaviour {
 
     // -- 形状固有のShapePoseの取得。剛体からの相対位置姿勢による分は除く
     public override Posed ShapePose(GameObject shapeObject) {
+        CapsuleCollider cc = shapeObject.GetComponent<CapsuleCollider>();
+        if (cc == null) { throw new ObjectNotFoundException("CDCapsuleBehaviour requires CapsuleCollider", shapeObject); }
         // SpringheadとUnityでカプセルの向きが違うことに対する補正
-        return new Posed(new Vec3d(), Quaterniond.Rot(90 * Mathf.Deg2Rad, new Vec3d(1, 0, 0)));
+        Quaterniond diffRot = Quaternion.identity.ToQuaterniond();
+        // X-Axis
+        if (cc.direction == 0) {
+            diffRot = Quaterniond.Rot(-90 * Mathf.Deg2Rad, new Vec3d(0, 1, 0));
+        }
+        // Y-Axis
+        if (cc.direction == 1) {
+            diffRot = Quaterniond.Rot(90 * Mathf.Deg2Rad, new Vec3d(1, 0, 0));
+        }
+        // Z-Axis
+        if (cc.direction == 2) {
+            diffRot = Quaternion.identity.ToQuaterniond();
+        }
+        return new Posed(cc.center.ToVec3d(), diffRot);
     }
 
     // -- SpringheadのShapeオブジェクトを構築する
@@ -55,7 +71,8 @@ public class CDCapsuleBehavior : CDShapeBehaviour {
         Vector3 scale = shapeObject.transform.lossyScale;
         Vector3 position = shapeObject.GetComponent<Transform>().position;
         desc.radius = cc.radius * (Mathf.Max(scale.x, scale.z));
-        desc.length = cc.height * scale.y - desc.radius * 2;
+        // lengthが0だと落ちる
+        desc.length = Mathf.Max(0.001f,cc.height * scale.y - desc.radius * 2);
 
         return phSdk.CreateShape(CDCapsuleIf.GetIfInfoStatic(), (CDCapsuleDesc)desc);
     }

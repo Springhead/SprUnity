@@ -4,11 +4,12 @@ using SprCs;
 using System.Runtime.InteropServices;
 using System;
 using System.Linq;
+using System.Threading;
 
 #if UNITY_EDITOR
 using UnityEditor;
 
-[CustomEditor(typeof(PHSceneBehaviour))]
+[CustomEditor(typeof(PHSceneBehaviour), true)]
 public class PHSceneBehaviourEditor : Editor {
 
     public bool showCollision = false;
@@ -18,6 +19,7 @@ public class PHSceneBehaviourEditor : Editor {
 
         DrawDefaultInspector();
 
+        EditorGUI.BeginChangeCheck();
         showCollision = EditorGUILayout.Foldout(showCollision, "Collision Setting");
         if (showCollision) {
             int i = 0;
@@ -40,28 +42,62 @@ public class PHSceneBehaviourEditor : Editor {
                 // -----
 
                 EditorGUILayout.BeginHorizontal();
-                collisionItem.targetSetMode1 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 1", collisionItem.targetSetMode1));
+                EditorGUI.BeginChangeCheck();
+                var targetSetMode1 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 1", collisionItem.targetSetMode1));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.targetSetMode1 = targetSetMode1;
+                }
                 if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
-                    collisionItem.solid1 = EditorGUILayout.ObjectField(collisionItem.solid1, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    EditorGUI.BeginChangeCheck();
+                    var solid1 = EditorGUILayout.ObjectField(collisionItem.solid1, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid1 = solid1;
+                    }
                 } else if (collisionItem.targetSetMode1 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    collisionItem.solid1Pattern = EditorGUILayout.TextField(collisionItem.solid1Pattern);
+                    EditorGUI.BeginChangeCheck();
+                    var solid1Pattern = EditorGUILayout.TextField(collisionItem.solid1Pattern);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid1Pattern = solid1Pattern;
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
 
                 // --
 
                 EditorGUILayout.BeginHorizontal();
-                collisionItem.targetSetMode2 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 2", collisionItem.targetSetMode2));
+                EditorGUI.BeginChangeCheck();
+                var targetSetMode2 = (PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode)(EditorGUILayout.EnumPopup("Target Solid 2", collisionItem.targetSetMode2));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.targetSetMode2 = targetSetMode2;
+                }
                 if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.One) {
-                    collisionItem.solid2 = EditorGUILayout.ObjectField(collisionItem.solid2, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    EditorGUI.BeginChangeCheck();
+                    var solid2 = EditorGUILayout.ObjectField(collisionItem.solid2, typeof(PHSolidBehaviour), true) as PHSolidBehaviour;
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid2 = solid2;
+                    }
                 } else if (collisionItem.targetSetMode2 == PHSceneBehaviour.CollisionSetting.CollisionTargetSettingMode.NameMatching) {
-                    collisionItem.solid2Pattern = EditorGUILayout.TextField(collisionItem.solid2Pattern);
+                    var solid2Pattern = EditorGUILayout.TextField(collisionItem.solid2Pattern);
+                    if (EditorGUI.EndChangeCheck()) {
+                        Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                        collisionItem.solid2Pattern = solid2Pattern;
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
 
                 // -----
 
-                collisionItem.mode = (PHSceneDesc.ContactMode)(EditorGUILayout.EnumPopup("Contact Mode", collisionItem.mode));
+                EditorGUI.BeginChangeCheck();
+                var mode = (PHSceneDesc.ContactMode)(EditorGUILayout.EnumPopup("Contact Mode", collisionItem.mode));
+                if (EditorGUI.EndChangeCheck()) {
+                    Undo.RecordObject(phSceneBehaviour, "Collision Setting is changed");
+                    collisionItem.mode = mode;
+                }
             }
 
             foreach (var removeItem in removeList) {
@@ -90,7 +126,8 @@ public class PHSceneBehaviour : SprBehaviour {
     protected List<PHSolidBehaviour> phSolidBehaviours = new List<PHSolidBehaviour>();
     protected List<PHIKEndEffectorBehaviour> phIKEndEffectorBehaviours = new List<PHIKEndEffectorBehaviour>();
 
-    private static PHSdkIf phSdk = null;
+    public static PHSdkIf phSdk = null;
+    public static FWApp fwApp = null;
 
     public PHSceneDescStruct desc = null;
     public PHIKEngineDescStruct descIK = null;
@@ -98,6 +135,10 @@ public class PHSceneBehaviour : SprBehaviour {
     public bool enableIK = true;
     public bool enableStep = true;
     public bool enableUpdate = true;
+
+    public bool enableDebugWindow = false;
+
+    public bool multiThreadMode = false;
 
     [Serializable]
     public class CollisionSetting {
@@ -115,6 +156,27 @@ public class PHSceneBehaviour : SprBehaviour {
     }
     [HideInInspector]
     public List<CollisionSetting> collisionList = new List<CollisionSetting>();
+
+    // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+    // DefaultExecutionOrderでは不十分なためPHSceneのFixedUpdateで特定の順番で呼べるようにする
+    public enum CallbackPriority {
+        BeforeUpdateSolidFromGameObject,
+        BeforeStep,
+        BeforeUpdateGameObjectFromSolid,
+        Finally
+    }
+    public delegate void PHSceneBehaviourCallback();
+    protected class PHSceneBehaviourCallbackItem {
+        public int subPriority;
+        public PHSceneBehaviourCallback callback;
+        public PHSceneBehaviourCallbackItem(int subPriority, PHSceneBehaviourCallback callback) {
+            this.subPriority = subPriority;
+            this.callback = callback;
+        }
+    }
+
+    // 優先度付きコールバックのリスト。Add/Removeの際にpriorityに従ってsortする
+    protected Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>> fixedUpdateCallbacks;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
@@ -152,18 +214,38 @@ public class PHSceneBehaviour : SprBehaviour {
     public override ObjectIf Build() {
         SEH_Exception.init();
 
-        FWAppBehaviour appB = GetComponent<FWAppBehaviour>();
-
         PHSceneIf phScene;
-        if (appB != null) {
-            FWApp app = FWAppBehaviour.app;
-            phSdk   = app.GetSdk().GetPHSdk();
-            phScene = app.GetSdk().GetScene(0).GetPHScene();
+        if (enableDebugWindow) {
+            fwApp = new FWApp();
+            fwApp.InitInNewThread();
+
+            // FWAppの初期化が終わるまで待つ
+            while (fwApp.GetSdk() == null || fwApp.GetSdk().GetPHSdk() == null) { System.Threading.Thread.Sleep(10); }
+
+            phSdk = fwApp.GetSdk().GetPHSdk();
+            PHSdkIf.phSdkIf = phSdk;
+            phScene = fwApp.GetSdk().GetScene(0).GetPHScene();
             phScene.Clear();
             phScene.SetDesc((PHSceneDesc)desc);
+
+            FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
+            fwSceneIf.EnableRenderContact(true);
+            fwSceneIf.EnableRenderForce(false, true);
+            phScene.multiThreadMode = multiThreadMode;
+            //fwSceneIf.SetForceScale(0.01f, 0.01f);
+
         } else {
             phSdk = PHSdkIf.CreateSdk();
             phScene = phSdk.CreateScene((PHSceneDesc)desc);
+            phScene.multiThreadMode = multiThreadMode;
+
+            PHConstraintEngineDesc constraintEngineDesc = new PHConstraintEngineDesc();
+            phScene.GetConstraintEngine().GetDesc(constraintEngineDesc);
+            //constraintEngineDesc.velCorrectionRate = 0.3;
+            //constraintEngineDesc.shrinkRate = 0.95;
+            Debug.Log("constraintEngineDesc.velCorrectionRate " + constraintEngineDesc.velCorrectionRate);
+            Debug.Log("constraintEngineDesc.shirinkRate " + constraintEngineDesc.shrinkRate);
+            phScene.GetConstraintEngine().SetDesc(constraintEngineDesc);
         }
 
         return phScene;
@@ -177,31 +259,62 @@ public class PHSceneBehaviour : SprBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // MonoBehaviourのメソッド
 
-    void FixedUpdate () {
-        if (sprObject != null && enableStep) {
-            foreach(var phSolidBehaviour in phSolidBehaviours){
-                phSolidBehaviour.BeforeStep();
-            }
-            foreach(var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours){
-                phIKEndEffectorBehaviour.BeforeStep();
-            }
-            lock (sprObject) {
-                (sprObject as PHSceneIf).Step();
+    public override void Awake() {
+        base.Awake();
+        // Nullチェックしなくて済むように初期化
+        fixedUpdateCallbacks = new Dictionary<CallbackPriority, List<PHSceneBehaviourCallbackItem>>();
+        foreach (CallbackPriority callbackPriority in Enum.GetValues(typeof(CallbackPriority))) {
+            fixedUpdateCallbacks.Add(callbackPriority, new List<PHSceneBehaviourCallbackItem>());
+        }
+    }
+    public override void Start() {
+        base.Start();
+        if (enableDebugWindow) {
+            FWSceneIf fwSceneIf = fwApp.GetSdk().GetScene(0);
+            fwSceneIf.SetForceScale(0.01f, 0.01f);
+            for (int i = 0; i < phScene.NJoints(); i++) {
+                var joint = phScene.GetJoint(i);
+                fwSceneIf.EnableRender(joint, false);
             }
         }
     }
-
-    void Update() {
+    void FixedUpdate() {
         if (enableUpdate) {
-            lock (sprObject) {
-                foreach (var phSolidBehaviour in phSolidBehaviours) {
-                    if (phSolidBehaviour != null) {
-                        phSolidBehaviour.UpdatePose();
-                    }
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateSolidFromGameObject]) {
+                callBackItem.callback();
+            }
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdateSolidFromGameObject();
                 }
             }
-            if (FWAppBehaviour.app != null) {
-                FWAppBehaviour.app.PostRedisplay();
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                phSolidBehaviour.BeforeStep();
+            }
+
+            foreach (var phIKEndEffectorBehaviour in phIKEndEffectorBehaviours) {
+                phIKEndEffectorBehaviour.BeforeStep();
+            }
+
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeStep]) {
+                callBackItem.callback();
+            }
+            if (sprObject != null && enableStep) {
+                (sprObject as PHSceneIf).Step();
+            }
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.BeforeUpdateGameObjectFromSolid]) {
+                callBackItem.callback();
+            }
+            foreach (var phSolidBehaviour in phSolidBehaviours) {
+                if (phSolidBehaviour != null) {
+                    phSolidBehaviour.UpdateGameObjectFromSolid();
+                }
+            }
+            foreach (var callBackItem in fixedUpdateCallbacks[CallbackPriority.Finally]) {
+                callBackItem.callback();
+            }
+            if (fwApp != null) {
+                fwApp.PostRedisplay();
             }
         }
     }
@@ -238,6 +351,17 @@ public class PHSceneBehaviour : SprBehaviour {
         }
 
         ApplyCollisionList();
+    }
+
+    private void OnDestroy() {
+        if (fwApp != null) {
+            fwApp.EndThread();
+            fwApp = null;
+        }
+        if (phSdk != null) {
+            phSdk.Clear();
+            phSdk = null;
+        }
     }
 
 
@@ -290,7 +414,7 @@ public class PHSceneBehaviour : SprBehaviour {
                 } else {
                     foreach (var solid1 in solid1s) {
                         foreach (var solid2 in solid2s) {
-                            if (solid1.sprObject != null && solid2.sprObject != null) {
+                            if (solid1?.sprObject != null && solid2?.sprObject != null) {
                                 phScene.SetContactMode(solid1.phSolid, solid2.phSolid, c.mode);
                             }
                         }
@@ -301,7 +425,24 @@ public class PHSceneBehaviour : SprBehaviour {
         }
     }
 
-    public void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
+    public void AddFixedUpadateCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, CallbackPriority callbackPriority, int subPriority = 0) {
+        var newItem = new PHSceneBehaviourCallbackItem(subPriority, phSceneBehaviourCallback);
+        fixedUpdateCallbacks[callbackPriority].Add(newItem);
+        fixedUpdateCallbacks[callbackPriority].Sort((a, b) => a.subPriority - b.subPriority);
+    }
+    public void DeleteFixedUpadateCallback(PHSceneBehaviourCallback phSceneBehaviourCallback, CallbackPriority callbackPriority, int subPriority = 0) {
+        var callBackItems = fixedUpdateCallbacks[callbackPriority];
+        PHSceneBehaviourCallbackItem deleteCallBackItem = null;
+        foreach (var item in callBackItems) {
+            if (item.subPriority == subPriority && item.callback == phSceneBehaviourCallback) {
+                deleteCallBackItem = item;
+                break;
+            }
+        }
+        callBackItems.Remove(deleteCallBackItem);
+    }
+
+    public virtual void RegisterPHSolidBehaviour(PHSolidBehaviour phSolid) {
         phSolidBehaviours.Add(phSolid);
 
         // スキンメッシュ描画時のカクつきを防ぐため、ツリー深さでソートしておく。

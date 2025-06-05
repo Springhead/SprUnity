@@ -27,6 +27,7 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
         }
 
         CDShapeIf shape = CreateShape(shapeObject);
+        shape.SetName("cd:" + gameObject.name);
         phSolid.AddShape(shape);
 
         GameObject solidObject = solidBehaviour.gameObject;
@@ -63,6 +64,16 @@ public abstract class CDShapeBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private bool applicationQuit = false;
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    private void OnDestroy() {
+        if (!applicationQuit) {
+            phSdk.DelChildObject(sprObject);
+        }
+    }
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // その他のメソッド
 

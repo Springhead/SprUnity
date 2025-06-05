@@ -18,12 +18,23 @@ public class PHSolidBehaviourEditor : Editor {
 
         // ----- ----- ----- ----- -----
         // Fixed Solid Position Handle
-        if (pHSolidBehaviour.fixedSolid) {
+        if (Application.isPlaying && pHSolidBehaviour.fixedSolid) {
             Tools.current = Tool.None;
             pHSolidBehaviour.fixedSolidPosition = Handles.PositionHandle(pHSolidBehaviour.fixedSolidPosition, Quaternion.identity);
             pHSolidBehaviour.fixedSolidRotation = Handles.RotationHandle(pHSolidBehaviour.fixedSolidRotation, pHSolidBehaviour.fixedSolidPosition);
         }
     }
+
+    //public override void OnInspectorGUI() {
+    //    DrawDefaultInspector();
+    //    if (Application.isPlaying) {
+    //        PHSolidBehaviour phSolid = (PHSolidBehaviour) target;
+    //        for (int i = 0; i < phSolid.phSolid.NShape(); i++) {
+    //            var inertia = phSolid.phSolid.GetShape(i).CalcMomentOfInertia();
+
+    //        }
+    //    }
+    //}
 }
 
 #endif
@@ -46,7 +57,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public Quaternion fixedSolidRotation = new Quaternion();
 
     // このGameObjectがScene Hierarchyでどれくらいの深さにあるか。浅いものから順にUpdatePoseするために使う
-    [HideInInspector]
+    [NonSerialized]
     public int treeDepth = 0;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -79,9 +90,9 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
 
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
-		PHSolidIf so = phScene.CreateSolid (desc);
+        PHSolidIf so = phScene.CreateSolid(desc);
         so.SetName("so:" + gameObject.name);
-		so.SetPose (gameObject.transform.ToPosed());
+        so.SetPose(gameObject.transform.ToPosed());
 
         fixedSolidPosition = gameObject.transform.position;
         fixedSolidRotation = gameObject.transform.rotation;
@@ -116,6 +127,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
             // --
 
             // <!!> SpineとShoulderはCompInertiaすると落ちるのでデバッグ中
+            /*
             if (name == "Spine" || name.Contains("Shoulder")) {
                 var I = phSolid.GetInertia();
                 string str = name + " : \r\n";
@@ -147,7 +159,7 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 }
                 Debug.Log(str);
             }
-
+            */
             // --
 
             PHSolidDesc desc_ = new PHSolidDesc();
@@ -179,15 +191,63 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
     public void BeforeStep() {
         UpdateCenterOfMass();
     }
+    // GameObjectの位置姿勢をSpringhead剛体に適用 適用対象(fixedSolid,dynamicalOff)の親にSolidがあると問題が起こる
+    public void UpdateSolidFromGameObject() {
+        if (sprObject != null) {
+            PHSolidIf so = sprObject as PHSolidIf;
+            if (fixedSolid) {
+                // Fixedな剛体はHandleの位置をSpringheadに反映
+                //so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
+                //gameObject.transform.position = fixedSolidPosition;
+                //gameObject.transform.rotation = fixedSolidRotation;
+            } else {
+                // Fixedでない剛体の場合
+                if (!so.IsDynamical()) {
+                    // Dynamicalでない剛体はUnityの位置をSpringheadに反映（操作可能）
+                    //Debug.Log(name + " so.GetVelocity() " + so.GetVelocity());
+                    //Debug.Log(name + " so.GetAngurlarVel() " + so.GetAngularVelocity());
+                    //Debug.Log(name + " so.GetPose() " + so.GetPose());
+                    //so.SetVelocity((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
+                    //Debug.Log((gameObject.transform.position.ToVec3d() - so.GetPose().Pos()) / phScene.GetTimeStep());
+                    //so.SetPose(gameObject.transform.ToPosed());
+                    //gameObject.transform.FromPosed(so.GetPose());
+                }
 
+                fixedSolidPosition = gameObject.transform.position;
+                fixedSolidRotation = gameObject.transform.rotation;
+            }
+        }
+    }
+    // Springhead剛体の位置姿勢をGameObjectに適用：更新順を制御するためPHSceneからまとめて呼び出す
+    public void UpdateGameObjectFromSolid() {
+        if (sprObject != null) {
+            PHSolidIf so = sprObject as PHSolidIf;
+            if (fixedSolid) {
+                // 親が動くと子のGameObjectは動くため修正
+                //gameObject.transform.position = fixedSolidPosition;
+                //gameObject.transform.rotation = fixedSolidRotation;
+            } else {
+                // Fixedでない剛体の場合
+                if (so.IsDynamical()) {
+                    gameObject.transform.FromPosed(so.GetPose());
+                    //Debug.Log(so.GetName() + so.GetPose());
+                    var q = so.GetPose();
+                    //Debug.Log("test " + name + "(" + q.w + "," + q.x + "," + q.y + "," + q.z + ")");
+                    fixedSolidPosition = gameObject.transform.position;
+                    fixedSolidRotation = gameObject.transform.rotation;
+                }
+            }
+        }
+    }
     // Springhead剛体とGameObjectの間での位置姿勢の同期：　更新順を制御するためPHSceneからまとめて呼び出す
-    public void UpdatePose () {
+    public void UpdatePose() {
         if (sprObject != null) {
             PHSolidIf so = sprObject as PHSolidIf;
             if (fixedSolid) {
                 // Fixedな剛体はHandleの位置をSpringheadに反映
                 so.SetPose(new Posed(fixedSolidPosition.ToVec3d(), fixedSolidRotation.ToQuaterniond()));
-
+                gameObject.transform.position = fixedSolidPosition;
+                gameObject.transform.rotation = fixedSolidRotation;
             } else {
                 // Fixedでない剛体の場合
 
@@ -203,9 +263,9 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
                 fixedSolidRotation = gameObject.transform.rotation;
             }
         }
-	}
+    }
 
-    public void UpdateCenterOfMass () {
+    public void UpdateCenterOfMass() {
         if (centerOfMass != null) {
             Vec3d centerOfMassLocalPos = gameObject.transform.ToPosed().Inv() * centerOfMass.transform.position.ToVec3d();
             desc.center = centerOfMassLocalPos;
@@ -215,4 +275,14 @@ public class PHSolidBehaviour : SprSceneObjBehaviour {
         }
     }
 
+    private bool applicationQuit = false;
+    private void OnApplicationQuit() {
+        applicationQuit = true;
+    }
+
+    private void OnDestroy() {
+        if (!applicationQuit) {
+            phScene.DelChildObject(phSolid);
+        }
+    }
 }

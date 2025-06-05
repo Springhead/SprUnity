@@ -1,40 +1,35 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using SprCs;
 
 #if UNITY_EDITOR
-    using UnityEditor;
+using UnityEditor;
 
-    [CustomEditor(typeof(PHSpringBehavior))]
-    [CanEditMultipleObjects]
-    public class PHSpringBehaviorEditor : Editor {
-    }
+[CustomEditor(typeof(PHFixJointBehavior))]
+[CanEditMultipleObjects]
+public class PHFixJointBehaviorEditor : Editor {
+}
 
 #endif
 [DefaultExecutionOrder(4)]
-public class PHSpringBehavior : PHJointBehaviour {
+public class PHFixJointBehavior : PHJointBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
 
-    public PHSpringDescStruct desc = null;
+    public PHFixJointDescStruct desc = null;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
-    public PHSpringIf phSpring { get { return sprObject as PHSpringIf; } }
+    public PHFixJointIf phFixJoint { get { return sprObject as PHFixJointIf; } }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // SprBehaviourの派生クラスで実装するメソッド
 
     // -- DescStructオブジェクトを再構築する
     public override void ResetDescStruct() {
-        desc = new PHSpringDescStruct();
-
-        // Springheadだと初期値がゼロなので、多少はバネとして機能する値にしておく
-        desc.spring = new Vec3d(10.0, 10.0, 10.0);
-        desc.damper = new Vec3d(1.0, 1.0, 1.0);
-        desc.springOri = 10.0;
-        desc.damperOri = 1.0;
+        desc = new PHFixJointDescStruct();
     }
 
     // -- DescStructオブジェクトを取得する
@@ -44,12 +39,12 @@ public class PHSpringBehavior : PHJointBehaviour {
 
     // -- DescオブジェクトをNewして返す
     public override CsObject CreateDesc() {
-        return new PHSpringDesc();
+        return new PHFixJointDesc();
     }
 
     // -- DescStructをDescに適用する
     public override void ApplyDesc(CsObject from, CsObject to) {
-        (from as PHSpringDescStruct).ApplyTo(to as PHSpringDesc);
+        (from as PHFixJointDescStruct).ApplyTo(to as PHFixJointDesc);
     }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -57,6 +52,6 @@ public class PHSpringBehavior : PHJointBehaviour {
 
     // -- 関節を作成する
     public override PHJointIf CreateJoint(PHSolidIf soSock, PHSolidIf soPlug) {
-        return phScene.CreateJoint(soSock, soPlug, PHSpringIf.GetIfInfoStatic(), (PHSpringDesc)desc);
+        return phScene.CreateJoint(soSock, soPlug, PHFixJointIf.GetIfInfoStatic(), (PHFixJointDesc)desc);
     }
 }

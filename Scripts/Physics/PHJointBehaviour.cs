@@ -12,8 +12,8 @@ public class PHJointBehaviourEditor : Editor {
         PHJointBehaviour phJointBehaviour = (PHJointBehaviour)target;
 
         // ----- ----- ----- ----- -----
-        // Target Position Handle
-        if (phJointBehaviour.showHandle) {
+        // Joint Pose Handle
+        if (phJointBehaviour.showJointPoseHandle) {
             Tools.current = Tool.None;
             // <!!> この方式だと微小変化が常に発生してあまりUndoなどが機能しない
             Posed objectPose = phJointBehaviour.gameObject.transform.ToPosed();
@@ -41,9 +41,12 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     public GameObject plug = null;
 
     public GameObject jointObject = null;
-    public bool showHandle;
+    // Joint自体の位置姿勢の描画・編集有効化
+    public bool showJointPoseHandle;
+    // Jointの目標角度の描画・編集有効化(Jointの種類によって描画変化)
+    public bool showJointTargetPositionHandle;
     public Vector3 jointPosition = new Vector3();
-    public Quaternion jointOrientation =Quaternion.identity;
+    public Quaternion jointOrientation = Quaternion.identity;
 
     // 関節で接続された剛体同士の衝突を無効ににするかどうか
     public bool disableCollision = false;
@@ -64,10 +67,13 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // SprBehaviourの派生クラスで実装するメソッド
 
+    public Posed socketPose;
+    public Posed plugPose;
+
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
         if (!socket) { socket = gameObject.transform.parent.GetComponentInParent<PHSolidBehaviour>().gameObject; }
-        if (!plug)   { plug   = gameObject.GetComponentInParent<PHSolidBehaviour>().gameObject; }
+        if (!plug) { plug = gameObject.GetComponentInParent<PHSolidBehaviour>().gameObject; }
 
         if (socket == null) { throw new ObjectNotFoundException("Socket object did not found for Joint", gameObject); }
         if (plug == null) { throw new ObjectNotFoundException("Plug object did not found for Joint", gameObject); }
@@ -75,10 +81,27 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
         PHSolidIf soSock = socket.GetComponent<PHSolidBehaviour>().sprObject as PHSolidIf;
         PHSolidIf soPlug = plug.GetComponent<PHSolidBehaviour>().sprObject as PHSolidIf;
 
+        // SocketとPlugを設定。SetSocketPose/SetPlugPoseを使わずdescの段階でセット。
+        if (autoSetSockPlugPose) {
+            Posed jointPose = new Posed();
+            if (jointObject == null) {
+                jointObject = gameObject;
+                jointPose = jointObject.transform.ToPosed() * new Posed(jointPosition.ToVec3d(), jointOrientation.ToQuaterniond());
+            } else {
+                jointPose = jointObject.transform.ToPosed();
+            }
+            var desc = (PHConstraintDescStruct)GetDescStruct();
+            desc.poseSocket = soSock.GetPose().Inv() * jointPose;
+            desc.posePlug = soPlug.GetPose().Inv() * jointPose;
+        }
+
         PHJointIf jo = CreateJoint(soSock, soPlug);
 
         jo.SetName("jo:" + gameObject.name);
 
+        // SetSocketPose / SetPlugPoseが動かなくなているかもしれない。 (2022/01)
+        // 以前はこの段階でSocketとPlugを設定していたが、上でdescにセットするようにした。
+        /*
         if (autoSetSockPlugPose) {
             // priority jointObject > jointPosition/Orientation > gameObject
             Posed jointPose = new Posed();
@@ -88,9 +111,17 @@ public abstract class PHJointBehaviour : SprSceneObjBehaviour {
             } else {
                 jointPose = jointObject.transform.ToPosed();
             }
-            jo.SetSocketPose(soSock.GetPose().Inv() * jointPose);
-            jo.SetPlugPose(soPlug.GetPose().Inv() * jointPose);
+            Posed socketPose = soSock.GetPose().Inv() * jointPose;
+            Posed plugPose = soPlug.GetPose().Inv() * jointPose;
+            jo.SetSocketPose(socketPose);
+            jo.SetPlugPose(plugPose);
+
+            // 後でDescStructを元にSetDescするため、DescStructの更新が必要
+            PHJointDescStruct jointDescStruct = GetDescStruct() as PHJointDescStruct;
+            jointDescStruct.poseSocket = socketPose;
+            jointDescStruct.posePlug = plugPose;
         }
+        */
 
         return jo;
     }

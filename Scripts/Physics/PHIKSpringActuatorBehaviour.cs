@@ -7,26 +7,26 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 
-[CustomEditor(typeof(PHIKBallActuatorBehaviour))]
+[CustomEditor(typeof(PHIKSpringActuatorBehaviour))]
 [CanEditMultipleObjects]
-public class PHIKBallActuatorBehaviourEditor : Editor {
-    PHIKBallActuatorDesc desc = new PHIKBallActuatorDesc();
+public class PHIKSpringActuatorBehaviourEditor : Editor {
+    PHIKSpringActuatorDesc desc = new PHIKSpringActuatorDesc();
 
     public void OnSceneGUI() {
-        PHIKBallActuatorBehaviour phIKActBehaviour = (PHIKBallActuatorBehaviour)target;
+        PHIKSpringActuatorBehaviour phIKActBehaviour = (PHIKSpringActuatorBehaviour)target;
 
         // ----- ----- ----- ----- -----
         // Pullback Target Handle
         // <!!>（本当は親剛体の姿勢を基準にしたほうがいいのでは？）
         if (phIKActBehaviour.showPullbackTargetHandle) {
             Tools.current = Tool.None;
-
-            if (phIKActBehaviour.phIKBallActuator != null) {
-                phIKActBehaviour.phIKBallActuator.GetDesc(desc);
+/*
+            if (phIKActBehaviour.phIKSpringActuator != null) {
+                phIKActBehaviour.phIKSpringActuator.GetDesc(desc);
                 Quaternion currPullbackTarget = desc.pullbackTarget.ToQuaternion();
                 Quaternion handleRot = Handles.RotationHandle(currPullbackTarget, phIKActBehaviour.transform.position);
                 desc.pullbackTarget = handleRot.ToQuaterniond();
-                phIKActBehaviour.phIKBallActuator.SetDesc(desc);
+                phIKActBehaviour.phIKSpringActuator.SetDesc(desc);
                 phIKActBehaviour.desc.pullbackTarget = desc.pullbackTarget;
 
             } else if (phIKActBehaviour.desc != null) {
@@ -34,31 +34,32 @@ public class PHIKBallActuatorBehaviourEditor : Editor {
                 Quaternion handleRot = Handles.RotationHandle(currPullbackTarget, phIKActBehaviour.transform.position);
                 phIKActBehaviour.desc.pullbackTarget = handleRot.ToQuaterniond();
             }
+*/
         }
     }
 }
 #endif
 
 [DefaultExecutionOrder(6)]
-public class PHIKBallActuatorBehaviour : PHIKActuatorBehaviour {
+public class PHIKSpringActuatorBehaviour : PHIKActuatorBehaviour {
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // メンバ変数
 
-    public PHIKBallActuatorDescStruct desc = null;
+    public PHIKSpringActuatorDescStruct desc = null;
 
     public bool showPullbackTargetHandle = false;
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // このBehaviourに対応するSpringheadオブジェクト
 
-    public PHIKBallActuatorIf phIKBallActuator { get { return sprObject as PHIKBallActuatorIf; } }
+    public PHIKSpringActuatorIf phIKSpringActuator { get { return sprObject as PHIKSpringActuatorIf; } }
 
     // ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
     // SprBehaviourの派生クラスで実装するメソッド
 
     // -- DescStructオブジェクトを再構築する
     public override void ResetDescStruct() {
-        desc = new PHIKBallActuatorDescStruct();
+        desc = new PHIKSpringActuatorDescStruct();
     }
 
     // -- DescStructオブジェクトを取得する
@@ -68,21 +69,21 @@ public class PHIKBallActuatorBehaviour : PHIKActuatorBehaviour {
 
     // -- DescオブジェクトをNewして返す
     public override CsObject CreateDesc() {
-        return new PHIKBallActuatorDesc();
+        return new PHIKSpringActuatorDesc();
     }
 
     // -- DescStructをDescに適用する
     public override void ApplyDesc(CsObject from, CsObject to) {
-        (from as PHIKBallActuatorDescStruct).ApplyTo(to as PHIKBallActuatorDesc);
+        (from as PHIKSpringActuatorDescStruct).ApplyTo(to as PHIKSpringActuatorDesc);
     }
 
     // -- Sprオブジェクトの構築を行う
     public override ObjectIf Build() {
-        PHIKBallActuatorIf phIKAct = phScene.CreateIKActuator(PHIKBallActuatorIf.GetIfInfoStatic(), (PHIKBallActuatorDesc)desc).Cast();
+        PHIKSpringActuatorIf phIKAct = phScene.CreateIKActuator(PHIKSpringActuatorIf.GetIfInfoStatic(), (PHIKSpringActuatorDesc)desc).Cast();
         phIKAct.SetName("ika:" + gameObject.name);
         phIKAct.Enable(true);
-
-        PHBallJointBehaviour bj = gameObject.GetComponent<PHBallJointBehaviour>();
+        
+        PHSpringBehavior bj = gameObject.GetComponent<PHSpringBehavior>();
         if (bj != null && bj.sprObject != null) {
             phIKAct.AddChildObject(bj.sprObject);
         }

@@ -58,10 +58,10 @@ public abstract class PHIKActuatorBehaviour : SprSceneObjBehaviour {
         if (jo != null && jo.sprObject != null && sprObject != null) {
             // 次に、関節の親関節を探す。関節のソケット剛体を探し、それを基準に探す
             // （親関節　＝　この関節のソケット剛体をプラグ剛体として持つ関節）
-            // 親関節がないかどんどん上に行って探す
+            // 親関節にIKActuatorが付属していない場合は、親IKActuatorが見つかるまで関節ツリーをさかのぼって探す
             while (true) {
                 PHJointBehaviour joParent = null;
-                var jos = jo.socket.GetComponentsInChildren<PHJointBehaviour>(); //InChildrenで探す必要はないはず
+                var jos = jo.socket.GetComponentsInChildren<PHJointBehaviour>();
                 foreach (var j in jos) {
                     if (j.plug == jo.socket) { joParent = j; break; }
                 }

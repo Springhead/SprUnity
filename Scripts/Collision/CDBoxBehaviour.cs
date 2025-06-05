@@ -2,6 +2,14 @@
 using System.Collections;
 using SprCs;
 using System;
+#if UNITY_EDITOR
+using UnityEditor;
+
+[CustomEditor(typeof(CDBoxBehaviour))]
+[CanEditMultipleObjects]
+public class CDBoxBehaviourEditor : Editor {
+}
+#endif
 
 [DefaultExecutionOrder(3)]
 public class CDBoxBehaviour : CDShapeBehaviour {

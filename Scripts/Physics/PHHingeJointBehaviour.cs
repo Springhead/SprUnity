@@ -8,9 +8,33 @@ using System;
 using UnityEditor;
 
 [CustomEditor(typeof(PHHingeJointBehaviour))]
+[CanEditMultipleObjects]
 public class PHHingeJointBehaviourEditor : PHJointBehaviourEditor {
+    PHHingeJointDesc desc = new PHHingeJointDesc();
+
     public void OnSceneGUI() {
         base.OnSceneGUI();
+
+        PHHingeJointBehaviour phHingeJointBehaviour = target as PHHingeJointBehaviour;
+
+        if (phHingeJointBehaviour.showJointTargetPositionHandle) {
+            Tools.current = Tool.None;
+            /*
+            if (phHingeJointBehaviour.phHingeJoint != null) {
+                phHingeJointBehaviour.phHingeJoint.GetDesc(desc);
+                double currTargetPosition = desc.targetPosition;
+                Quaternion handleRot = Handles.Di(currTargetPosition, phBallJointBehaviour.transform.position);
+                desc.targetPosition = handleRot.ToQuaterniond();
+                phBallJointBehaviour.phBallJoint.SetDesc(desc);
+                phBallJointBehaviour.desc.targetPosition = desc.targetPosition;
+
+            } else if (phHingeJointBehaviour.desc != null) {
+                Quaternion currPullbackTarget = ((Quaterniond)(phBallJointBehaviour.desc.targetPosition)).ToQuaternion();
+                Quaternion handleRot = Handles.RotationHandle(currPullbackTarget, phBallJointBehaviour.transform.position);
+                phBallJointBehaviour.desc.targetPosition = handleRot.ToQuaterniond();
+            }
+            */
+        }
     }
 }
 
